@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const addCartItemSchema = z.object({
-  productId: z.string().trim().min(1, "Product ID is required"),
+  productId: z.string().trim().uuid("Product ID must be a valid UUID"),
   quantity: z.coerce.number().int().positive("Quantity must be a positive whole number"),
 });
 

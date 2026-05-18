@@ -3,7 +3,7 @@ export const validate = (schema, target = 'body') => {
         const result = schema.safeParse(req[target]);
         if (!result.success) {
             const errors = result.error.issues.map((issue) => ({
-                field: issue.path[0],
+                field: issue.path.join("."),
                 message: issue.message,
             }));
             return res.status(400).json({ message: "Validation failed", errors });

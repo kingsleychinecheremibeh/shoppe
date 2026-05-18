@@ -118,7 +118,7 @@ describe('authController', () => {
 
       await logoutUser(req, res, next);
 
-      expect(authService.logout).toHaveBeenCalledWith('refresh-tok');
+      expect(authService.logout).toHaveBeenCalledWith({ refreshToken: 'refresh-tok', userId: undefined });
       expect(res.clearCookie).toHaveBeenCalledWith('access_token', expect.objectContaining({ httpOnly: true, sameSite: 'lax' }));
       expect(res.clearCookie).toHaveBeenCalledWith('refresh_token', expect.objectContaining({ httpOnly: true, sameSite: 'lax' }));
       expect(res.json).toHaveBeenCalledWith({ message: 'Logged out successfully' });

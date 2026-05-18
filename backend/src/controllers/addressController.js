@@ -7,18 +7,16 @@ export const getAddresses = asyncHandler(async (req, res) => {
 });
 
 export const createAddress = asyncHandler(async (req, res) => {
-  const { fullName, phone, street, city, state, country } = req.body;
-  const address = await addressService.createAddress(req.user.id, {
-    fullName, phone, street, city, state, country,
-  });
+  const address = await addressService.createAddress(req.user.id, req.body);
   res.status(201).json(address);
 });
 
 export const updateAddress = asyncHandler(async (req, res) => {
-  const { fullName, phone, street, city, state, country } = req.body;
-  const address = await addressService.updateAddress(req.params.id, req.user.id, {
-    fullName, phone, street, city, state, country,
-  });
+  const address = await addressService.updateAddress(
+    req.params.id,
+    req.user.id,
+    req.body
+  );
   res.json(address);
 });
 

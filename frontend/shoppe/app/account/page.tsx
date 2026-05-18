@@ -1,0 +1,401 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  MapPin,
+  ShoppingBag,
+  LogOut,
+  Plus,
+  Trash2,
+  Loader2,
+  Mail,
+  Shield,
+  ArrowRight,
+  Sparkles,
+  Phone,
+  Home
+} from "lucide-react";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+
+type Address = {
+  id: string;
+  fullName: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+};
+
+type UserProfile = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+};
+
+export default function AccountPage() {
+  const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submittingAddress, setSubmittingAddress] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // Address Form State
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "Nigeria",
+  });
+
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      try {
+        const [profileData, addressesData] = await Promise.all([
+          api.getMe(),
+          api.getAddresses(),
+        ]);
+        setProfile(profileData as UserProfile);
+        setAddresses((addressesData as Address[]) || []);
+      } catch (error) {
+        console.error("Failed to load account details:", error);
+        toast.error("Please login to access your account dashboard.");
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccountData();
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      await api.logout();
+      toast.success("Logged out successfully. See you soon!");
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Failed to logout. Please try again.");
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.fullName || !formData.phone || !formData.street || !formData.city || !formData.state) {
+      toast.error("Please fill in all address details.");
+      return;
+    }
+
+    try {
+      setSubmittingAddress(true);
+      const newAddress = await api.createAddress(formData);
+      setAddresses([...addresses, newAddress as Address]);
+      toast.success("Delivery address added successfully!");
+      setShowAddressForm(false);
+      setFormData({
+        fullName: "",
+        phone: "",
+        street: "",
+        city: "",
+        state: "",
+        country: "Nigeria",
+      });
+    } catch (error) {
+      console.error("Failed to save address:", error);
+      toast.error("Failed to add new address. Please try again.");
+    } finally {
+      setSubmittingAddress(false);
+    }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this shipping address?")) return;
+
+    try {
+      await api.deleteAddress(id);
+      setAddresses(addresses.filter((addr) => addr.id !== id));
+      toast.success("Address removed successfully.");
+    } catch (error) {
+      console.error("Failed to delete address:", error);
+      toast.error("Failed to remove address. Please try again.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50/50">
+        <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
+        <p className="text-gray-500 font-medium animate-pulse">Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  return (
+    <main className="max-w-6xl mx-auto px-4 py-16 sm:px-6 lg:px-8 min-h-screen">
+      {/* Dashboard Top Intro */}
+      <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+            My Account
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Manage your personal profile settings, shipping details, and shopping records.
+          </p>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="inline-flex items-center px-4 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 hover:border-rose-300 text-xs font-bold text-rose-700 hover:text-rose-800 rounded-xl transition duration-200"
+        >
+          {loggingOut ? (
+            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+          ) : (
+            <LogOut className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          Sign Out
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {/* ================= COLUMN 1: PROFILE SUMMARY ================= */}
+        <div className="lg:col-span-1 space-y-6">
+
+          {/* User Profile Card */}
+          <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 h-24 w-24 bg-gray-50 rounded-bl-full flex items-start justify-end p-4 text-gray-200 z-0">
+              <Sparkles className="h-6 w-6" />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <div className="h-16 w-16 bg-black text-white rounded-2xl flex items-center justify-center text-xl font-bold mb-4 shadow-md">
+                {(profile?.name || "User").slice(0, 2).toUpperCase()}
+              </div>
+
+              <h3 className="text-lg font-bold text-gray-900 mb-1">{profile?.name}</h3>
+
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-gray-100 text-gray-700 border border-gray-200 mb-6">
+                <Shield className="h-3 w-3 mr-1" />
+                {profile?.role} Member
+              </span>
+
+              <div className="w-full space-y-3.5 text-left border-t border-gray-100 pt-5">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Mail className="h-4 w-4 mr-3 text-gray-400 shrink-0" />
+                  <span className="truncate">{profile?.email}</span>
+                </div>
+
+                <div className="flex items-center text-sm text-gray-600">
+                  <Shield className="h-4 w-4 mr-3 text-gray-400 shrink-0" />
+                  <span>Joined {new Date(profile?.createdAt || "").toLocaleDateString("en-US", { year: "numeric", month: "short" })}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href="/account/orders"
+            className="group bg-black hover:bg-neutral-900 text-white rounded-3xl p-6 shadow-sm flex justify-between items-center transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-white">
+                <ShoppingBag className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm">Shopping History</h4>
+                <p className="text-xs text-neutral-400">View and track all past orders</p>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-neutral-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+          </Link>
+
+        </div>
+
+        {/* ================= COLUMN 2 & 3: ADDRESS BOOK ================= */}
+        <div className="lg:col-span-2 space-y-6">
+
+          <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center space-x-2.5">
+                <MapPin className="h-5 w-5 text-gray-400" />
+                <h3 className="font-bold text-lg text-gray-900">Address Book</h3>
+              </div>
+
+              {!showAddressForm && (
+                <button
+                  onClick={() => setShowAddressForm(true)}
+                  className="inline-flex items-center px-3.5 py-2 bg-black hover:bg-neutral-800 text-white text-xs font-semibold rounded-xl shadow-sm transition duration-200"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  New Address
+                </button>
+              )}
+            </div>
+
+            {/* Inline New Address Form */}
+            {showAddressForm && (
+              <form onSubmit={handleAddAddress} className="bg-gray-50 border border-gray-150 rounded-2xl p-5 mb-6 space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-150 pb-3 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                    Add New Shipping Location
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddressForm(false)}
+                    className="text-xs font-semibold text-gray-400 hover:text-black transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Kingsley Ibeh"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. +234 812 345 6789"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 15 Akinwunmi Street, Ejigbo"
+                      value={formData.street}
+                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Ikeja"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Lagos"
+                      value={formData.state}
+                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={submittingAddress}
+                    className="inline-flex items-center px-4 py-2.5 bg-black hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow-sm transition"
+                  >
+                    {submittingAddress ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+                        Saving Address...
+                      </>
+                    ) : (
+                      "Save Location Address"
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Address List */}
+            {addresses.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-gray-150 rounded-2xl">
+                <MapPin className="mx-auto h-8 w-8 text-gray-300 mb-3" />
+                <p className="text-sm font-semibold text-gray-900 mb-1">No shipping address recorded</p>
+                <p className="text-xs text-gray-400 max-w-[240px] mx-auto">
+                  Add shipping destinations to enable rapid one-click checkout on future purchases!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {addresses.map((address) => (
+                  <div
+                    key={address.id}
+                    className="border border-gray-150 rounded-2xl p-4 relative group hover:border-gray-300 hover:bg-gray-50/30 transition duration-200"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center space-x-1.5">
+                        <Home className="h-3.5 w-3.5 text-gray-400" />
+                        <h4 className="text-xs font-bold text-gray-800 truncate max-w-[120px]">
+                          {address.fullName}
+                        </h4>
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteAddress(address.id)}
+                        className="text-gray-400 hover:text-rose-600 transition p-0.5"
+                        title="Delete Address"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-1 text-xs text-gray-500 leading-normal">
+                      <p className="line-clamp-2">{address.street}</p>
+                      <p>{address.city}, {address.state}</p>
+                      <p className="font-semibold text-gray-600">{address.country}</p>
+
+                      <div className="flex items-center text-[10px] text-gray-400 mt-2.5 pt-2 border-t border-gray-100">
+                        <Phone className="h-3 w-3 mr-1 text-gray-300" />
+                        {address.phone}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  );
+}

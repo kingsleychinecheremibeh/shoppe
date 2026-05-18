@@ -11,7 +11,7 @@ const ORDER_STATUSES = {
 };
 
 export const orderService = {
-  async createOrder(userId, addressId) {
+  async createOrder(userId, addressId, idempotencyKey, paymentGateway, paymentReference) {
     if (!addressId) {
       throw new AppError("Address ID is required", 400);
     }
@@ -47,6 +47,9 @@ export const orderService = {
       address,
       cart,
       total,
+      idempotencyKey,
+      paymentGateway,
+      paymentReference
     });
   },
 

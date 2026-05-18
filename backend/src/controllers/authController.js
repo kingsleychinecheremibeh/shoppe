@@ -1,5 +1,6 @@
 import { authService } from "../services/authService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 import {
     authCookieName,
     getAuthCookieOptions,
@@ -20,8 +21,15 @@ const sendAuthResponse = (res, statusCode, result) => {
 };
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
-    const result = await authService.refreshAccessToken(req.cookies?.[refreshCookieName]);
-    sendAuthResponse(res, 200, result);
+    const refreshToken = req.cookies?.[refreshCookieName];
+
+    if (!refreshToken) {
+        throw new AppError("Refresh token missing", 401);
+    }
+
+    const result = await authService.refreshAccessToken(refreshToken);
+
+    return sendAuthResponse(res, 200, result);
 });
 
 export const registerUser = asyncHandler(async (req, res) => {
@@ -39,7 +47,10 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 export const logoutUser = asyncHandler(async (req, res) => {
-    await authService.logout(req.cookies?.[refreshCookieName]);
+    await authService.logout({
+        refreshToken: req.cookies?.[refreshCookieName],
+        userId: req.user?.id,
+    });
 
     res
         .clearCookie(authCookieName, getClearAuthCookieOptions())

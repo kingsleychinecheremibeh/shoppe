@@ -10,14 +10,14 @@ export const orderRepository = {
             where: { userId },
             include: {
                 items: {
-                    include: {  product: true },
+                    include: { product: true },
                 },
             },
         });
     },
 
     // address is validated and fetched in the service layer before being passed here
-    createOrderTransaction: async ({ userId, addressId, address, cart, total }) => {
+    createOrderTransaction: async ({ userId, addressId, address, cart, total, idempotencyKey, paymentGateway, paymentReference }) => {
         return prisma.$transaction(async (tx) => {
             const createdOrder = await tx.order.create({
                 data: {
@@ -30,6 +30,10 @@ export const orderRepository = {
                     shippingCity: address.city,
                     shippingState: address.state,
                     shippingCountry: address.country,
+                    idempotencyKey,
+                    status: paymentReference ? "PAID" : "PENDING",
+                    paymentGateway,
+                    paymentReference,
                     orderItems: {
                         create: cart.items.map((item) => ({
                             productId: item.productId,
@@ -146,4 +150,18 @@ export const orderRepository = {
             });
         });
     },
+
+    findOrderByIdempotencyKey: (idempotencyKey) => {
+        if (!idempotencyKey) return null;
+        return prisma.order.findUnique({
+            where: { idempotencyKey },
+            include: {
+                orderItems: {
+                    include: { product: true }
+                },
+                address: true,
+            },
+        });
+    },
 };
+

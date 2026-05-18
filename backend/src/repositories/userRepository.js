@@ -21,10 +21,17 @@ const authUserSelect = {
 
 export const userRepository = {
   // Find user by email (login / duplicate check)
-  findAuthUserByEmail: (email) => {
+  findAuthByEmail: (email) => {
     return prisma.user.findUnique({
       where: { email },
       select: authUserSelect,
+    });
+  },
+
+  findPublicByEmail: (email) => {
+    return prisma.user.findUnique({
+      where: { email },
+      select: publicUserSelect,
     });
   },
 
@@ -32,6 +39,13 @@ export const userRepository = {
     return prisma.user.findUnique({
       where: { email },
       select: publicUserSelect,
+    });
+  },
+
+  findAuthUserByEmail: (email) => {
+    return prisma.user.findUnique({
+      where: { email },
+      select: authUserSelect,
     });
   },
 

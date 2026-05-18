@@ -1,18 +1,26 @@
 import { prisma } from "../config/db.js";
 
 export const refreshTokenRepository = {
-  create: ({ userId, tokenHash, expiresAt }) => {
-    return prisma.refreshToken.create({
-      data: { userId, tokenHash, expiresAt },
+  createSession: ({ userId, userAgent, ip }) => {
+    return prisma.session.create({
+      data: { userId, userAgent, ip },
     });
   },
 
-  findValidByHash: (tokenHash) => {
+  create: ({ sessionId, tokenHash, expiresAt, userAgent, ip }) => {
+    return prisma.refreshToken.create({
+      data: { sessionId, tokenHash, expiresAt, userAgent, ip },
+    });
+  },
+
+  findByHash: (tokenHash) => {
     return prisma.refreshToken.findFirst({
       where: {
         tokenHash,
-        revokedAt: null,
         expiresAt: { gt: new Date() },
+      },
+      include: {
+        session: true,
       },
     });
   },
@@ -32,7 +40,7 @@ export const refreshTokenRepository = {
   revokeAllForUser: (userId) => {
     return prisma.refreshToken.updateMany({
       where: {
-        userId,
+        session: { userId },
         revokedAt: null,
       },
       data: {

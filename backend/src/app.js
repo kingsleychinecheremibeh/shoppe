@@ -11,6 +11,8 @@ import categoryRoute from './routes/categoryRoute.js';
 import cartRoutes from './routes/cartRoutes.js';
 import addressRoutes from './routes/addressRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json' with { type: 'json' };
 
@@ -18,53 +20,74 @@ import { AppError } from './utils/AppError.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 export const app = express();
-
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-app.use(
-  cors(corsOptions)
-);
-app.use(cookieparser());
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '10kb' }));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(helmet());
+
+const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+app.use(cookieparser());
+app.use(express.json({ 
+  limit: '10kb',
+  verify: (req, res, buf) => {
+    if (req.originalUrl && req.originalUrl.includes('webhook')) {
+      req.rawBody = buf;
+    }
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
 
-const limiter = rateLimit({
+const apilimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.',
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests, slow down please.',
 });
 
-app.use(limiter);
+app.use('/api', apilimiter);
 
-const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 20,
-  message: 'Too many login attempts, please try again in an hour.',
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+}
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'success', message: 'Backend is healthy' });
-});
-
-app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoute);
 app.use('/api/v1/categories', categoryRoute);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/addresses', addressRoutes);
 app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/payment', paymentRoutes);
+
+// Serve uploaded image files statically
+app.use('/uploads', express.static('uploads'));
+
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'API is running' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'success', 
+    message: 'Backend is healthy',
+  });
+});
+
+
 
 app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

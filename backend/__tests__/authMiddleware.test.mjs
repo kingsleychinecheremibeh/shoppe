@@ -23,7 +23,7 @@ describe('protect middleware', () => {
   });
 
   test('should call next if token is valid and user exists', async () => {
-    const token = jwt.sign({ userId: '123' }, 'test-secret');
+    const token = jwt.sign({ userId: '123', sessionId: 'session-123' }, 'test-secret');
     req.cookies.access_token = token;
     prisma.user.findUnique.mockResolvedValue({ id: '123', name: 'Test User', email: 'test@example.com', role: 'USER', deletedAt: null });
 
@@ -50,7 +50,7 @@ describe('protect middleware', () => {
   });
 
   test('should call next with 401 AppError if user not found', async () => {
-    const token = jwt.sign({ userId: '123' }, 'test-secret');
+    const token = jwt.sign({ userId: '123', sessionId: 'session-123' }, 'test-secret');
     req.cookies.access_token = token;
     prisma.user.findUnique.mockResolvedValue(null);
 
@@ -60,7 +60,7 @@ describe('protect middleware', () => {
   });
 
   test('should call next with 401 AppError if user is soft-deleted', async () => {
-    const token = jwt.sign({ userId: '123' }, 'test-secret');
+    const token = jwt.sign({ userId: '123', sessionId: 'session-123' }, 'test-secret');
     req.cookies.access_token = token;
     prisma.user.findUnique.mockResolvedValue({ id: '123', deletedAt: new Date() });
 

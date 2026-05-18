@@ -28,7 +28,7 @@ describe('categoryService', () => {
 
     await categoryService.createCategory('Running Shoes');
 
-    expect(categoryRepository.create).toHaveBeenCalledWith({ name: 'Running Shoes', slug: 'running-shoes' });
+    expect(categoryRepository.create).toHaveBeenCalledWith({ name: 'Running Shoes', slug: 'running-shoes', image: null });
   });
 
   test('increments slug when duplicate exists', async () => {
@@ -39,7 +39,7 @@ describe('categoryService', () => {
 
     await categoryService.createCategory('Shoes');
 
-    expect(categoryRepository.create).toHaveBeenCalledWith({ name: 'Shoes', slug: 'shoes-1' });
+    expect(categoryRepository.create).toHaveBeenCalledWith({ name: 'Shoes', slug: 'shoes-1', image: null });
   });
 
   test('rejects missing category name', async () => {
@@ -53,7 +53,7 @@ describe('categoryService', () => {
 
     await categoryService.updateCategory('cat-1', 'Bags');
 
-    expect(categoryRepository.update).toHaveBeenCalledWith('cat-1', { name: 'Bags', slug: 'bags' });
+    expect(categoryRepository.update).toHaveBeenCalledWith('cat-1', { name: 'Bags', slug: 'bags', image: null });
   });
 
   test('does not update a missing category', async () => {

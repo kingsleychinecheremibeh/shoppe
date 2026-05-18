@@ -1,9 +1,27 @@
 import { orderService } from "../services/orderService.js";
+import { orderRepository } from "../repositories/orderRepository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 
 export const createOrder = asyncHandler(async (req, res) => {
-  const order = await orderService.createOrder(req.user.id, req.body.addressId);
+  const headers = req.headers || {};
+  const idempotencyKey = headers["idempotency-key"];
+  const { addressId, paymentGateway, paymentReference } = req.body;
+
+  if (idempotencyKey) {
+    const existingOrder = await orderRepository.findOrderByIdempotencyKey(idempotencyKey);
+
+    if (existingOrder) {
+      return res.status(200).json(existingOrder)
+    }
+  }
+  const order = await orderService.createOrder(
+    req.user.id,
+    addressId,
+    idempotencyKey,
+    paymentGateway,
+    paymentReference
+  );
   res.status(201).json(order);
 });
 

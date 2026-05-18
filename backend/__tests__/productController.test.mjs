@@ -9,6 +9,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      count: jest.fn(),
     },
     category: {
       findFirst: jest.fn(),
@@ -46,6 +47,7 @@ describe('productController', () => {
     test('should return products', async () => {
       const mockProducts = [{ id: '1', name: 'Test Product' }];
       prisma.product.findMany.mockResolvedValue(mockProducts);
+      prisma.product.count.mockResolvedValue(1);
 
       await getProducts(req, res, next);
 
@@ -53,8 +55,18 @@ describe('productController', () => {
         where: { deletedAt: null },
         include: { category: true },
         orderBy: { createdAt: 'desc' },
+        skip: 0,
+        take: 12,
       });
-      expect(res.json).toHaveBeenCalledWith(mockProducts);
+      expect(res.json).toHaveBeenCalledWith({
+        data: mockProducts,
+        meta: {
+          currentPage: 1,
+          limit: 12,
+          totalItems: 1,
+          totalPages: 1,
+        },
+      });
       expect(next).not.toHaveBeenCalled();
     });
 

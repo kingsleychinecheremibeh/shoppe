@@ -37,7 +37,10 @@ export const categoryService = {
     return categoryRepository.findAll();
   },
 
-  async createCategory(name) {
+  async createCategory(data) {
+    const name = typeof data === "string" ? data : data?.name;
+    const image = typeof data === "string" ? null : data?.image;
+
     if (!name) {
       throw new AppError("Name is required", 400);
     }
@@ -47,10 +50,14 @@ export const categoryService = {
     return categoryRepository.create({
       name,
       slug,
+      image: image || null,
     });
   },
 
-  async updateCategory(id, name) {
+  async updateCategory(id, data) {
+    const name = typeof data === "string" ? data : data?.name;
+    const image = typeof data === "string" ? null : data?.image;
+
     if (!name) {
       throw new AppError("Name is required", 400);
     }
@@ -70,6 +77,7 @@ export const categoryService = {
     return categoryRepository.update(id, {
       name,
       slug,
+      image: image || null,
     });
   },
 

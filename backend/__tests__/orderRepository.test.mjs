@@ -83,6 +83,10 @@ describe('orderRepository', () => {
         shippingState: 'Lagos',
         shippingCountry: 'Nigeria',
         orderItems: { create: [{ productId: 'prod-1', quantity: 2, price: 50 }] },
+        idempotencyKey: undefined,
+        paymentGateway: undefined,
+        paymentReference: undefined,
+        status: "PENDING",
       },
       include: { orderItems: { include: { product: true } }, address: true },
     });

@@ -37,7 +37,7 @@ describe('categoryController', () => {
 
     await createCategory(req, res);
 
-    expect(categoryService.createCategory).toHaveBeenCalledWith('Shoes');
+    expect(categoryService.createCategory).toHaveBeenCalledWith({ name: 'Shoes' });
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ id: 'cat-1', name: 'Shoes' });
   });
@@ -49,7 +49,7 @@ describe('categoryController', () => {
 
     await updateCategory(req, res);
 
-    expect(categoryService.updateCategory).toHaveBeenCalledWith('cat-1', 'Bags');
+    expect(categoryService.updateCategory).toHaveBeenCalledWith('cat-1', { name: 'Bags' });
     expect(res.json).toHaveBeenCalledWith({ id: 'cat-1', name: 'Bags' });
   });
 

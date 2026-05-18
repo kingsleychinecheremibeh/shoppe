@@ -11,27 +11,45 @@ model User {
   id            String         @id @default(uuid())
   email         String         @unique
   password      String
-  createdAt     DateTime       @default(now())
   name          String
   role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
   addresses     Address[]
   cart          Cart?
   orders        Order[]
-  refreshTokens RefreshToken[]
+  sessions      Session[]
+  @@index([deletedAt])
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  userId    String
+  userAgent String?
+  ip        String?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens  RefreshToken[] 
+  @@index([userId])
 }
 
 model RefreshToken {
   id        String    @id @default(uuid())
+  sessionId String
   tokenHash String    @unique
+  ip        String?
+  userAgent String?
+  lastUsedAt DateTime?
+  
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([sessionId])
   @@index([expiresAt])
 }
 
@@ -39,6 +57,7 @@ model Category {
   id        String    @id @default(uuid())
   name      String
   slug      String    @unique
+  image     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   isDeleted Boolean   @default(false)
@@ -48,18 +67,20 @@ model Category {
 model Product {
   id          String      @id @default(uuid())
   name        String
-  price       Float
-  stock       Int         @default(0)
-  createdAt   DateTime    @default(now())
-  categoryId  String
-  description String
-  image       String
   slug        String      @unique
+  description String
+  price       Decimal     @db.Decimal(10, 2)
+  image       String?
+  stock       Int         @default(0)
+  categoryId  String
+  createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   deletedAt   DateTime?
   cartItems   CartItem[]
   orderItems  OrderItem[]
   category    Category    @relation(fields: [categoryId], references: [id])
+  @@index([categoryId])
+  @@index([deletedAt])
 }
 
 model Cart {
@@ -67,7 +88,7 @@ model Cart {
   userId    String     @unique
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  user      User       @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartItem[]
 }
 
@@ -78,9 +99,12 @@ model CartItem {
   updatedAt DateTime @updatedAt
   cartId    String
   productId String
-  cart      Cart     @relation(fields: [cartId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  
+  @@index([cartId])
+  @@index([productId])
   @@unique([cartId, productId])
 }
 
@@ -95,37 +119,78 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders    Order[]
+
+  @@index([userId])
 }
 
 model Order {
   id         String      @id @default(uuid())
   userId     String
-  total      Float
-  createdAt  DateTime    @default(now())
   addressId  String
-  updatedAt  DateTime    @updatedAt
+  total      Decimal     @db.Decimal(10, 2)
   status     OrderStatus @default(PENDING)
-  address    Address     @relation(fields: [addressId], references: [id])
-  user       User        @relation(fields: [userId], references: [id])
+  shippingName    String
+  shippingPhone   String
+  shippingStreet  String
+  shippingCity    String
+  shippingState   String
+  shippingCountry String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  idempotencyKey   String?     @unique
+  paymentGateway   String?     
+  paymentReference String?  
+
+  address    Address     @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
+  @@index([userId, createdAt])
+  @@index([status])
 }
 
 model OrderItem {
   id        String   @id @default(uuid())
   quantity  Int
-  price     Float
+  price     Decimal  @db.Decimal(10, 2)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   orderId   String
   productId String
-  order     Order    @relation(fields: [orderId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id])
+  @@index([orderId])
+  @@index([productId])
+}
+
+model AuditLog {
+  id     String   @id @default(uuid())
+  ip     String?
+  userAgent String?
+  userId String?
+  action String
+  entity AuditEntity
+  entityId String?
+  metadata Json?
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+  @@index([entity])
+  @@index([entityId])
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+enum AuditEntity {
+  USER
+  PRODUCT
+  ORDER
+  CART
+  ADDRESS
 }
 
 enum OrderStatus {

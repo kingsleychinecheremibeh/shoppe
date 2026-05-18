@@ -96,8 +96,8 @@ export const productService = {
     return productRepository.update(id, updateData);
   },
 
-  async getAll() {
-    return productRepository.findAll();
+  async getAll(options = {}) {
+    return productRepository.findAll(options);
   },
 
   async getById(id) {

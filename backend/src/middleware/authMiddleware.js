@@ -14,7 +14,15 @@ export const protect = asyncHandler(async (req, res, next) => {
     let decoded;
     try {
         decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (!decoded.sessionId) {
+            throw new AppError("Invalid session", 401);
+        }
     } catch (err) {
+        if (err.statusCode) {
+            throw err;
+        }
+
         if (err.name === "TokenExpiredError") {
             throw new AppError("Token expired", 401);
         }

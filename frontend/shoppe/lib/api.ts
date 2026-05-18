@@ -1,3 +1,5 @@
+const memoryCache: Record<string, { data: any; expiry: number }> = {};
+const CACHE_TTL = 3 * 60 * 1000;
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
@@ -10,6 +12,20 @@ async function request<T>(
   options: RequestOptions = {}
 ): Promise<T> {
   const { skipRefresh, ...fetchOptions } = options;
+  const method = (fetchOptions.method || "GET").toUpperCase();
+
+  if (method === "GET") {
+    const cached = memoryCache[endpoint];
+    if (cached && Date.now() < cached.expiry) {
+      console.log(`[FRONTEND CACHE HIT] Serving instantly ${endpoint}`);
+      return cached.data as T;
+    }
+  }
+
+  if (method !== "GET" && endpoint !== "/auth/refresh-token") {
+    Object.keys(memoryCache).forEach((key) => delete memoryCache[key]);
+    console.log(`[FRONTEND CACHE] Invalidated all`);
+  }
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -34,6 +50,7 @@ async function request<T>(
     });
   }
 
+
   if (!response.ok) {
     const error = await response
       .json()
@@ -46,7 +63,16 @@ async function request<T>(
     return undefined as T;
   }
 
-  return response.json();
+  const result = await response.json();
+
+  if (method === "GET") {
+    memoryCache[endpoint] = {
+      data: result,
+      expiry: Date.now() + CACHE_TTL,
+    };
+  }
+
+  return result;
 }
 
 export const api = {
@@ -80,9 +106,16 @@ export const api = {
   getMe: () => request("/auth/me"),
 
   // Products
-  getProducts: (params?: Record<string, string>) => {
+  getProducts: async (params?: Record<string, string>): Promise<any> => {
     const query = params ? `?${new URLSearchParams(params).toString()}` : "";
-    return request(`/products${query}`);
+    const response = await request<any>(`/products${query}`);
+    if (response && typeof response === "object" && "data" in response) {
+      if (params && (params.page || params.limit)) {
+        return response;
+      }
+      return response.data;
+    }
+    return response;
   },
 
   getProduct: (id: string) => request(`/products/${id}`),
@@ -170,10 +203,11 @@ export const api = {
     }),
 
   // Orders
-  createOrder: (addressId: string) =>
+  createOrder: (addressId: string, options?: { idempotencyKey?: string; paymentGateway?: string; paymentReference?: string }) =>
     request("/orders", {
       method: "POST",
-      body: JSON.stringify({ addressId }),
+      body: JSON.stringify({ addressId, paymentGateway: options?.paymentGateway, paymentReference: options?.paymentReference }),
+      headers: options?.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : undefined,
     }),
 
   getMyOrders: () => request("/orders/my-orders"),

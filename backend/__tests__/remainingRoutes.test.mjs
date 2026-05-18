@@ -103,7 +103,7 @@ describe('remaining routes', () => {
 
   test('cart routes call their handlers', async () => {
     expect((await request(app).get('/cart')).body).toEqual({ handler: 'getCart' });
-    expect((await request(app).post('/cart/items').send({ productId: 'prod-1', quantity: 1 })).status).toBe(201);
+    expect((await request(app).post('/cart/items').send({ productId: '11111111-1111-4111-8111-111111111111', quantity: 1 })).status).toBe(201);
     expect((await request(app).put('/cart/items/item-1').send({ quantity: 2 })).body).toEqual({ handler: 'updateCartItem' });
     expect((await request(app).delete('/cart/items/item-1')).body).toEqual({ handler: 'removeCartItem' });
     expect((await request(app).delete('/cart')).body).toEqual({ handler: 'clearCart' });
@@ -117,7 +117,7 @@ describe('remaining routes', () => {
   });
 
   test('order routes call protected and admin handlers', async () => {
-    expect((await request(app).post('/orders').send({ addressId: 'addr-1' })).status).toBe(201);
+    expect((await request(app).post('/orders').send({ addressId: '22222222-2222-4222-8222-222222222222' })).status).toBe(201);
     expect((await request(app).get('/orders/my-orders')).body).toEqual({ handler: 'getMyOrders' });
     expect((await request(app).get('/orders').set('x-role', 'ADMIN')).body).toEqual({ handler: 'getAllOrders' });
     expect((await request(app).put('/orders/order-1/status').set('x-role', 'ADMIN').send({ status: 'PAID' })).body).toEqual({ handler: 'updateOrderStatus' });

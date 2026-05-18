@@ -14,7 +14,7 @@ const generateAccessToken = (user) => {
         throw new Error("JWT_SECRET is not defined in environment variables");
     }
     return jwt.sign(
-        { userId: user.id, role: user.role },
+        { userId: user.id, role: user.role, sessionId: user.sessionId },
         process.env.JWT_SECRET,
         { expiresIn: "15min" }
     );
@@ -25,18 +25,24 @@ const generateRefreshToken = (user) => {
         throw new Error("JWT_REFRESH_SECRET is not defined in environment variables");
     }
     return jwt.sign(
-        { userId: user.id },
+        { userId: user.id, sessionId: user.sessionId },
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: "7d" }
     );
 };
 
-const buildAuthPayload = async (user) => {
-    const token = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+const buildAuthPayload = async (user, sessionId) => {
+    const session = sessionId
+        ? { id: sessionId }
+        : await refreshTokenRepository.createSession({
+            userId: user.id,
+        });
+    const tokenUser = { ...user, sessionId: session.id };
+    const token = generateAccessToken(tokenUser);
+    const refreshToken = generateRefreshToken(tokenUser);
 
     await refreshTokenRepository.create({
-        userId: user.id,
+        sessionId: session.id,
         tokenHash: hashToken(refreshToken),
         expiresAt: new Date(Date.now() + refreshTokenMaxAgeMs),
     });
@@ -56,7 +62,7 @@ const buildAuthPayload = async (user) => {
 export const authService = {
     async register({ name, email, password }) {
         const normalizeEmail = email.toLowerCase().trim();
-        const existingUser = await userRepository.findByEmail(normalizeEmail);
+        const existingUser = await userRepository.findPublicByEmail(normalizeEmail);
         if (existingUser) {
             throw new AppError("User already exists", 400);
         }
@@ -74,7 +80,7 @@ export const authService = {
 
     async login({ email, password }) {
         const normalizeEmail = email.toLowerCase().trim();
-        const user = await userRepository.findAuthUserByEmail(normalizeEmail);
+        const user = await userRepository.findAuthByEmail(normalizeEmail);
         if (!user || user.deletedAt) {
             throw new AppError("Invalid email or password", 401);
         }
@@ -102,12 +108,20 @@ export const authService = {
         } catch (err) {
             throw new AppError("Invalid or expired refresh token", 401);
         }
-
+        const storedToken = await refreshTokenRepository.findByHash(hashToken(refreshToken));
         const tokenHash = hashToken(refreshToken);
-        const storedToken = await refreshTokenRepository.findValidByHash(tokenHash);
-
-        if (!storedToken || storedToken.userId !== decoded.userId) {
+        if (!storedToken) {
             throw new AppError("Invalid or expired refresh token", 401);
+        }
+
+        if (storedToken.sessionId !== decoded.sessionId) {
+            await refreshTokenRepository.revokeAllForUser(decoded.userId);
+            throw new AppError("Invalid session", 401);
+        }
+
+        if (storedToken.revokedAt) {
+            await refreshTokenRepository.revokeAllForUser(decoded.userId);
+            throw new AppError("Token reuse detected. All sessions terminated.", 401);
         }
 
         const user = await userRepository.findById(decoded.userId);
@@ -117,11 +131,16 @@ export const authService = {
         }
 
         await refreshTokenRepository.revokeByHash(tokenHash);
-        return buildAuthPayload(user);
+        return buildAuthPayload(user, storedToken.sessionId);
     },
 
-    async logout(refreshToken) {
-        if (!refreshToken) return;
-        await refreshTokenRepository.revokeByHash(hashToken(refreshToken));
+    async logout({ refreshToken, userId }) {
+        if (refreshToken) {
+          await refreshTokenRepository.revokeByHash(hashToken(refreshToken));
+        }
+        
+        if (userId) {
+          await refreshTokenRepository.revokeAllForUser(userId);
+        }
     },
 };

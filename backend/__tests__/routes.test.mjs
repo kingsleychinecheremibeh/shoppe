@@ -9,6 +9,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
       findUnique: jest.fn(),
       findFirst: jest.fn(),
       create: jest.fn(),
+      count: jest.fn(),
     },
     category: {
       findUnique: jest.fn(),
@@ -19,6 +20,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
 const { prisma } = await import('../src/config/db.js');
 const { default: productRoute } = await import('../src/routes/productRoute.js');
 const { errorHandler } = await import('../src/middleware/errorMiddleware.js');
+const { invalidateCache } = await import('../src/middleware/cacheMiddleware.js');
 
 const app = express();
 app.use(express.json());
@@ -28,17 +30,27 @@ app.use(errorHandler);
 describe('Product Routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    invalidateCache("/");
   });
 
   describe('GET /api/products', () => {
     test('should return products', async () => {
       const mockProducts = [{ id: '1', name: 'Test Product' }];
       prisma.product.findMany.mockResolvedValue(mockProducts);
+      prisma.product.count.mockResolvedValue(1);
 
       const response = await request(app).get('/api/products');
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockProducts);
+      expect(response.body).toEqual({
+        data: mockProducts,
+        meta: {
+          currentPage: 1,
+          limit: 12,
+          totalItems: 1,
+          totalPages: 1,
+        },
+      });
     });
   });
 
@@ -65,7 +77,4 @@ describe('Product Routes', () => {
       });
     });
   });
-
-  // Note: POST, PUT, DELETE require auth middleware, which would need mocking or a test setup with auth
-  // For simplicity, skipping those here, but you can add them with proper auth mocking
 });

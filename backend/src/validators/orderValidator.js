@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const createOrderSchema = z.object({
-  addressId: z.string().trim().min(1, "Address ID is required"),
+  addressId: z.string().trim().uuid("Address ID must be a valid UUID"),
+  paymentGateway: z.string().trim().optional(),
+  paymentReference: z.string().trim().optional(),
 });
 
 export const updateOrderStatusSchema = z.object({
