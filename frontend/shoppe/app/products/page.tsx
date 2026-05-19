@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Grid, List, SlidersHorizontal, Search, ShoppingCart, Eye, AlertCircle } from "lucide-react";
+import { Search, ShoppingCart, Eye, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -55,18 +55,27 @@ function ProductCatalogContent() {
   const urlSort = searchParams.get("sort") || "default";
 
   useEffect(() => {
-    setSearchQuery(urlSearch);
-    setPage(1);
+    const timer = setTimeout(() => {
+      setSearchQuery(urlSearch);
+      setPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [urlSearch]);
 
   useEffect(() => {
-    setSelectedCategory(urlCategory);
-    setPage(1);
+    const timer = setTimeout(() => {
+      setSelectedCategory(urlCategory);
+      setPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [urlCategory]);
 
   useEffect(() => {
-    setSortBy(urlSort === "newest" ? "default" : urlSort);
-    setPage(1);
+    const timer = setTimeout(() => {
+      setSortBy(urlSort === "newest" ? "default" : urlSort);
+      setPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [urlSort]);
 
   // Find current category name and description for header block

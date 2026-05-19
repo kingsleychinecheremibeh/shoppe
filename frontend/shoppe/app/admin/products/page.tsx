@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
-import { Edit, ImageIcon, Plus, Search, Trash2, X, AlertCircle, TrendingUp } from "lucide-react";
+import { Edit, ImageIcon, Plus, Search, Trash2, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 

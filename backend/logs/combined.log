@@ -427,3 +427,221 @@ Error: Token reuse detected. All sessions terminated.
 Error: Invalid email or password
     at Object.login (file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/services/authService.js:90:19)
     at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:41:20
+[2026-05-19 14:43:15:4315] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 14:43:15:4315] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 14:43:15:4315] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 14:59:20:5920] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 14:59:20:5920] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 15:35:44:3544] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 15:35:45:3545] [[31merror[39m]: [31mRefresh token missing[39m
+Error: Refresh token missing
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:27:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:970:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:825:5
+[2026-05-19 15:36:04:364] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 15:36:05:365] [[31merror[39m]: [31mRefresh token missing[39m
+Error: Refresh token missing
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:27:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:970:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:825:5
+[2026-05-19 16:14:27:1427] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 16:14:27:1427] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 16:14:27:1427] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 16:14:28:1428] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 16:14:31:1431] [[31merror[39m]: [31mInvalid or expired refresh token[39m
+Error: Invalid or expired refresh token
+    at Object.refreshAccessToken (file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/services/authService.js:114:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:30:20
+[2026-05-19 17:47:10:4710] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 17:47:11:4711] [[31merror[39m]: [31mRefresh token missing[39m
+Error: Refresh token missing
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:27:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:970:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:825:5
+[2026-05-19 17:47:22:4722] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 17:47:23:4723] [[31merror[39m]: [31mRefresh token missing[39m
+Error: Refresh token missing
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:27:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:970:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:825:5
+[2026-05-19 17:52:35:5235] [[31merror[39m]: [31mNot authorized, no token[39m
+Error: Not authorized, no token
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/middleware/authMiddleware.js:11:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\index.js:291:5)
+[2026-05-19 17:52:35:5235] [[31merror[39m]: [31mRefresh token missing[39m
+Error: Refresh token missing
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/controllers/authController.js:27:15
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/src/utils/asyncHandler.js:3:28
+    at Layer.handleRequest (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\neche\projects\ecomerce pern\backend\node_modules\router\lib\route.js:157:13)
+    at file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:970:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/neche/projects/ecomerce%20pern/backend/node_modules/express-rate-limit/dist/index.mjs:825:5

@@ -47,22 +47,21 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
-  const fetchCart = async () => {
-    try {
-      const cartData = await api.getCart();
-      setCart((cartData as Cart) || null);
-    } catch (error) {
-      console.error("Failed to load cart:", error);
-      toast.error("Please login to view your cart.");
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCart();
-  }, []);
+    const fetchCart = async () => {
+      try {
+        const cartData = await api.getCart();
+        setCart((cartData as Cart) || null);
+      } catch (error) {
+        console.error("Failed to load cart:", error);
+        toast.error("Please login to view your cart.");
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+    void fetchCart();
+  }, [router]);
 
   const handleUpdateQuantity = async (item: CartItem, newQuantity: number) => {
     if (newQuantity <= 0) {

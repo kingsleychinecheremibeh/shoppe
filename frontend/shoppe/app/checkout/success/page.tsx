@@ -2,16 +2,21 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle2, ShoppingBag, ArrowRight, Sparkles, Printer, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle2, ShoppingBag, ArrowRight, Sparkles, Printer, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "../../../lib/api";
+
+interface Order {
+  id: string;
+  status: string;
+}
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get("orderId");
 
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Poll order status if it is still PENDING
@@ -24,11 +29,11 @@ function SuccessPageContent() {
     }
 
     let isMounted = true;
-    let pollInterval: NodeJS.Timeout;
+    let pollInterval: NodeJS.Timeout | null = null;
 
     const fetchOrder = async () => {
       try {
-        const res = (await api.getOrder(orderId)) as any;
+        const res = (await api.getOrder(orderId)) as unknown as Order;
         if (!isMounted) return;
         setOrder(res);
         setLoading(false);
@@ -42,7 +47,7 @@ function SuccessPageContent() {
       }
     };
 
-    fetchOrder();
+    void fetchOrder();
 
     // Poll every 2 seconds
     pollInterval = setInterval(fetchOrder, 2000);

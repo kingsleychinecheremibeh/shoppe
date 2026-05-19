@@ -19,11 +19,22 @@ type Address = {
   country: string;
 };
 
-type Category = {
-  id: string;
-  name: string;
-  slug: string;
-};
+interface CustomWindow extends Window {
+  PaystackPop?: {
+    new (): {
+      newTransaction: (options: {
+        key: string;
+        email: string;
+        amount: number;
+        currency: string;
+        ref: string;
+        metadata: Record<string, string>;
+        onSuccess: () => void;
+        onCancel: () => void;
+      }) => void;
+    };
+  };
+}
 
 type Product = {
   id: string;
@@ -73,46 +84,49 @@ export default function CheckoutPage() {
     country: "United States",
   });
 
-  const loadCheckoutData = async () => {
-    try {
-      const [cartData, addressesData, userData] = await Promise.all([
-        api.getCart(),
-        api.getAddresses(),
-        api.getMe(),
-      ]);
-
-      const cartObj = cartData as Cart;
-      if (!cartObj || !cartObj.items || cartObj.items.length === 0) {
-        toast.error("Your cart is empty. Add products before checking out.");
-        router.push("/products");
-        return;
-      }
-
-      setCart(cartObj);
-      const addrList = (addressesData as Address[]) || [];
-      setAddresses(addrList);
-      setUser(userData as { email: string; name: string });
-
-      if (addrList.length > 0) {
-        setSelectedAddressId(addrList[0].id);
-      }
-    } catch (error) {
-      console.error("Failed to load checkout details:", error);
-      toast.error("Please login to proceed with checkout.");
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadCheckoutData();
-    if (typeof window !== "undefined" && window.crypto?.randomUUID) {
-      setIdempotencyKey(window.crypto.randomUUID());
-    } else {
-      setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36));
-    }
-  }, []);
+    const loadCheckoutData = async () => {
+      try {
+        const [cartData, addressesData, userData] = await Promise.all([
+          api.getCart(),
+          api.getAddresses(),
+          api.getMe(),
+        ]);
+
+        const cartObj = cartData as Cart;
+        if (!cartObj || !cartObj.items || cartObj.items.length === 0) {
+          toast.error("Your cart is empty. Add products before checking out.");
+          router.push("/products");
+          return;
+        }
+
+        setCart(cartObj);
+        const addrList = (addressesData as Address[]) || [];
+        setAddresses(addrList);
+        setUser(userData as { email: string; name: string });
+
+        if (addrList.length > 0) {
+          setSelectedAddressId(addrList[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load checkout details:", error);
+        toast.error("Please login to proceed with checkout.");
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadCheckoutData();
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+        setIdempotencyKey(window.crypto.randomUUID());
+      } else {
+        setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36));
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -161,7 +175,7 @@ export default function CheckoutPage() {
     }
 
     if (paymentGateway === "PAYSTACK") {
-      const PaystackPop = (window as any).PaystackPop;
+      const PaystackPop = (window as unknown as CustomWindow).PaystackPop;
 
       if (!PaystackPop) {
         toast.error("Initializing secure checkout... Please wait a moment.")
@@ -191,7 +205,7 @@ export default function CheckoutPage() {
           metadata: {
             orderId: order.id,
           },
-          onSuccess: function (response: any) {
+          onSuccess: function () {
             toast.success("Payment Successful! Thank you for your order");
             if (typeof window !== "undefined") {
               window.dispatchEvent(new Event("cart-updated"));

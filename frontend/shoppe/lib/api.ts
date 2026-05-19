@@ -1,4 +1,4 @@
-const memoryCache: Record<string, { data: any; expiry: number }> = {};
+const memoryCache: Record<string, { data: unknown; expiry: number }> = {};
 const CACHE_TTL = 3 * 60 * 1000;
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
@@ -7,7 +7,7 @@ type RequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
 
-let refreshPromise: Promise<any> | null = null;
+let refreshPromise: Promise<unknown> | null = null;
 
 async function request<T>(
   endpoint: string,
@@ -114,9 +114,9 @@ export const api = {
   getMe: () => request("/auth/me"),
 
   // Products
-  getProducts: async (params?: Record<string, string>): Promise<any> => {
+  getProducts: async (params?: Record<string, string>): Promise<unknown> => {
     const query = params ? `?${new URLSearchParams(params).toString()}` : "";
-    const response = await request<any>(`/products${query}`);
+    const response = await request<unknown>(`/products${query}`);
     if (response && typeof response === "object" && "data" in response) {
       if (params && (params.page || params.limit)) {
         return response;
