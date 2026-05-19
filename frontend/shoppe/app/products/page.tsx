@@ -49,9 +49,10 @@ function ProductCatalogContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Sync Search Query from URL SearchParams
+  // Sync Search Query and Filters from URL SearchParams
   const urlSearch = searchParams.get("search") || "";
   const urlCategory = searchParams.get("category") || "all";
+  const urlSort = searchParams.get("sort") || "default";
 
   useEffect(() => {
     setSearchQuery(urlSearch);
@@ -62,6 +63,24 @@ function ProductCatalogContent() {
     setSelectedCategory(urlCategory);
     setPage(1);
   }, [urlCategory]);
+
+  useEffect(() => {
+    setSortBy(urlSort === "newest" ? "default" : urlSort);
+    setPage(1);
+  }, [urlSort]);
+
+  // Find current category name and description for header block
+  const currentCategoryName = useMemo(() => {
+    if (selectedCategory === "all") return "Shop Collection";
+    const found = categories.find((c) => c.slug.toLowerCase() === selectedCategory.toLowerCase());
+    return found ? `${found.name} Collection` : "Shop Collection";
+  }, [selectedCategory, categories]);
+
+  const currentCategoryDesc = useMemo(() => {
+    if (selectedCategory === "all") return "Browse through our highly curated collection of high-quality products.";
+    const found = categories.find((c) => c.slug.toLowerCase() === selectedCategory.toLowerCase());
+    return found ? `Browse our curated collection of premium ${found.name.toLowerCase()} items.` : "Browse through our highly curated collection of high-quality products.";
+  }, [selectedCategory, categories]);
 
   // Load Categories once on mount
   useEffect(() => {
@@ -165,9 +184,9 @@ function ProductCatalogContent() {
         
         {/* Header Block */}
         <div className="mb-8 border-b border-gray-200 pb-5">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">Shop Collection</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">{currentCategoryName}</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Browse through our highly curated collection of high-quality products.
+            {currentCategoryDesc}
           </p>
         </div>
 

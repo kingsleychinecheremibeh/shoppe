@@ -7,6 +7,8 @@ type RequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
 
+let refreshPromise: Promise<any> | null = null;
+
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
@@ -39,10 +41,16 @@ async function request<T>(
   });
 
   if (response.status === 401 && !skipRefresh) {
-    await request("/auth/refresh-token", {
-      method: "POST",
-      skipRefresh: true,
-    });
+    if (!refreshPromise) {
+      refreshPromise = request("/auth/refresh-token", {
+        method: "POST",
+        skipRefresh: true,
+      }).finally(() => {
+        refreshPromise = null;
+      });
+    }
+
+    await refreshPromise;
 
     return request<T>(endpoint, {
       ...options,
