@@ -11,11 +11,9 @@ export const cacheMiddleware = (durationSeconds = 300) => {
         const key = req.originalUrl || req.url;
         const cachedResponse = cache.get(key);
         if (cachedResponse) {
-            console.log(`[CACHE HIT] serving from memory: ${key}`);
             return res.status(200).json(cachedResponse);
         }
 
-        console.log(`[CACHE MISS] Querying database: ${key}`);
         const originalJson = res.json;
         res.json = function (body) {
             if (res.statusCode === 200) {
@@ -32,7 +30,6 @@ export const invalidateCache = (urlPattern) => {
     const keys = cache.keys();
     const matchedKeys = keys.filter((key) => key.includes(urlPattern));
     if (matchedKeys.length > 0) {
-        console.log(`[CACHE INVALIDATE] Clearing keys matching "${urlPattern}:`, matchedKeys);
         matchedKeys.forEach((key) => cache.del(key));
     }
 };

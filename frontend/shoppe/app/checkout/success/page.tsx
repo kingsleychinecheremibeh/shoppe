@@ -42,9 +42,7 @@ function SuccessPageContent() {
         if (res && res.status === "PAID") {
           if (pollInterval) clearInterval(pollInterval);
         }
-      } catch (err) {
-        console.error("Error fetching order status:", err);
-      }
+      } catch {}
     };
 
     void fetchOrder();

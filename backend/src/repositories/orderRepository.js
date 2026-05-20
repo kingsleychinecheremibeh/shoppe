@@ -17,7 +17,7 @@ export const orderRepository = {
     },
 
     // address is validated and fetched in the service layer before being passed here
-    createOrderTransaction: async ({ userId, addressId, address, cart, total, idempotencyKey, paymentGateway, paymentReference }) => {
+    createOrderTransaction: async ({ userId, addressId, address, cart, total, idempotencyKey, paymentGateway }) => {
         return prisma.$transaction(async (tx) => {
             const createdOrder = await tx.order.create({
                 data: {
@@ -31,9 +31,8 @@ export const orderRepository = {
                     shippingState: address.state,
                     shippingCountry: address.country,
                     idempotencyKey,
-                    status: paymentReference ? "PAID" : "PENDING",
+                    status: "PENDING",
                     paymentGateway,
-                    paymentReference,
                     orderItems: {
                         create: cart.items.map((item) => ({
                             productId: item.productId,
@@ -164,4 +163,3 @@ export const orderRepository = {
         });
     },
 };
-

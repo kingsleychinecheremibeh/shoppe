@@ -6,7 +6,7 @@ import { ShoppingCart, ArrowLeft, ShieldCheck, Truck, RefreshCw, Minus, Plus } f
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
   id: string;
@@ -52,8 +52,7 @@ export default function ProductDetailPage() {
           return;
         }
         setProduct(productData as Product);
-      } catch (error) {
-        console.error("Failed to load product details:", error);
+      } catch {
         toast.error("Unable to load product information.");
         router.push("/products");
       } finally {
@@ -89,8 +88,7 @@ export default function ProductDetailPage() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
       }
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
+    } catch {
       toast.error("Please login to add items to your cart.");
       router.push("/login");
     } finally {
@@ -111,6 +109,7 @@ export default function ProductDetailPage() {
   }
 
   const isOutOfStock = product.stock <= 0;
+  const imageUrl = getAssetUrl(product.image);
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
@@ -130,9 +129,9 @@ export default function ProductDetailPage() {
           
           {/* Image Viewer */}
           <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center relative">
-            {product.image ? (
+            {imageUrl ? (
               <Image
-                src={product.image}
+                src={imageUrl}
                 alt={product.name}
                 className="h-full w-full object-cover transition duration-300"
                 width={600}

@@ -3,7 +3,7 @@
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { Edit, ImageIcon, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type UserData = {
   id: string;
@@ -385,7 +385,9 @@ function TableHead({
 }
 
 function CategoryThumbnail({ category }: { category: Category }) {
-  if (!category.image) {
+  const imageUrl = getAssetUrl(category.image);
+
+  if (!imageUrl) {
     return (
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-400">
         <ImageIcon className="h-4.5 w-4.5" />
@@ -396,7 +398,7 @@ function CategoryThumbnail({ category }: { category: Category }) {
   return (
     <div
       className="h-11 w-11 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border border-gray-200"
-      style={{ backgroundImage: `url("${category.image}")` }}
+      style={{ backgroundImage: `url("${imageUrl}")` }}
       aria-label={category.name}
     />
   );

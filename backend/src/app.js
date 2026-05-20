@@ -18,15 +18,34 @@ import swaggerDocument from '../swagger.json' with { type: 'json' };
 
 import { AppError } from './utils/AppError.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
+import { requireAllowedOrigin } from './middleware/originMiddleware.js';
+import { cacheMiddleware } from './middleware/cacheMiddleware.js';
+
 
 export const app = express();
 app.set('trust proxy', 1);
 app.use(helmet());
 
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+const normalizeOrigin = (origin) => {
+  if (!origin) return null;
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return origin.replace(/\/$/, '');
+  }
+};
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  ...(process.env.CORS_ORIGINS || '').split(','),
+  'http://localhost:3000',
+]
+  .map((origin) => normalizeOrigin(origin?.trim()))
+  .filter(Boolean);
+
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
       callback(null, true);
     } else {
       callback(null, false);
@@ -35,8 +54,10 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+app.use(cacheMiddleware());
 
 app.use(cookieparser());
+app.use('/api', requireAllowedOrigin);
 app.use(express.json({ 
   limit: '10kb',
   verify: (req, res, buf) => {

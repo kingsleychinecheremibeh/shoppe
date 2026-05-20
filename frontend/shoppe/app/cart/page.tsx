@@ -6,7 +6,7 @@ import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, Truck, ShieldCheck } from
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
   id: string;
@@ -52,8 +52,7 @@ export default function CartPage() {
       try {
         const cartData = await api.getCart();
         setCart((cartData as Cart) || null);
-      } catch (error) {
-        console.error("Failed to load cart:", error);
+      } catch {
         toast.error("Please login to view your cart.");
         router.push("/login");
       } finally {
@@ -89,8 +88,7 @@ export default function CartPage() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
       }
-    } catch (error) {
-      console.error("Failed to update quantity:", error);
+    } catch {
       toast.error("Failed to update cart quantity.");
     } finally {
       setUpdatingItemId(null);
@@ -114,8 +112,7 @@ export default function CartPage() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
       }
-    } catch (error) {
-      console.error("Failed to remove item:", error);
+    } catch {
       toast.error("Failed to remove item from cart.");
     } finally {
       setUpdatingItemId(null);
@@ -133,8 +130,7 @@ export default function CartPage() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
       }
-    } catch (error) {
-      console.error("Failed to clear cart:", error);
+    } catch {
       toast.error("Failed to clear cart.");
     } finally {
       setLoading(false);
@@ -218,7 +214,7 @@ export default function CartPage() {
                       >
                         {item.product.image ? (
                           <Image
-                            src={item.product.image}
+                            src={getAssetUrl(item.product.image) || item.product.image}
                             alt={item.product.name}
                             className="h-full w-full object-cover"
                             width={150}

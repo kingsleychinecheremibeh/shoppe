@@ -38,6 +38,11 @@ type UserProfile = {
   createdAt: string;
 };
 
+type MeResponse = {
+  user: UserProfile;
+};
+
+
 export default function AccountPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -64,10 +69,9 @@ export default function AccountPage() {
           api.getMe(),
           api.getAddresses(),
         ]);
-        setProfile(profileData as UserProfile);
+        setProfile((profileData as MeResponse).user);
         setAddresses((addressesData as Address[]) || []);
-      } catch (error) {
-        console.error("Failed to load account details:", error);
+      } catch {
         toast.error("Please login to access your account dashboard.");
         router.push("/login");
       } finally {
@@ -84,8 +88,7 @@ export default function AccountPage() {
       await api.logout();
       toast.success("Logged out successfully. See you soon!");
       router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch {
       toast.error("Failed to logout. Please try again.");
     } finally {
       setLoggingOut(false);
@@ -113,8 +116,7 @@ export default function AccountPage() {
         state: "",
         country: "Nigeria",
       });
-    } catch (error) {
-      console.error("Failed to save address:", error);
+    } catch {
       toast.error("Failed to add new address. Please try again.");
     } finally {
       setSubmittingAddress(false);
@@ -128,8 +130,7 @@ export default function AccountPage() {
       await api.deleteAddress(id);
       setAddresses(addresses.filter((addr) => addr.id !== id));
       toast.success("Address removed successfully.");
-    } catch (error) {
-      console.error("Failed to delete address:", error);
+    } catch {
       toast.error("Failed to remove address. Please try again.");
     }
   };
@@ -348,7 +349,7 @@ export default function AccountPage() {
               <div className="text-center py-12 border-2 border-dashed border-gray-150 rounded-2xl">
                 <MapPin className="mx-auto h-8 w-8 text-gray-300 mb-3" />
                 <p className="text-sm font-semibold text-gray-900 mb-1">No shipping address recorded</p>
-                <p className="text-xs text-gray-400 max-w-[240px] mx-auto">
+                <p className="text-xs text-gray-400 max-w-60 mx-auto">
                   Add shipping destinations to enable rapid one-click checkout on future purchases!
                 </p>
               </div>
@@ -362,7 +363,7 @@ export default function AccountPage() {
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center space-x-1.5">
                         <Home className="h-3.5 w-3.5 text-gray-400" />
-                        <h4 className="text-xs font-bold text-gray-800 truncate max-w-[120px]">
+                        <h4 className="text-xs font-bold text-gray-800 truncate max-w-30">
                           {address.fullName}
                         </h4>
                       </div>

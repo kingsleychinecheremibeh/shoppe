@@ -138,9 +138,5 @@ export const authService = {
         if (refreshToken) {
           await refreshTokenRepository.revokeByHash(hashToken(refreshToken));
         }
-        
-        if (userId) {
-          await refreshTokenRepository.revokeAllForUser(userId);
-        }
     },
 };

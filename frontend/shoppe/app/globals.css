@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #121212;
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
 }
 
 @theme inline {

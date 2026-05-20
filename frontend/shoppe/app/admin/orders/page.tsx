@@ -3,7 +3,7 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Eye, ImageIcon, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type UserData = {
   id: string;
@@ -504,7 +504,7 @@ function SummaryRow({ label, value }: { label: string; value: number }) {
 }
 
 function ItemThumbnail({ item }: { item: OrderItem }) {
-  const image = item.product?.image;
+  const image = getAssetUrl(item.product?.image);
 
   if (!image) {
     return (

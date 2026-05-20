@@ -6,22 +6,77 @@ import { orderRepository } from "../repositories/orderRepository.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy");
 
+const toMinorUnit = (amount) => Math.round(Number(amount) * 100);
+const isStripeEnabled = () => process.env.STRIPE_ENABLED === "true";
+const buildCheckoutCallbackUrl = (orderId) => {
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const callbackUrl = new URL("/checkout/success", frontendUrl);
+  callbackUrl.searchParams.set("orderId", orderId);
+  return callbackUrl.toString();
+};
+
+const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount }) => {
+  if (!orderId) {
+    throw new AppError("Payment metadata missing order ID", 400);
+  }
+
+  const order = await orderRepository.findOrderById(orderId);
+  if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  if (order.paymentGateway && order.paymentGateway !== gateway) {
+    throw new AppError("Payment gateway does not match order", 400);
+  }
+
+  if (order.status === "PAID") {
+    return { orderId, status: "PAID", alreadyProcessed: true };
+  }
+
+  if (order.status !== "PENDING") {
+    throw new AppError("Order is not payable", 400);
+  }
+
+  const actualAmount = Number(paidAmount);
+  const expectedAmount = toMinorUnit(order.total);
+  if (!Number.isFinite(actualAmount) || actualAmount !== expectedAmount) {
+    throw new AppError("Payment amount does not match order total", 400);
+  }
+
+  await orderRepository.updateOrderStatus(orderId, "PAID");
+  return { orderId, status: "PAID" };
+};
+
 export const paymentService = {
   /**
    * Initialize a payment session for Stripe or Paystack
-   * @param {Object} params - { amount, orderId, gateway, email, userId }
+   * @param {Object} params - { orderId, gateway, email, userId }
    */
-  async initialize({ amount, orderId, gateway, email, userId }) {
+  async initialize({ orderId, gateway, email, userId }) {
     // 1. Double check order exists in database
     const order = await orderRepository.findOrderById(orderId);
-    if (!order) {
+    if (!order || order.userId !== userId) {
       throw new AppError("Order not found", 404);
     }
 
+    if (order.status !== "PENDING") {
+      throw new AppError("Order is not payable", 400);
+    }
+
+    const amount = Number(order.total);
+    if (Number.isNaN(amount) || amount <= 0) {
+      throw new AppError("Invalid order amount", 400);
+    }
+    const amountInMinorUnit = toMinorUnit(amount);
+
     // A. Handle Stripe Payment Intent
     if (gateway === "STRIPE") {
+      if (!isStripeEnabled()) {
+        throw new AppError("Stripe checkout is not enabled", 400);
+      }
+
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // In cents
+        amount: amountInMinorUnit,
         currency: "usd",
         metadata: { orderId, userId },
         automatic_payment_methods: { enabled: true },
@@ -39,8 +94,9 @@ export const paymentService = {
         "https://api.paystack.co/transaction/initialize",
         {
           email,
-          amount: Math.round(amount * 100), // In kobo/cents
+          amount: amountInMinorUnit,
           metadata: { orderId, userId },
+          callback_url: buildCheckoutCallbackUrl(orderId),
         },
         {
           headers: {
@@ -82,10 +138,12 @@ export const paymentService = {
     if (event.type === "payment_intent.succeeded") {
       const paymentIntent = event.data.object;
       const { orderId } = paymentIntent.metadata;
-      
-      // Update order status securely
-      await orderRepository.updateOrderStatus(orderId, "PAID");
-      return { orderId, status: "PAID" };
+
+      return markOrderPaidFromWebhook({
+        orderId,
+        gateway: "STRIPE",
+        paidAmount: paymentIntent.amount_received ?? paymentIntent.amount,
+      });
     }
 
     return null;
@@ -111,10 +169,12 @@ export const paymentService = {
 
     if (body.event === "charge.success") {
       const { orderId } = body.data.metadata;
-      
-      // Update order status securely
-      await orderRepository.updateOrderStatus(orderId, "PAID");
-      return { orderId, status: "PAID" };
+
+      return markOrderPaidFromWebhook({
+        orderId,
+        gateway: "PAYSTACK",
+        paidAmount: body.data.amount,
+      });
     }
 
     return null;

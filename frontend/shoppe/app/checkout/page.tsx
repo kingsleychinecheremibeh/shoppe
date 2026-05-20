@@ -6,8 +6,7 @@ import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, Loader2, ArrowLeft
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
-import Script from "next/script";
+import { api, getAssetUrl } from "@/lib/api";
 
 type Address = {
   id: string;
@@ -18,23 +17,6 @@ type Address = {
   state: string;
   country: string;
 };
-
-interface CustomWindow extends Window {
-  PaystackPop?: {
-    new (): {
-      newTransaction: (options: {
-        key: string;
-        email: string;
-        amount: number;
-        currency: string;
-        ref: string;
-        metadata: Record<string, string>;
-        onSuccess: () => void;
-        onCancel: () => void;
-      }) => void;
-    };
-  };
-}
 
 type Product = {
   id: string;
@@ -55,6 +37,14 @@ type Cart = {
   items: CartItem[];
 };
 
+type PaymentInitializeResponse = {
+  data?: {
+    authorizationUrl?: string;
+    gateway?: string;
+    reference?: string;
+  };
+};
+
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -70,7 +60,6 @@ export default function CheckoutPage() {
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [paymentGateway, setPaymentGateway] = useState<"STRIPE" | "PAYSTACK">("PAYSTACK");
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
-  const [user, setUser] = useState<{ email: string; name: string } | null>(null);
 
   // Address creation form state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -87,10 +76,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     const loadCheckoutData = async () => {
       try {
-        const [cartData, addressesData, userData] = await Promise.all([
+        const [cartData, addressesData] = await Promise.all([
           api.getCart(),
           api.getAddresses(),
-          api.getMe(),
         ]);
 
         const cartObj = cartData as Cart;
@@ -103,13 +91,11 @@ export default function CheckoutPage() {
         setCart(cartObj);
         const addrList = (addressesData as Address[]) || [];
         setAddresses(addrList);
-        setUser(userData as { email: string; name: string });
 
         if (addrList.length > 0) {
           setSelectedAddressId(addrList[0].id);
         }
-      } catch (error) {
-        console.error("Failed to load checkout details:", error);
+      } catch {
         toast.error("Please login to proceed with checkout.");
         router.push("/login");
       } finally {
@@ -160,8 +146,7 @@ export default function CheckoutPage() {
         state: "",
         country: "United States",
       });
-    } catch (error) {
-      console.error("Failed to create address:", error);
+    } catch {
       toast.error("Failed to save new address.");
     } finally {
       setCreatingAddress(false);
@@ -175,13 +160,6 @@ export default function CheckoutPage() {
     }
 
     if (paymentGateway === "PAYSTACK") {
-      const PaystackPop = (window as unknown as CustomWindow).PaystackPop;
-
-      if (!PaystackPop) {
-        toast.error("Initializing secure checkout... Please wait a moment.")
-        return;
-      }
-
       try {
         setSubmittingOrder(true);
 
@@ -191,52 +169,31 @@ export default function CheckoutPage() {
           paymentGateway: "PAYSTACK",
         })) as { id: string };
 
-        const paystackAmount = Math.round(total * 1600 * 100);
-        const paystackRef = idempotencyKey + "_" + Date.now();
-        const paystackKey = (process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "").replace(/[^\w-]/g, "").trim();
+        const payment = (await api.initializePayment(
+          order.id,
+          "PAYSTACK"
+        )) as PaymentInitializeResponse;
+        const authorizationUrl = payment.data?.authorizationUrl;
 
-        const paystack = new PaystackPop();
-        paystack.newTransaction({
-          key: paystackKey,
-          email: user?.email || "customer@example.com",
-          amount: paystackAmount,
-          currency: "NGN",
-          ref: paystackRef,
-          metadata: {
-            orderId: order.id,
-          },
-          onSuccess: function () {
-            toast.success("Payment Successful! Thank you for your order");
-            if (typeof window !== "undefined") {
-              window.dispatchEvent(new Event("cart-updated"));
-            }
-            router.push(`/checkout/success?orderId=${order.id}`);
-          },
-          onCancel: () => {
-            setSubmittingOrder(false);
-            toast.error("Payment modal closed. You can complete payment later in your Order History.");
-          }
-        });
-      } catch (err) {
-        console.error("Paystack transaction failed to launch:", err);
+        if (!authorizationUrl) {
+          throw new Error("Payment provider did not return a checkout URL");
+        }
+
+        toast.success("Redirecting to secure Paystack checkout...");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("cart-updated"));
+          window.location.assign(authorizationUrl);
+        } else {
+          router.push(`/checkout/success?orderId=${order.id}`);
+        }
+      } catch {
         setSubmittingOrder(false);
         toast.error("Failed to initialize payment. Please try again or contact support");
       }
       return;
     }
-    try {
-      setSubmittingOrder(true);
-      const order = (await api.createOrder(selectedAddressId, { idempotencyKey, paymentGateway })) as { id: string };
-      toast.success("Order placed successfully! Thank you for shopping.");
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("cart-updated"));
-      }
-      router.push(`/checkout/success?orderId=${order.id}`);
-    } catch (error) {
-      console.error("Failed to place order:", error);
-      toast.error("Failed to finalize order. Please try again.");
-      setSubmittingOrder(false);
-    }
+
+    toast.error("Stripe checkout is not connected yet. Please choose Paystack.");
   };
 
   // Math totals
@@ -476,14 +433,16 @@ export default function CheckoutPage() {
                 {/* Stripe Card Option */}
                 <button
                   type="button"
-                  onClick={() => setPaymentGateway("STRIPE")}
-                  className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all hover:bg-gray-50 ${paymentGateway === "STRIPE"
-                    ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
-                    : "border-gray-200 bg-white"
-                    }`}
+                  disabled
+                  //onClick={() => toast.error("Stripe checkout is not connected yet. Please choose Paystack.")}
+                  // className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all hover:bg-gray-50 ${paymentGateway === "STRIPE"
+                  //   ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
+                  //   : "border-gray-200 bg-white"
+                  //   }`}
+                  className="relative flex flex-col items-start p-4 rounded-xl border text-left border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
                 >
                   <div className="flex items-center gap-2 w-full justify-between mb-2">
-                    <span className="text-sm font-bold text-gray-950">Stripe (Global)</span>
+                    <span className="text-sm font-bold text-gray-950">Stripe (Coming soon)</span>
                     <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${paymentGateway === "STRIPE" ? "border-gray-950 bg-gray-950" : "border-gray-300"
                       }`}>
                       {paymentGateway === "STRIPE" && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
@@ -515,7 +474,7 @@ export default function CheckoutPage() {
                     <div className="aspect-square h-12 shrink-0 overflow-hidden rounded bg-gray-50 border border-gray-100">
                       {item.product.image ? (
                         <Image
-                          src={item.product.image}
+                          src={getAssetUrl(item.product.image) || item.product.image}
                           alt={item.product.name}
                           className="h-full w-full object-cover"
                           width={60}
@@ -577,10 +536,6 @@ export default function CheckoutPage() {
         </div>
 
       </div>
-      <Script
-        src="https://js.paystack.co/v2/inline.js"
-        strategy="afterInteractive"
-      />
     </main>
   );
 }

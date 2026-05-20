@@ -15,7 +15,7 @@ import {
   Truck,
   CheckCircle2
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 import { toast } from "sonner";
 
 type OrderItem = {
@@ -44,6 +44,16 @@ type Order = {
   orderItems: OrderItem[];
 };
 
+type UserData = {
+  name: string;
+  email: string;
+};
+
+type MeResponse = {
+  user: UserData;
+};
+
+
 export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,9 +67,8 @@ export default function MyOrdersPage() {
           api.getMe(),
         ]);
         setOrders((ordersData as Order[]) || []);
-        setUser(userData as { name: string; email: string });
-      } catch (error) {
-        console.error("Failed to load orders:", error);
+        setUser((userData as MeResponse).user);
+      } catch {
         toast.error("Please login to view your order history.");
       } finally {
         setLoading(false);
@@ -242,7 +251,7 @@ export default function MyOrdersPage() {
                   <div key={item.id} className="py-5 flex items-center space-x-4">
                     <div className="h-20 w-16 relative shrink-0 bg-gray-50 border border-gray-100 rounded-xl overflow-hidden">
                       <Image
-                        src={item.product.image || "https://images.pexels.com/photos/1036856/pexels-photo-1036856.jpeg"}
+                        src={getAssetUrl(item.product.image) || "https://images.pexels.com/photos/1036856/pexels-photo-1036856.jpeg"}
                         alt={item.product.name}
                         fill
                         className="object-cover"

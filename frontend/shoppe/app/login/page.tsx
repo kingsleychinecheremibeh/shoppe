@@ -12,6 +12,12 @@ type LoginFormData = {
   password: string;
 };
 
+type LoginResponse = {
+  user?: {
+    role?: "USER" | "ADMIN";
+  };
+};
+
 const initialFormData: LoginFormData = {
   email: "",
   password: "",
@@ -32,9 +38,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await api.login(formData.email.trim(), formData.password);
+      const result = (await api.login(formData.email.trim(), formData.password)) as LoginResponse;
       toast.success("Welcome back!");
-      window.location.assign("/");
+      window.location.assign(result.user?.role === "ADMIN" ? "/admin" : "/account");
     } catch (error) {
       toast.error(getErrorMessage(error));
       setLoading(false);

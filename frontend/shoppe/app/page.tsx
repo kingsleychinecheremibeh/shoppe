@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, ShieldCheck, Truck, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
   id: string;
@@ -24,22 +24,22 @@ type Product = {
   category?: Category;
 };
 
-// Curated high-fashion lookbook images to dynamically assign based on Category Slug
-const categoryImages: Record<string, string> = {
-  apparel: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
-  clothing: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
-  accessories: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
-  bags: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
-  footwear: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-  shoes: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-  home: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
-};
+// // Curated high-fashion lookbook images to dynamically assign based on Category Slug
+// const categoryImages: Record<string, string> = {
+//   apparel: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
+//   clothing: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
+//   accessories: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+//   bags: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+//   footwear: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
+//   shoes: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
+//   home: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
+// };
 
-const getCategoryImage = (category: Category) => {
-  if (category.image) return category.image;
-  const slug = category.slug?.toLowerCase();
-  return categoryImages[slug] || "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80";
-};
+// const getCategoryImage = (category: Category) => {
+//   if (category.image) return category.image;
+//   const slug = category.slug?.toLowerCase();
+//   return categoryImages[slug] || "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80";
+// };
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -47,15 +47,16 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 function ProductCard({ product }: { product: Product }) {
+  const imageUrl = getAssetUrl(product.image);
   return (
     <Link 
       href={`/products/${product.id}`}
       className="group block overflow-hidden transition"
     >
       <div className="aspect-square overflow-hidden bg-gray-50 border border-gray-100 rounded-lg relative">
-        {product.image ? (
+        {imageUrl ? (
           <Image
-            src={product.image}
+            src={imageUrl}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
             width={500}
@@ -91,21 +92,27 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 function CategoryCard({ category }: { category: Category }) {
-  const imageUrl = getCategoryImage(category);
+  const imageUrl = getAssetUrl(category.image);
   return (
     <Link
       href={`/category/${category.slug}`}
       className="group relative aspect-3/4 overflow-hidden rounded-xl bg-gray-100 block shadow-xs transition hover:shadow-md"
     >
       <div className="h-full w-full">
-        <Image
-          src={imageUrl}
-          alt={category.name}
-          className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-          width={600}
-          height={800}
-          priority
-        />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={category.name}
+            className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+            width={500}
+            height={500}
+            priority
+          />
+        ) : (
+          <div className="flex h-full w-full">
+            No image available
+          </div>
+        )}
       </div>
       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-6">
         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-1">Explore Range</span>
@@ -126,9 +133,7 @@ export default function Home() {
         setCategories((categoriesData as Category[]) || []);
         setProducts((productData as Product[]) || []);
       })
-      .catch((error) => {
-        console.error("Failed to fetch home page data:", error);
-      })
+      .catch(() => {})
       .finally(() => {
         setLoading(false);
       });
@@ -190,7 +195,7 @@ export default function Home() {
                   height={800}
                   priority
                 />
-                <div className="absolute bottom-8 left-6 lg:-left-8 bg-white p-5 rounded-xl border border-gray-100 shadow-lg max-w-[200px]">
+                <div className="absolute bottom-8 left-6 lg:-left-8 bg-white p-5 rounded-xl border border-gray-100 shadow-lg max-w-50">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Featured Capsule</p>
                   <p className="font-serif font-bold text-gray-950 mt-1 leading-snug">Minimalist Wardrobe Series</p>
                   <Link href="/products" className="text-xs font-bold text-gray-900 hover:underline mt-2 inline-flex items-center gap-1">
@@ -274,7 +279,7 @@ export default function Home() {
       <section className="grid grid-cols-1 lg:grid-cols-2 overflow-hidden bg-gray-950 text-white">
         
         {/* Lookbook Image Container */}
-        <div className="aspect-video lg:aspect-auto min-h-[350px] relative">
+        <div className="aspect-video lg:aspect-auto min-h-87.5 relative">
           <Image
             src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80"
             alt="Summer collection lifestyle shoot"

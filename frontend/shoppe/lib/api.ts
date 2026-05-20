@@ -19,20 +19,20 @@ async function request<T>(
   if (method === "GET") {
     const cached = memoryCache[endpoint];
     if (cached && Date.now() < cached.expiry) {
-      console.log(`[FRONTEND CACHE HIT] Serving instantly ${endpoint}`);
       return cached.data as T;
     }
   }
 
   if (method !== "GET" && endpoint !== "/auth/refresh-token") {
     Object.keys(memoryCache).forEach((key) => delete memoryCache[key]);
-    console.log(`[FRONTEND CACHE] Invalidated all`);
   }
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...fetchOptions.headers,
+  const headers: Record<string, string> = {
+    ...(fetchOptions.headers as Record<string, string> | undefined),
   };
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...fetchOptions,
@@ -211,11 +211,17 @@ export const api = {
     }),
 
   // Orders
-  createOrder: (addressId: string, options?: { idempotencyKey?: string; paymentGateway?: string; paymentReference?: string }) =>
+  createOrder: (addressId: string, options?: { idempotencyKey?: string; paymentGateway?: string }) =>
     request("/orders", {
       method: "POST",
-      body: JSON.stringify({ addressId, paymentGateway: options?.paymentGateway, paymentReference: options?.paymentReference }),
+      body: JSON.stringify({ addressId, paymentGateway: options?.paymentGateway }),
       headers: options?.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : undefined,
+    }),
+
+  initializePayment: (orderId: string, gateway: string) =>
+    request("/payment/initialize", {
+      method: "POST",
+      body: JSON.stringify({ orderId, gateway }),
     }),
 
   getMyOrders: () => request("/orders/my-orders"),
@@ -234,4 +240,23 @@ export const api = {
     request(`/orders/${id}`, {
       method: "DELETE",
     }),
+
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    return request("/upload", {
+      method: "POST",
+      body: formData,
+    });
+  },
+};
+
+
+export const getAssetUrl = (url?: string | null) => {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+  const apiOrigin = API_BASE.replace(/\/api\/v1$/, "");
+  return `${apiOrigin}${url.startsWith("/") ? "" : "/"}${url}`;
 };

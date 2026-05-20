@@ -39,6 +39,8 @@ describe('orderService', () => {
       address: { id: 'addr-1', userId: 'user-1' },
       cart,
       total: 125,
+      idempotencyKey: undefined,
+      paymentGateway: undefined,
     });
     expect(result).toEqual({ id: 'order-1' });
   });

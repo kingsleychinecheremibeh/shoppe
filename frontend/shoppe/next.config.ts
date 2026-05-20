@@ -1,8 +1,18 @@
 import type { NextConfig } from "next";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const apiOrigin = new URL(apiUrl).origin;
+const apiImagesHost = new URL(apiOrigin);
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
+      {
+        protocol: apiImagesHost.protocol.replace(":", "") as "http" | "https",
+        hostname: apiImagesHost.hostname,
+        port: apiImagesHost.port,
+        pathname: "/uploads/**",
+      },
       {
         protocol: "https",
         hostname: "images.unsplash.com",

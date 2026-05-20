@@ -3,7 +3,7 @@
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { Edit, ImageIcon, Plus, Search, Trash2, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type UserData = {
   id: string;
@@ -43,6 +43,10 @@ type ProductFormData = {
   image: string;
 };
 
+type UploadResponse = {
+  url: string;
+};
+
 const initialFormData: ProductFormData = {
   name: "",
   description: "",
@@ -78,6 +82,7 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -163,6 +168,26 @@ export default function AdminProductsPage() {
       ...current,
       [name]: value,
     }));
+  };
+
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const result = (await api.uploadImage(file)) as UploadResponse;
+      setFormData((current) => ({
+        ...current,
+        image: result.url,
+      }));
+      toast.success("Image uploaded successfully.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to upload image."));
+    } finally {
+      setUploadingImage(false);
+      event.target.value = "";
+    }
   };
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
@@ -507,17 +532,29 @@ export default function AdminProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="image" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
-                  Image Source URL
-                </label>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label htmlFor="image" className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Image Source
+                  </label>
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 text-[10px] font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50">
+                    {uploadingImage ? "Uploading..." : "Upload File"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage || saving}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
                 <input
                   id="image"
                   name="image"
-                  type="url"
+                  type="text"
                   value={formData.image}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
-                  placeholder="https://images.unsplash.com/photo-..."
+                  placeholder="/uploads/image.webp or https://images.unsplash.com/photo-..."
                 />
               </div>
 
@@ -568,7 +605,9 @@ function TableHead({
 }
 
 function ProductThumbnail({ product }: { product: Product }) {
-  if (!product.image) {
+  const imageUrl = getAssetUrl(product.image);
+
+  if (!imageUrl) {
     return (
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-400">
         <ImageIcon className="h-4.5 w-4.5" />
@@ -579,7 +618,7 @@ function ProductThumbnail({ product }: { product: Product }) {
   return (
     <div
       className="h-11 w-11 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border border-gray-200"
-      style={{ backgroundImage: `url("${product.image}")` }}
+      style={{ backgroundImage: `url("${imageUrl}")` }}
       aria-label={product.name}
     />
   );

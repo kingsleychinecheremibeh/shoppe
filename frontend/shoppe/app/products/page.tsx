@@ -6,7 +6,7 @@ import { Search, ShoppingCart, Eye, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
   id: string;
@@ -97,9 +97,7 @@ function ProductCatalogContent() {
       try {
         const categoriesData = await api.getCategories();
         setCategories((categoriesData as Category[]) || []);
-      } catch (error) {
-        console.error("Failed to load categories:", error);
-      }
+      } catch {}
     };
     fetchCategories();
   }, []);
@@ -120,8 +118,7 @@ function ProductCatalogContent() {
         setProducts(productsResponse.data || []);
         setTotalPages(productsResponse.meta?.totalPages || 1);
         setTotalItems(productsResponse.meta?.totalItems || 0);
-      } catch (error) {
-        console.error("Failed to load products:", error);
+      } catch {
         toast.error("Unable to load products. Please try again.");
       } finally {
         setLoading(false);
@@ -147,8 +144,7 @@ function ProductCatalogContent() {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
       }
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
+    } catch {
       toast.error("Please login to add items to your cart.");
       router.push("/login");
     } finally {
@@ -285,6 +281,7 @@ function ProductCatalogContent() {
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product) => {
                   const isOutOfStock = product.stock <= 0;
+                  const imageUrl = getAssetUrl(product.image);
                   return (
                     <div
                       key={product.id}
@@ -293,9 +290,9 @@ function ProductCatalogContent() {
                       {/* Product Image Area */}
                       <div className="aspect-square w-full overflow-hidden bg-gray-100 relative block">
                         <Link href={`/products/${product.id}`} className="block h-full w-full">
-                          {product.image ? (
+                          {imageUrl ? (
                             <Image
-                              src={product.image}
+                              src={imageUrl}
                               alt={product.name}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                               width={400}

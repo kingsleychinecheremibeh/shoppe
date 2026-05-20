@@ -49,7 +49,6 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 export const logoutUser = asyncHandler(async (req, res) => {
     await authService.logout({
         refreshToken: req.cookies?.[refreshCookieName],
-        userId: req.user?.id,
     });
 
     res
