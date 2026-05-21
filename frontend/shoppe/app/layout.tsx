@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,6 +52,7 @@ export default function RootLayout({
         </div>
         <Footer />
         <Toaster richColors position="top-right" />
+        <Analytics />
       </body>
     </html>
   );
