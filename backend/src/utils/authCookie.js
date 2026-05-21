@@ -5,7 +5,13 @@ export const authCookieName = "access_token";
 export const refreshCookieName = "refresh_token";
 
 const getCookieSameSite = () => {
-  return process.env.COOKIE_SAMESITE || (process.env.NODE_ENV === "production" ? "none" : "lax");
+  const sameSite = (process.env.COOKIE_SAMESITE || (process.env.NODE_ENV === "production" ? "none" : "lax")).toLowerCase();
+
+  if (["lax", "strict", "none"].includes(sameSite)) {
+    return sameSite;
+  }
+
+  return process.env.NODE_ENV === "production" ? "none" : "lax";
 };
 
 const getCookieDomain = () => {

@@ -8,6 +8,10 @@ export const cacheMiddleware = (durationSeconds = 300) => {
             return next();
         }
 
+        if (req.originalUrl?.startsWith("/api/v1/auth") || req.headers.cookie || req.headers.authorization) {
+            return next();
+        }
+
         const key = req.originalUrl || req.url;
         const cachedResponse = cache.get(key);
         if (cachedResponse) {

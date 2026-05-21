@@ -37,6 +37,7 @@ const normalizeOrigin = (origin) => {
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN,
   ...(process.env.CORS_ORIGINS || '').split(','),
   'http://localhost:3000',
 ]
