@@ -58,7 +58,7 @@ const initialFormData: ProductFormData = {
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD",
+  currency: "NGN",
 });
 
 const getNumber = (value: number | string | null | undefined) => {
@@ -323,7 +323,7 @@ export default function AdminProductsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[880px]">
+              <table className="w-full min-w-220">
                 <thead className="bg-gray-50">
                   <tr>
                     <TableHead>Product</TableHead>
@@ -452,7 +452,7 @@ export default function AdminProductsPage() {
 
                 <div>
                   <label htmlFor="price" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Selling Price (USD)
+                    Selling Price (NGN)
                   </label>
                   <input
                     id="price"

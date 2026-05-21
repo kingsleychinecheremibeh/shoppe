@@ -77,7 +77,7 @@ export const paymentService = {
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInMinorUnit,
-        currency: "usd",
+        currency: "ngn",
         metadata: { orderId, userId },
         automatic_payment_methods: { enabled: true },
       });

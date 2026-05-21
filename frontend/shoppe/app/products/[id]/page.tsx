@@ -27,7 +27,7 @@ type Product = {
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD",
+  currency: "NGN",
 });
 
 export default function ProductDetailPage() {
@@ -215,7 +215,7 @@ export default function ProductDetailPage() {
                   <button
                     onClick={handleAddToCart}
                     disabled={addingToCart}
-                    className="flex-1 min-w-[200px] inline-flex items-center justify-center gap-2 bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white rounded-lg shadow-sm hover:bg-gray-800 transition disabled:opacity-50"
+                    className="flex-1 min-w-50 inline-flex items-center justify-center gap-2 bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white rounded-lg shadow-sm hover:bg-gray-800 transition disabled:opacity-50"
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {addingToCart ? "Adding to Cart..." : "Add to Cart"}

@@ -65,7 +65,7 @@ const statusTransitions: Record<OrderStatus, OrderStatus[]> = {
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD",
+  currency: "NGN",
 });
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -219,7 +219,7 @@ export default function AdminOrdersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[860px]">
+              <table className="w-full min-w-215">
                 <thead className="bg-gray-50">
                   <tr>
                     <TableHead>Order ID</TableHead>

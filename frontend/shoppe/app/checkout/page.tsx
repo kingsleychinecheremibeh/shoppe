@@ -47,7 +47,7 @@ type PaymentInitializeResponse = {
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD",
+  currency: "NGN",
 });
 
 export default function CheckoutPage() {

@@ -61,7 +61,7 @@ type DashboardStats = {
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD",
+  currency: "NGN",
 });
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
