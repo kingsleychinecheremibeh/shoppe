@@ -56,6 +56,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "img.staticdj.com",
+      },
+      {
+        protocol: "https",
         hostname: "tailwindui.com",
       },
     ],
