@@ -204,6 +204,8 @@ function ProductCatalogContent() {
               <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-4">Search</h3>
               <div className="relative">
                 <input
+                  id="productSearch"
+                  name="productSearch"
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
@@ -246,6 +248,8 @@ function ProductCatalogContent() {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-4">Sort By</h3>
               <select
+                id="productSort"
+                name="productSort"
                 value={sortBy}
                 onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
                 className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"

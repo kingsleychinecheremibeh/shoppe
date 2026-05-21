@@ -287,6 +287,8 @@ export default function AdminProductsPage() {
               <span className="sr-only">Search products</span>
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
+                id="adminProductSearch"
+                name="adminProductSearch"
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -539,6 +541,8 @@ export default function AdminProductsPage() {
                   <label className="inline-flex h-8 cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 text-[10px] font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50">
                     {uploadingImage ? "Uploading..." : "Upload File"}
                     <input
+                      id="productImageUpload"
+                      name="productImageUpload"
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
                       onChange={handleImageUpload}

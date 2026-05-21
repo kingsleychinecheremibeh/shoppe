@@ -185,6 +185,8 @@ export function Header() {
                 <span className="sr-only">Search products</span>
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
+                  id="desktopProductSearch"
+                  name="productSearch"
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
@@ -334,6 +336,8 @@ export function Header() {
                   <span className="sr-only">Search products</span>
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
+                    id="mobileProductSearch"
+                    name="productSearch"
                     type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}

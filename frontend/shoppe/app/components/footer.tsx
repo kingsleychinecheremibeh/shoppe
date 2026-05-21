@@ -94,6 +94,8 @@ export function Footer() {
             </p>
             <form className="flex gap-2 max-w-sm" onSubmit={(e) => e.preventDefault()}>
               <input
+                id="footerEditorialEmail"
+                name="footerEditorialEmail"
                 type="email"
                 placeholder="email@example.com"
                 className="flex-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-950 placeholder-gray-400 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"

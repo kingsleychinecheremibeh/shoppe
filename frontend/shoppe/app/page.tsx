@@ -344,6 +344,8 @@ export default function Home() {
           </p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
             <input
+              id="editorialEmail"
+              name="editorialEmail"
               type="email"
               placeholder="Enter your email"
               className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-950 placeholder-gray-400 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"

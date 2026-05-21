@@ -265,8 +265,10 @@ export default function AccountPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
+                    <label htmlFor="addressFullName" className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
                     <input
+                      id="addressFullName"
+                      name="fullName"
                       type="text"
                       required
                       placeholder="e.g. Kingsley Ibeh"
@@ -277,8 +279,10 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
+                    <label htmlFor="addressPhone" className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
                     <input
+                      id="addressPhone"
+                      name="phone"
                       type="tel"
                       required
                       placeholder="e.g. +234 812 345 6789"
@@ -289,8 +293,10 @@ export default function AccountPage() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
+                    <label htmlFor="addressStreet" className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
                     <input
+                      id="addressStreet"
+                      name="street"
                       type="text"
                       required
                       placeholder="e.g. 15 Akinwunmi Street, Ejigbo"
@@ -301,8 +307,10 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
+                    <label htmlFor="addressCity" className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
                     <input
+                      id="addressCity"
+                      name="city"
                       type="text"
                       required
                       placeholder="e.g. Ikeja"
@@ -313,8 +321,10 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
+                    <label htmlFor="addressState" className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
                     <input
+                      id="addressState"
+                      name="state"
                       type="text"
                       required
                       placeholder="e.g. Lagos"

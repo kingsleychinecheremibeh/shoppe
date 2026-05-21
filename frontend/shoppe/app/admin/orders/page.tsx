@@ -202,6 +202,8 @@ export default function AdminOrdersPage() {
             <span className="sr-only">Search orders</span>
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
+              id="adminOrderSearch"
+              name="adminOrderSearch"
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -326,6 +328,8 @@ function OrderStatusControl({
 
   return (
     <select
+      id={`orderStatus-${order.id}`}
+      name={`orderStatus-${order.id}`}
       value={order.status}
       disabled={disabled}
       onChange={(event: ChangeEvent<HTMLSelectElement>) =>

@@ -106,6 +106,8 @@ export default function LoginPage() {
             <div className="flex items-center justify-between gap-4">
               <label className="flex items-center">
                 <input
+                  id="rememberMe"
+                  name="rememberMe"
                   type="checkbox"
                   className="h-4 w-4 rounded border-gray-300 text-gray-950"
                 />
