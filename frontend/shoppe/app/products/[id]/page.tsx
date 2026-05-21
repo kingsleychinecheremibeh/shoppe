@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ShoppingCart, ArrowLeft, ShieldCheck, Truck, RefreshCw, Minus, Plus } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "sonner";
+import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
@@ -130,13 +130,10 @@ export default function ProductDetailPage() {
           {/* Image Viewer */}
           <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center relative">
             {imageUrl ? (
-              <Image
+              <ProductImage
                 src={imageUrl}
                 alt={product.name}
                 className="h-full w-full object-cover transition duration-300"
-                width={600}
-                height={600}
-                priority
               />
             ) : (
               <span className="text-sm font-semibold text-gray-400">No product image</span>

@@ -20,6 +20,7 @@
     "@prisma/client": "^7.8.0",
     "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "cross-env": "^10.1.0",

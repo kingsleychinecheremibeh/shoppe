@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "sonner";
+import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
 type Address = {
@@ -473,12 +473,10 @@ export default function CheckoutPage() {
                   <div key={item.id} className="py-3.5 flex gap-4 text-sm">
                     <div className="aspect-square h-12 shrink-0 overflow-hidden rounded bg-gray-50 border border-gray-100">
                       {item.product.image ? (
-                        <Image
+                        <ProductImage
                           src={getAssetUrl(item.product.image) || item.product.image}
                           alt={item.product.name}
                           className="h-full w-full object-cover"
-                          width={60}
-                          height={60}
                         />
                       ) : (
                         <div className="h-full w-full bg-gray-100" />

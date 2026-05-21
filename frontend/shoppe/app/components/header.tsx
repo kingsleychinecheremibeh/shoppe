@@ -81,28 +81,49 @@ export function Header() {
   useEffect(() => {
     let ignore = false;
 
-    api
-      .getMe()
-      .then((data) => {
-        if (ignore) return undefined;
+    const loadAccountState = () => {
+      api
+        .getMe()
+        .then((data) => {
+          if (ignore) return undefined;
 
-        setUser((data as MeResponse).user);
-        if (!showStorefrontTools) return undefined;
+          setUser((data as MeResponse).user);
+          if (!showStorefrontTools) return undefined;
 
-        return api.getCart();
-      })
-      .then((data) => {
-        if (!ignore && data) setCart(data as Cart);
-      })
-      .catch(() => {
-        if (!ignore) {
-          setUser(null);
-          setCart(null);
-        }
+          return api.getCart();
+        })
+        .then((data) => {
+          if (!ignore && data) setCart(data as Cart);
+        })
+        .catch(() => {
+          if (!ignore) {
+            setUser(null);
+            setCart(null);
+          }
+        });
+    };
+
+    const scheduleIdleWork =
+      window.requestIdleCallback ||
+      ((callback: IdleRequestCallback) =>
+        window.setTimeout(() => {
+          callback({
+            didTimeout: false,
+            timeRemaining: () => 0,
+          });
+        }, 1200));
+
+    const cancelIdleWork =
+      window.cancelIdleCallback ||
+      ((id: number) => {
+        window.clearTimeout(id);
       });
+
+    const idleId = scheduleIdleWork(loadAccountState, { timeout: 3000 });
 
     return () => {
       ignore = true;
+      cancelIdleWork(idleId);
     };
   }, [showStorefrontTools]);
 

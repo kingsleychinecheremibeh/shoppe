@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { ShoppingBag, ArrowUpRight } from "lucide-react";
 
@@ -92,7 +90,7 @@ export function Footer() {
             <p className="text-xs text-gray-500 leading-relaxed font-sans">
               Sign up for private sales, lookbooks, and periodic product drop alerts.
             </p>
-            <form className="flex gap-2 max-w-sm" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex gap-2 max-w-sm">
               <input
                 id="footerEditorialEmail"
                 name="footerEditorialEmail"
@@ -102,7 +100,7 @@ export function Footer() {
                 required
               />
               <button
-                type="submit"
+                type="button"
                 className="rounded-md bg-gray-950 px-4 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 transition"
               >
                 Join

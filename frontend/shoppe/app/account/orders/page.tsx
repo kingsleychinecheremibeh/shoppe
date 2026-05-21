@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ShoppingBag,
   Calendar,
@@ -15,6 +14,7 @@ import {
   Truck,
   CheckCircle2
 } from "lucide-react";
+import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -250,12 +250,10 @@ export default function MyOrdersPage() {
                 {order.orderItems.map((item) => (
                   <div key={item.id} className="py-5 flex items-center space-x-4">
                     <div className="h-20 w-16 relative shrink-0 bg-gray-50 border border-gray-100 rounded-xl overflow-hidden">
-                      <Image
+                      <ProductImage
                         src={getAssetUrl(item.product.image) || "https://images.pexels.com/photos/1036856/pexels-photo-1036856.jpeg"}
                         alt={item.product.name}
-                        fill
-                        className="object-cover"
-                        sizes="64px"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">

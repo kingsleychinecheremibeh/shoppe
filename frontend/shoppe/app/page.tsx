@@ -1,10 +1,8 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, ShieldCheck, Truck, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { api, getAssetUrl } from "@/lib/api";
+import { ProductImage } from "@/app/components/product-image";
+import { getAssetUrl } from "@/lib/api";
 
 type Category = {
   id: string;
@@ -46,6 +44,35 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "NGN",
 });
 
+const DEFAULT_API_BASE = process.env.VERCEL
+  ? "https://shoppe-backend-yko6.onrender.com/api/v1"
+  : "http://localhost:5000/api/v1";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE;
+
+async function getHomeData() {
+  try {
+    const [categoriesResponse, productsResponse] = await Promise.all([
+      fetch(`${API_BASE}/categories`, { next: { revalidate: 180 } }),
+      fetch(`${API_BASE}/products`, { next: { revalidate: 180 } }),
+    ]);
+
+    const categoriesData = categoriesResponse.ok
+      ? await categoriesResponse.json()
+      : [];
+    const productsData = productsResponse.ok ? await productsResponse.json() : [];
+
+    return {
+      categories: (Array.isArray(categoriesData) ? categoriesData : []) as Category[],
+      products: (Array.isArray(productsData)
+        ? productsData
+        : productsData?.data || []) as Product[],
+    };
+  } catch {
+    return { categories: [] as Category[], products: [] as Product[] };
+  }
+}
+
 function ProductCard({ product }: { product: Product }) {
   const imageUrl = getAssetUrl(product.image);
   return (
@@ -55,13 +82,10 @@ function ProductCard({ product }: { product: Product }) {
     >
       <div className="aspect-square overflow-hidden bg-gray-50 border border-gray-100 rounded-lg relative">
         {imageUrl ? (
-          <Image
+          <ProductImage
             src={imageUrl}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
-            width={500}
-            height={500}
-            priority
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-400">
@@ -100,13 +124,10 @@ function CategoryCard({ category }: { category: Category }) {
     >
       <div className="h-full w-full">
         {imageUrl ? (
-          <Image
+          <ProductImage
             src={imageUrl}
             alt={category.name}
             className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-            width={500}
-            height={500}
-            priority
           />
         ) : (
           <div className="flex h-full w-full">
@@ -122,33 +143,10 @@ function CategoryCard({ category }: { category: Category }) {
   );
 }
 
-export default function Home() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([api.getCategories(), api.getProducts()])
-      .then(([categoriesData, productData]) => {
-        setCategories((categoriesData as Category[]) || []);
-        setProducts((productData as Product[]) || []);
-      })
-      .catch(() => {})
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
+export default async function Home() {
+  const { categories, products } = await getHomeData();
   const newArrivals = products.slice(0, 4);
   const featuredProducts = products.slice(4, 8).length ? products.slice(4, 8) : products.slice(0, 4);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-950" /> 
-      </div>
-    );
-  }
 
   return (
     <main className="bg-white">
@@ -194,6 +192,7 @@ export default function Home() {
                   width={600}
                   height={800}
                   priority
+                  sizes="(max-width: 1024px) 100vw, 42vw"
                 />
                 <div className="absolute bottom-8 left-6 lg:-left-8 bg-white p-5 rounded-xl border border-gray-100 shadow-lg max-w-50">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Featured Capsule</p>
@@ -342,7 +341,7 @@ export default function Home() {
           <p className="mb-8 text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
             Subscribe to receive priority notifications on curated product drops, private lookbooks, and periodic design narratives.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input
               id="editorialEmail"
               name="editorialEmail"
@@ -352,7 +351,7 @@ export default function Home() {
               required
             />
             <button
-              type="submit"
+              type="button"
               className="rounded-lg bg-gray-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
               Subscribe

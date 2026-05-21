@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, Truck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "sonner";
+import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
@@ -213,12 +213,10 @@ export default function CartPage() {
                         className="aspect-square w-24 sm:w-28 shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 block"
                       >
                         {item.product.image ? (
-                          <Image
+                          <ProductImage
                             src={getAssetUrl(item.product.image) || item.product.image}
                             alt={item.product.name}
                             className="h-full w-full object-cover"
-                            width={150}
-                            height={150}
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-400">

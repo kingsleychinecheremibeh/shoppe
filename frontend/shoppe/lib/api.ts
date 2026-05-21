@@ -1,7 +1,10 @@
 const memoryCache: Record<string, { data: unknown; expiry: number }> = {};
 const CACHE_TTL = 3 * 60 * 1000;
+const DEFAULT_API_BASE = process.env.VERCEL
+  ? "https://shoppe-backend-yko6.onrender.com/api/v1"
+  : "http://localhost:5000/api/v1";
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE;
 
 type RequestOptions = RequestInit & {
   skipRefresh?: boolean;

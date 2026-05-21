@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, ShoppingCart, Eye, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "sonner";
+import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
 type Category = {
@@ -295,13 +295,10 @@ function ProductCatalogContent() {
                       <div className="aspect-square w-full overflow-hidden bg-gray-100 relative block">
                         <Link href={`/products/${product.id}`} className="block h-full w-full">
                           {imageUrl ? (
-                            <Image
+                            <ProductImage
                               src={imageUrl}
                               alt={product.name}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              width={400}
-                              height={400}
-                              priority
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-gray-400">
