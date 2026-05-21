@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").trim();
 const fallbackApiOrigin = "https://shoppe-backend-yko6.onrender.com";
-const apiOrigin = /^https?:\/\//i.test(apiUrl) ? new URL(apiUrl).origin : fallbackApiOrigin;
+const apiOrigin = apiUrl.startsWith("http") ? new URL(apiUrl).origin : fallbackApiOrigin;
 const apiImagesHost = new URL(apiOrigin);
 
 const nextConfig: NextConfig = {
