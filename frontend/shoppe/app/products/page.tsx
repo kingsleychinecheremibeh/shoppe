@@ -30,6 +30,8 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "NGN",
 });
 
+const SEARCH_DEBOUNCE_MS = 400;
+
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -42,6 +44,7 @@ function ProductCatalogContent() {
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("default");
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Pagination State
@@ -56,11 +59,21 @@ function ProductCatalogContent() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      setSearchInput(urlSearch);
       setSearchQuery(urlSearch);
       setPage(1);
     }, 0);
     return () => clearTimeout(timer);
   }, [urlSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setPage(1);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -158,6 +171,7 @@ function ProductCatalogContent() {
   const clearFilters = () => {
     setSelectedCategory("all");
     setSortBy("default");
+    setSearchInput("");
     setSearchQuery("");
     setPage(1);
     router.replace("/products");
@@ -208,8 +222,8 @@ function ProductCatalogContent() {
                   name="productSearch"
                   type="text"
                   placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                 />
                 <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -262,7 +276,7 @@ function ProductCatalogContent() {
               </select>
             </div>
 
-            {(selectedCategory !== "all" || searchQuery !== "" || sortBy !== "default") && (
+            {(selectedCategory !== "all" || searchInput !== "" || sortBy !== "default") && (
               <button
                 onClick={clearFilters}
                 className="w-full rounded-md border border-gray-300 bg-white py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
