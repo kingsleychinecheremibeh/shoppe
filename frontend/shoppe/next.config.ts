@@ -1,8 +1,4 @@
 import type { NextConfig } from "next";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").trim();
 const fallbackApiOrigin = "https://shoppe-backend-yko6.onrender.com";
@@ -10,9 +6,6 @@ const apiOrigin = apiUrl.startsWith("http") ? new URL(apiUrl).origin : fallbackA
 const apiImagesHost = new URL(apiOrigin);
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: projectRoot,
-  },
   async rewrites() {
     return [
       {

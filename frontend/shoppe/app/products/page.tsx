@@ -30,7 +30,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "NGN",
 });
 
-const SEARCH_DEBOUNCE_MS = 400;
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
@@ -65,15 +64,6 @@ function ProductCatalogContent() {
     }, 0);
     return () => clearTimeout(timer);
   }, [urlSearch]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(searchInput);
-      setPage(1);
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => clearTimeout(timer);
-  }, [searchInput]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -177,6 +167,11 @@ function ProductCatalogContent() {
     router.replace("/products");
   };
 
+  const handleSearch = () => {
+    setSearchQuery(searchInput.trim());
+    setPage(1);
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 py-12">
@@ -216,17 +211,32 @@ function ProductCatalogContent() {
           <aside className="space-y-8">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-4">Search</h3>
-              <div className="relative">
-                <input
-                  id="productSearch"
-                  name="productSearch"
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                />
-                <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    id="productSearch"
+                    name="productSearch"
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSearch();
+                      }
+                    }}
+                    className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
+                  />
+                  <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  disabled={searchInput.trim() === searchQuery}
+                  className="rounded-md bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+                >
+                  Search
+                </button>
               </div>
             </div>
 
