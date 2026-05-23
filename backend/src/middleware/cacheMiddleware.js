@@ -1,4 +1,5 @@
 import { isRedisReady, redisClient } from "../config/redis.js";
+import { logger } from "../utils/logger.js";
 
 const CACHE_KEY_PREFIX = "cache:response:";
 
@@ -25,21 +26,21 @@ export const cacheMiddleware = (durationSeconds = 300) => {
         try {
             const cachedResponse = await redisClient.get(key);
             if (cachedResponse) {
-                console.log("[Redis] HIT", key)
+                logger.info(`[Redis] Cache HIT: ${key}`)
                 return res.status(200).json(JSON.parse(cachedResponse));
             }
         } catch (err) {
-            console.error("[Redis] Cache read failed:", err.message);
+            logger.error("[Redis] Cache read failed:", { error: err.message });
             return next();
         }
 
         const originalJson = res.json;
         res.json = function (body) {
             if (res.statusCode === 200) {
-                console.log("[Redis] SET", key);
+                logger.info(`[Redis] Cache SET, ${key}`);
                 redisClient
                     .setEx(key, durationSeconds, JSON.stringify(body))
-                    .catch((err) => console.error("[Redis] Cache write failed:", err.message));
+                    .catch((err) => logger.error("[Redis] Cache write failed:", { error: err.message }));
             }
             return originalJson.call(this, body);
         };
@@ -63,6 +64,6 @@ export const invalidateCache = async (urlPattern) => {
             await redisClient.del(keysToDelete);
         }
     } catch (err) {
-        console.error("[Redis] Cache invalidation failed:", err.message);
+        logger.error("[Redis] Cache invalidation failed:", { error: err.message });
     }
 };

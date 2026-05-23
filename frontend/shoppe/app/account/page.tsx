@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,9 +17,13 @@ import {
   Phone,
   Home
 } from "lucide-react";
-import { ConfirmModal, FieldError, LoadingButton } from "@/app/components/feedback";
+import { ConfirmModal, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import useSWR, { mutate } from "swr";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 type Address = {
   id: string;
@@ -43,47 +47,47 @@ type MeResponse = {
   user: UserProfile;
 };
 
+const addressSchema = z.object({
+  fullName: z.string().min(2, "Full name is required"),
+  phone: z.string().min(5, "Valid phone number is required"),
+  street: z.string().min(5, "Street address is required"),
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(2, "State is required"),
+  country: z.string(),
+});
+
+type AddressFormValues = z.infer<typeof addressSchema>;
 
 export default function AccountPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submittingAddress, setSubmittingAddress] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [addressError, setAddressError] = useState("");
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
-
-  // Address Form State
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    country: "Nigeria",
+
+  // 1. SWR Data Fetching (Replaces useEffect, loading state, and profile/address state!)
+  const { data: profileData, isLoading: loadingProfile, error: profileError } = useSWR('/auth/me', () => api.getMe());
+  const { data: addressesData, isLoading: loadingAddresses } = useSWR('/addresses', () => api.getAddresses());
+
+  const profile = (profileData as MeResponse)?.user;
+  const addresses = (addressesData as Address[]) || [];
+  const loading = loadingProfile || loadingAddresses;
+
+  // Handle redirect if unauthenticated
+  if (profileError) {
+    toast.error("Please login to access your account dashboard.");
+    router.push("/login");
+  }
+
+  // 2. React Hook Form Setup (Replaces manual form state!)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<AddressFormValues>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: { country: "Nigeria" }
   });
-
-  useEffect(() => {
-    const fetchAccountData = async () => {
-      try {
-        const [profileData, addressesData] = await Promise.all([
-          api.getMe(),
-          api.getAddresses(),
-        ]);
-        setProfile((profileData as MeResponse).user);
-        setAddresses((addressesData as Address[]) || []);
-      } catch {
-        toast.error("Please login to access your account dashboard.");
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAccountData();
-  }, [router]);
 
   const handleLogout = async () => {
     try {
@@ -98,39 +102,22 @@ export default function AccountPage() {
     }
   };
 
-  const handleAddAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddressError("");
-    if (!formData.fullName || !formData.phone || !formData.street || !formData.city || !formData.state) {
-      setAddressError("Please fill in all address details.");
-      return;
-    }
-
+  const onSubmitAddress = async (data: AddressFormValues) => {
     try {
-      setSubmittingAddress(true);
-      const newAddress = await api.createAddress(formData);
-      setAddresses([...addresses, newAddress as Address]);
+      await api.createAddress(data);
+      mutate('/addresses'); // Automatically refreshes the address list from the server!
       toast.success("Delivery address added successfully!");
       setShowAddressForm(false);
-      setFormData({
-        fullName: "",
-        phone: "",
-        street: "",
-        city: "",
-        state: "",
-        country: "Nigeria",
-      });
+      reset(); // Clears the form
     } catch {
-      setAddressError("Failed to add new address. Please try again.");
-    } finally {
-      setSubmittingAddress(false);
+      toast.error("Failed to add new address. Please try again.");
     }
   };
 
   const handleDeleteAddress = async (id: string) => {
     try {
       await api.deleteAddress(id);
-      setAddresses(addresses.filter((addr) => addr.id !== id));
+      mutate('/addresses'); // Refresh the list automatically
       toast.success("Address removed successfully.");
     } catch {
       toast.error("Failed to remove address. Please try again.");
@@ -251,7 +238,7 @@ export default function AccountPage() {
 
             {/* Inline New Address Form */}
             {showAddressForm && (
-              <form onSubmit={handleAddAddress} className="bg-gray-50 border border-gray-150 rounded-2xl p-5 mb-6 space-y-4">
+              <form onSubmit={handleSubmit(onSubmitAddress)} className="bg-gray-50 border border-gray-150 rounded-2xl p-5 mb-6 space-y-4">
                 <div className="flex justify-between items-center border-b border-gray-150 pb-3 mb-2">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
                     Add New Shipping Location
@@ -264,84 +251,68 @@ export default function AccountPage() {
                     Cancel
                   </button>
                 </div>
-                <FieldError message={addressError} />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="addressFullName" className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
                     <input
-                      id="addressFullName"
-                      name="fullName"
+                      {...register("fullName")}
                       type="text"
-                      required
                       placeholder="e.g. Kingsley Ibeh"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
+                    {errors.fullName && <span className="text-red-500 text-xs mt-1 block">{errors.fullName.message}</span>}
                   </div>
 
                   <div>
-                    <label htmlFor="addressPhone" className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
                     <input
-                      id="addressPhone"
-                      name="phone"
+                      {...register("phone")}
                       type="tel"
-                      required
                       placeholder="e.g. +234 812 345 6789"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
+                    {errors.phone && <span className="text-red-500 text-xs mt-1 block">{errors.phone.message}</span>}
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label htmlFor="addressStreet" className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
                     <input
-                      id="addressStreet"
-                      name="street"
+                      {...register("street")}
                       type="text"
-                      required
                       placeholder="e.g. 15 Akinwunmi Street, Ejigbo"
-                      value={formData.street}
-                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
+                    {errors.street && <span className="text-red-500 text-xs mt-1 block">{errors.street.message}</span>}
                   </div>
 
                   <div>
-                    <label htmlFor="addressCity" className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
                     <input
-                      id="addressCity"
-                      name="city"
+                      {...register("city")}
                       type="text"
-                      required
                       placeholder="e.g. Ikeja"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
+                    {errors.city && <span className="text-red-500 text-xs mt-1 block">{errors.city.message}</span>}
                   </div>
 
                   <div>
-                    <label htmlFor="addressState" className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
                     <input
-                      id="addressState"
-                      name="state"
+                      {...register("state")}
                       type="text"
-                      required
                       placeholder="e.g. Lagos"
-                      value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
+                    {errors.state && <span className="text-red-500 text-xs mt-1 block">{errors.state.message}</span>}
                   </div>
                 </div>
 
                 <div className="pt-2 flex justify-end">
                   <LoadingButton
                     type="submit"
-                    loading={submittingAddress}
+                    loading={isSubmitting}
                     className="inline-flex items-center px-4 py-2.5 bg-black hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow-sm transition"
                   >
                     Save Location Address

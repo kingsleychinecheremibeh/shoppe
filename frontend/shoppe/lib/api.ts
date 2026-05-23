@@ -1,5 +1,3 @@
-const memoryCache: Record<string, { data: unknown; expiry: number }> = {};
-const CACHE_TTL = 3 * 60 * 1000;
 const DEFAULT_API_BASE = process.env.VERCEL
   ? "https://shoppe-backend-yko6.onrender.com/api/v1"
   : "http://localhost:5000/api/v1";
@@ -18,17 +16,6 @@ async function request<T>(
 ): Promise<T> {
   const { skipRefresh, ...fetchOptions } = options;
   const method = (fetchOptions.method || "GET").toUpperCase();
-
-  if (method === "GET") {
-    const cached = memoryCache[endpoint];
-    if (cached && Date.now() < cached.expiry) {
-      return cached.data as T;
-    }
-  }
-
-  if (method !== "GET" && endpoint !== "/auth/refresh-token") {
-    Object.keys(memoryCache).forEach((key) => delete memoryCache[key]);
-  }
 
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string> | undefined),
@@ -74,16 +61,7 @@ async function request<T>(
     return undefined as T;
   }
 
-  const result = await response.json();
-
-  if (method === "GET") {
-    memoryCache[endpoint] = {
-      data: result,
-      expiry: Date.now() + CACHE_TTL,
-    };
-  }
-
-  return result;
+  return response.json();
 }
 
 export const api = {

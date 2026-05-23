@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   keywords: ["Shoppe", "Curated Design", "Luxury Clothing", "Designer Accessories", "Minimalist Living", "Home Decor", "Premium Fashion"],
   authors: [{ name: "Shoppe Design Team" }],
   creator: "Shoppe",
+  manifest: "/manifest.json",
   metadataBase: new URL("http://localhost:3000"),
   alternates: {
     canonical: "/",
@@ -35,6 +36,14 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Shoppe",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
   },
 };
 

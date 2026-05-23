@@ -2,26 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, SyntheticEvent, useState } from "react";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-type LoginFormData = {
-  email: string;
-  password: string;
-};
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 type LoginResponse = {
   user?: {
     role?: "USER" | "ADMIN";
   };
-};
-
-const initialFormData: LoginFormData = {
-  email: "",
-  password: "",
 };
 
 const getErrorMessage = (error: unknown) => {
@@ -31,32 +30,24 @@ const getErrorMessage = (error: unknown) => {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState(initialFormData);
-  const [loading, setLoading] = useState(false);
-  const [formError, setFormError] = useState("");
 
-  const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormError("");
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      const result = (await api.login(formData.email.trim(), formData.password)) as LoginResponse;
+      const result = (await api.login(data.email.trim(), data.password)) as LoginResponse;
       toast.success("Welcome back!");
       window.location.assign(result.user?.role === "ADMIN" ? "/admin" : "/account");
     } catch (error) {
-      setFormError(getErrorMessage(error));
-      setLoading(false);
+      setError("root", { message: getErrorMessage(error) });
     }
-  };
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
   };
 
   return (
@@ -71,24 +62,22 @@ export default function LoginPage() {
             <p className="mt-2 text-gray-600">Login to your account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {formError ? <AlertBanner variant="error" message={formError} /> : null}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
 
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-900">
                 Email Address
               </label>
               <input
+                {...register("email")}
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="you@example.com"
               />
+              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
             </div>
 
             <div>
@@ -96,16 +85,14 @@ export default function LoginPage() {
                 Password
               </label>
               <input
+                {...register("password")}
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="Password"
               />
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
             </div>
 
             <div className="flex items-center justify-between gap-4">
@@ -126,7 +113,7 @@ export default function LoginPage() {
 
             <LoadingButton
               type="submit"
-              loading={loading}
+              loading={isSubmitting}
               className="w-full rounded-lg bg-gray-950 py-3 font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Login

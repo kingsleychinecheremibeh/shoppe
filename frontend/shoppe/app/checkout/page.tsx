@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { AlertBanner, FieldError, LoadingButton } from "@/app/components/feedback";
+import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
+import useSWR, { mutate } from "swr";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 type Address = {
   id: string;
@@ -46,6 +50,17 @@ type PaymentInitializeResponse = {
   };
 };
 
+const addressSchema = z.object({
+  fullName: z.string().min(2, "Full name is required"),
+  phone: z.string().min(5, "Valid phone number is required"),
+  street: z.string().min(5, "Street address is required"),
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(2, "State is required"),
+  country: z.string(),
+});
+
+type AddressFormValues = z.infer<typeof addressSchema>;
+
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "NGN",
@@ -54,59 +69,50 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 export default function CheckoutPage() {
   const router = useRouter();
 
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
-  const [loading, setLoading] = useState(true);
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [paymentGateway, setPaymentGateway] = useState<"STRIPE" | "PAYSTACK">("PAYSTACK");
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
   const [checkoutError, setCheckoutError] = useState("");
-  const [addressFormError, setAddressFormError] = useState("");
-
-  // Address creation form state
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [creatingAddress, setCreatingAddress] = useState(false);
-  const [addressForm, setAddressForm] = useState({
-    fullName: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    country: "United States",
+
+  // SWR Fetching
+  const { data: cartData, isLoading: loadingCart, error: cartError } = useSWR('/cart', () => api.getCart());
+  const { data: addressesData, isLoading: loadingAddresses } = useSWR('/addresses', () => api.getAddresses());
+
+  const cart = cartData as Cart | null;
+  const addresses = (addressesData as Address[]) || [];
+  const loading = loadingCart || loadingAddresses;
+
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<AddressFormValues>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: { country: "United States" }
   });
 
   useEffect(() => {
-    const loadCheckoutData = async () => {
-      try {
-        const [cartData, addressesData] = await Promise.all([
-          api.getCart(),
-          api.getAddresses(),
-        ]);
+    if (cartError) {
+      toast.error("Please login to proceed with checkout.");
+      router.push("/login");
+    } else if (cart && (!cart.items || cart.items.length === 0)) {
+      toast.error("Your cart is empty. Add products before checking out.");
+      router.push("/products");
+    }
+  }, [cart, cartError, router]);
 
-        const cartObj = cartData as Cart;
-        if (!cartObj || !cartObj.items || cartObj.items.length === 0) {
-          toast.error("Your cart is empty. Add products before checking out.");
-          router.push("/products");
-          return;
-        }
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      setSelectedAddressId(addresses[0].id);
+    }
+  }, [addresses, selectedAddressId]);
 
-        setCart(cartObj);
-        const addrList = (addressesData as Address[]) || [];
-        setAddresses(addrList);
-
-        if (addrList.length > 0) {
-          setSelectedAddressId(addrList[0].id);
-        }
-      } catch {
-        toast.error("Please login to proceed with checkout.");
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void loadCheckoutData();
+  useEffect(() => {
     const timer = setTimeout(() => {
       if (typeof window !== "undefined" && window.crypto?.randomUUID) {
         setIdempotencyKey(window.crypto.randomUUID());
@@ -115,45 +121,18 @@ export default function CheckoutPage() {
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [router]);
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setAddressForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCreateAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Simple Validation
-    const { fullName, phone, street, city, state, country } = addressForm;
-    if (!fullName || !phone || !street || !city || !state || !country) {
-      setAddressFormError("All address fields are required.");
-      return;
-    }
-
+  const onSubmitAddress = async (data: AddressFormValues) => {
     try {
-      setAddressFormError("");
-      setCreatingAddress(true);
-      const newAddress = (await api.createAddress(addressForm)) as Address;
+      const newAddress = (await api.createAddress(data)) as Address;
       toast.success("New address added successfully!");
-      setAddresses((prev) => [...prev, newAddress]);
+      mutate('/addresses');
       setSelectedAddressId(newAddress.id);
       setShowAddressForm(false);
-
-      // Reset Form
-      setAddressForm({
-        fullName: "",
-        phone: "",
-        street: "",
-        city: "",
-        state: "",
-        country: "United States",
-      });
+      reset();
     } catch {
-      setAddressFormError("Failed to save new address.");
-    } finally {
-      setCreatingAddress(false);
+      setError("root", { message: "Failed to save new address." });
     }
   };
 
@@ -168,7 +147,6 @@ export default function CheckoutPage() {
         setCheckoutError("");
         setSubmittingOrder(true);
 
-        // Pre-create order record in DB as PENDING
         const order = (await api.createOrder(selectedAddressId, {
           idempotencyKey,
           paymentGateway: "PAYSTACK",
@@ -201,7 +179,6 @@ export default function CheckoutPage() {
     setCheckoutError("Stripe checkout is not connected yet. Please choose Paystack.");
   };
 
-  // Math totals
   const subtotal = useMemo(() => {
     if (!cart) return 0;
     return cart.items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
@@ -309,81 +286,68 @@ export default function CheckoutPage() {
 
               {/* Inline Form for creating a new address */}
               {showAddressForm && (
-                <form onSubmit={handleCreateAddress} className="space-y-4 border-t border-gray-100 pt-4">
-                  <FieldError message={addressFormError} />
+                <form onSubmit={handleSubmit(onSubmitAddress)} className="space-y-4 border-t border-gray-100 pt-4">
+                  {errors.root && <AlertBanner variant="error" message={errors.root.message} />}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Recipient Full Name</label>
                       <input
+                        {...register("fullName")}
                         type="text"
-                        name="fullName"
-                        value={addressForm.fullName}
-                        onChange={handleInputChange}
                         placeholder="John Doe"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                        required
                       />
+                      {errors.fullName && <span className="text-red-500 text-xs mt-1 block">{errors.fullName.message}</span>}
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Phone Number</label>
                       <input
+                        {...register("phone")}
                         type="text"
-                        name="phone"
-                        value={addressForm.phone}
-                        onChange={handleInputChange}
                         placeholder="+1 (555) 019-2834"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                        required
                       />
+                      {errors.phone && <span className="text-red-500 text-xs mt-1 block">{errors.phone.message}</span>}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Street Address</label>
                     <input
+                      {...register("street")}
                       type="text"
-                      name="street"
-                      value={addressForm.street}
-                      onChange={handleInputChange}
                       placeholder="123 Shopping Lane, Suite 4B"
                       className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                      required
                     />
+                    {errors.street && <span className="text-red-500 text-xs mt-1 block">{errors.street.message}</span>}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">City</label>
                       <input
+                        {...register("city")}
                         type="text"
-                        name="city"
-                        value={addressForm.city}
-                        onChange={handleInputChange}
                         placeholder="New York"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                        required
                       />
+                      {errors.city && <span className="text-red-500 text-xs mt-1 block">{errors.city.message}</span>}
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">State / Province</label>
                       <input
+                        {...register("state")}
                         type="text"
-                        name="state"
-                        value={addressForm.state}
-                        onChange={handleInputChange}
                         placeholder="NY"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                        required
                       />
+                      {errors.state && <span className="text-red-500 text-xs mt-1 block">{errors.state.message}</span>}
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Country</label>
                       <select
-                        name="country"
-                        value={addressForm.country}
-                        onChange={handleInputChange}
+                        {...register("country")}
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                        required
                       >
                         <option value="United States">United States</option>
                         <option value="Canada">Canada</option>
@@ -403,7 +367,7 @@ export default function CheckoutPage() {
                     </button>
                     <LoadingButton
                       type="submit"
-                      loading={creatingAddress}
+                      loading={isSubmitting}
                       className="rounded-md bg-gray-950 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition disabled:opacity-50"
                     >
                       Save Address
@@ -446,11 +410,6 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   disabled
-                  //onClick={() => toast.error("Stripe checkout is not connected yet. Please choose Paystack.")}
-                  // className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all hover:bg-gray-50 ${paymentGateway === "STRIPE"
-                  //   ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
-                  //   : "border-gray-200 bg-white"
-                  //   }`}
                   className="relative flex flex-col items-start p-4 rounded-xl border text-left border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
                 >
                   <div className="flex items-center gap-2 w-full justify-between mb-2">

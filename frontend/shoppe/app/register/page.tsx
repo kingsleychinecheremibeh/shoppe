@@ -2,25 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, SyntheticEvent, useState } from "react";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import { AlertBanner, FieldError, LoadingButton } from "@/app/components/feedback";
+import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-type RegisterFormData = {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
+const registerSchema = z.object({
+  name: z.string().min(2, "Full name is required"),
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
-const initialFormData: RegisterFormData = {
-  name: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-};
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
@@ -29,50 +29,29 @@ const getErrorMessage = (error: unknown) => {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState(initialFormData);
-  const [loading, setLoading] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
 
-  const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormError("");
-    setPasswordError("");
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
 
-    if (formData.password !== formData.confirmPassword) {
-      setPasswordError("Passwords do not match.");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
-      return;
-    }
-
-    setLoading(true);
-
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       await api.register({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
+        name: data.name.trim(),
+        email: data.email.trim(),
+        password: data.password,
       });
 
       toast.success("Account created successfully!");
       window.location.assign("/");
     } catch (error) {
-      setFormError(getErrorMessage(error));
-      setLoading(false);
+      setError("root", { message: getErrorMessage(error) });
     }
-  };
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
   };
 
   return (
@@ -87,24 +66,22 @@ export default function RegisterPage() {
             <p className="mt-2 text-gray-600">Join us today</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {formError ? <AlertBanner variant="error" message={formError} /> : null}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
 
             <div>
               <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-900">
                 Full Name
               </label>
               <input
+                {...register("name")}
                 id="name"
-                name="name"
                 type="text"
                 autoComplete="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="John Doe"
               />
+              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
             </div>
 
             <div>
@@ -112,16 +89,14 @@ export default function RegisterPage() {
                 Email Address
               </label>
               <input
+                {...register("email")}
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="you@example.com"
               />
+              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
             </div>
 
             <div>
@@ -129,16 +104,14 @@ export default function RegisterPage() {
                 Password
               </label>
               <input
+                {...register("password")}
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="Password"
               />
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
             </div>
 
             <div>
@@ -149,17 +122,14 @@ export default function RegisterPage() {
                 Confirm Password
               </label>
               <input
+                {...register("confirmPassword")}
                 id="confirmPassword"
-                name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="Confirm password"
               />
-              <FieldError message={passwordError} />
+              {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>}
             </div>
 
             <div className="flex items-start">
@@ -183,7 +153,7 @@ export default function RegisterPage() {
 
             <LoadingButton
               type="submit"
-              loading={loading}
+              loading={isSubmitting}
               className="w-full rounded-lg bg-gray-950 py-3 font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Create Account

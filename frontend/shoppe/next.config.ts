@@ -1,4 +1,11 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  register: true,
+  disable: process.env.NODE_ENV === "development",
+});
 
 const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").trim();
 const fallbackApiOrigin = "https://shoppe-backend-yko6.onrender.com";
@@ -66,4 +73,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

@@ -53,8 +53,8 @@ const API_BASE =
 async function getHomeData() {
   try {
     const [categoriesResponse, productsResponse] = await Promise.all([
-      fetch(`${API_BASE}/categories`, { cache: "no-store" }),
-      fetch(`${API_BASE}/products`, { cache: "no-store" }),
+      fetch(`${API_BASE}/categories`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE}/products`, { next: { revalidate: 60 } }),
     ]);
 
     const categoriesData = categoriesResponse.ok

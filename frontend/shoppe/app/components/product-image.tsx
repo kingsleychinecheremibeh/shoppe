@@ -1,16 +1,22 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 
 type ProductImageProps = {
   src: string;
   alt: string;
   className?: string;
+  width?: number;
+  height?: number;
+  fill?: boolean;
 };
 
-export function ProductImage({ src, alt, className }: ProductImageProps) {
+export function ProductImage({ src, alt, className, width = 500, height = 500, fill = false }: ProductImageProps) {
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      fill={fill}
+      width={fill ? undefined : width}
+      height={fill ? undefined : height}
       className={className}
       loading="lazy"
       decoding="async"

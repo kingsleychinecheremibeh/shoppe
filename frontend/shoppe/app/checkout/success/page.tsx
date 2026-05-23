@@ -18,6 +18,7 @@ function SuccessPageContent() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [polledOut, setPolledOut] = useState(false);
 
   // Poll order status if it is still PENDING
   useEffect(() => {
@@ -40,6 +41,7 @@ function SuccessPageContent() {
 
         // Once the order is PAID, clear the polling interval
         if (res && res.status === "PAID") {
+          setPolledOut(false); // Reset in case tried manually
           if (pollInterval) clearInterval(pollInterval);
         }
       } catch {}
@@ -53,6 +55,9 @@ function SuccessPageContent() {
     // Stop polling after 30 seconds to prevent unnecessary server load
     const timeout = setTimeout(() => {
       if (pollInterval) clearInterval(pollInterval);
+      if (order?.status !== "PAID" && isMounted) {
+        setPolledOut(true); // set polledout to true when timing out
+      }
     }, 30000);
 
     return () => {
@@ -60,7 +65,7 @@ function SuccessPageContent() {
       if (pollInterval) clearInterval(pollInterval);
       clearTimeout(timeout);
     };
-  }, [orderId, router]);
+  }, [orderId, router, order?.status]);
 
   const handlePrint = () => {
     if (typeof window !== "undefined") {
@@ -137,6 +142,26 @@ function SuccessPageContent() {
                 ? "Your payment was securely verified. We are preparing the quiet details to elevate your daily life."
                 : "We are waiting for payment confirmation from Paystack. This page will update automatically when confirmed."}
             </p>
+
+            {polledOut && (
+              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-center no-print">
+                <p className="text-xs text-amber-800 mb-2">
+                  Verification is taking longer than expected.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPolledOut(false);
+                    setLoading(true);
+                    // This resets status to trigger the useEffect polling cycle again
+                    setOrder((prev) => prev ? { ...prev, status: "PENDING" } : null);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 transition"
+                >
+                  Check Status Again
+                </button>
+              </div>
+            )}
 
             {/* Order Identification Box */}
             {orderId ? (
