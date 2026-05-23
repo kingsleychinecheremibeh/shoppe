@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, ShoppingCart, Eye, AlertCircle } from "lucide-react";
+import { Search, ShoppingCart, Eye } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { AlertBanner, EmptyState, LoadingButton } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
@@ -39,6 +40,7 @@ function ProductCatalogContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState("");
 
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -109,6 +111,7 @@ function ProductCatalogContent() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoadError("");
         setLoading(true);
         const productsResponse = (await api.getProducts({
           page: String(page),
@@ -122,7 +125,7 @@ function ProductCatalogContent() {
         setTotalPages(productsResponse.meta?.totalPages || 1);
         setTotalItems(productsResponse.meta?.totalItems || 0);
       } catch {
-        toast.error("Unable to load products. Please try again.");
+        setLoadError("Unable to load products. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -203,6 +206,12 @@ function ProductCatalogContent() {
             {currentCategoryDesc}
           </p>
         </div>
+
+        {loadError ? (
+          <div className="mb-6">
+            <AlertBanner variant="error" message={loadError} />
+          </div>
+        ) : null}
 
         {/* Catalog Layout */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
@@ -375,13 +384,13 @@ function ProductCatalogContent() {
                           </p>
 
                           {!isOutOfStock ? (
-                            <button
+                            <LoadingButton
                               onClick={(e) => handleAddToCart(e, product)}
-                              disabled={addingToCart === product.id}
+                              loading={addingToCart === product.id}
                               className="inline-flex items-center gap-1.5 bg-gray-950 px-3 py-2 text-xs font-semibold text-white rounded-md transition hover:bg-gray-800 disabled:opacity-50"
                             >
-                              {addingToCart === product.id ? "Adding..." : "Add to Cart"}
-                            </button>
+                              Add to Cart
+                            </LoadingButton>
                           ) : (
                             <span className="text-xs font-bold text-red-600 uppercase">Out of Stock</span>
                           )}
@@ -433,17 +442,18 @@ function ProductCatalogContent() {
               )}
             </>
           ) : (
-              <div className="rounded-xl border border-dashed border-gray-300 p-16 text-center">
-                <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                <h3 className="text-lg font-bold text-gray-950 mb-1">No products found</h3>
-                <p className="text-sm text-gray-500 mb-6">We couldn&apos;t find any products matching your current filters.</p>
-                <button
-                  onClick={clearFilters}
-                  className="inline-flex items-center justify-center rounded-md bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
-                >
-                  Reset all filters
-                </button>
-              </div>
+              <EmptyState
+                title="No products found"
+                message="We couldn't find any products matching your current filters."
+                action={
+                  <button
+                    onClick={clearFilters}
+                    className="inline-flex items-center justify-center rounded-md bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                  >
+                    Reset all filters
+                  </button>
+                }
+              />
             )}
           </div>
 

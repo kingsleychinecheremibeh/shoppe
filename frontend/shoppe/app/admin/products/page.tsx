@@ -1,8 +1,9 @@
 "use client";
 
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
-import { Edit, ImageIcon, Plus, Search, Trash2, X, AlertCircle } from "lucide-react";
+import { Edit, ImageIcon, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { AlertBanner, ConfirmModal, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api, getAssetUrl } from "@/lib/api";
 
 type UserData = {
@@ -86,10 +87,14 @@ export default function AdminProductsPage() {
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [formData, setFormData] = useState(initialFormData);
+  const [fetchError, setFetchError] = useState("");
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductFormData, string>>>({});
 
   const fetchProducts = async () => {
     try {
+      setFetchError("");
       const me = (await api.getMe()) as MeResponse;
 
       if (me.user.role !== "ADMIN") {
@@ -106,7 +111,9 @@ export default function AdminProductsPage() {
       setProducts((productsData as Product[]) || []);
       setCategories((categoriesData as Category[]) || []);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to fetch products."));
+      const message = getErrorMessage(error, "Failed to fetch products.");
+      setFetchError(message);
+      toast.error(message);
       window.location.assign("/login");
     } finally {
       setLoading(false);
@@ -157,6 +164,7 @@ export default function AdminProductsPage() {
     setShowModal(false);
     setEditingProduct(null);
     setFormData(initialFormData);
+    setFormErrors({});
   };
 
   const handleChange = (
@@ -167,6 +175,10 @@ export default function AdminProductsPage() {
     setFormData((current) => ({
       ...current,
       [name]: value,
+    }));
+    setFormErrors((current) => ({
+      ...current,
+      [name]: undefined,
     }));
   };
 
@@ -192,25 +204,29 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const nextErrors: Partial<Record<keyof ProductFormData, string>> = {};
 
     if (!formData.categoryId) {
-      toast.error("Select a category for this product.");
-      return;
+      nextErrors.categoryId = "Select a category for this product.";
     }
 
     const price = Number(formData.price);
     const stock = Number(formData.stock);
 
     if (!Number.isFinite(price) || price <= 0) {
-      toast.error("Price must be a positive number.");
-      return;
+      nextErrors.price = "Price must be a positive number.";
     }
 
     if (!Number.isInteger(stock) || stock < 0) {
-      toast.error("Stock must be a non-negative whole number.");
+      nextErrors.stock = "Stock must be a non-negative whole number.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFormErrors(nextErrors);
       return;
     }
 
+    setFormErrors({});
     setSaving(true);
 
     const payload: {
@@ -244,6 +260,7 @@ export default function AdminProductsPage() {
       setShowModal(false);
       setEditingProduct(null);
       setFormData(initialFormData);
+      setFormErrors({});
       await fetchProducts();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to save product."));
@@ -253,12 +270,6 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (product: Product) => {
-    const confirmed = window.confirm(
-      `Delete "${product.name}"? This will remove it from the storefront.`
-    );
-
-    if (!confirmed) return;
-
     try {
       await api.deleteProduct(product.id);
       toast.success("Product deleted successfully.");
@@ -311,9 +322,17 @@ export default function AdminProductsPage() {
 
         {/* Categories Check Alert */}
         {!categories.length && !loading && (
-          <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 flex gap-3 text-amber-800">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-xs font-medium mt-0.5">Please create at least one category before attempt to register new catalog products.</p>
+          <div className="mb-6">
+            <AlertBanner
+              variant="warning"
+              message="Please create at least one category before attempting to register new catalog products."
+            />
+          </div>
+        )}
+
+        {fetchError && (
+          <div className="mb-6">
+            <AlertBanner variant="error" message={fetchError} />
           </div>
         )}
 
@@ -385,7 +404,7 @@ export default function AdminProductsPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDelete(product)}
+                              onClick={() => setProductToDelete(product)}
                               className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-700 border border-red-100"
                               aria-label={`Delete ${product.name}`}
                             >
@@ -468,6 +487,7 @@ export default function AdminProductsPage() {
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
                     placeholder="129.00"
                   />
+                  <FieldError message={formErrors.price} />
                 </div>
 
                 <div>
@@ -486,6 +506,7 @@ export default function AdminProductsPage() {
                     className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
                     placeholder="50"
                   />
+                  <FieldError message={formErrors.stock} />
                 </div>
 
                 <div className="sm:col-span-2">
@@ -510,6 +531,7 @@ export default function AdminProductsPage() {
                       </option>
                     ))}
                   </select>
+                  <FieldError message={formErrors.categoryId} />
                 </div>
               </div>
 
@@ -571,22 +593,35 @@ export default function AdminProductsPage() {
                 >
                   Cancel
                 </button>
-                <button
+                <LoadingButton
                   type="submit"
-                  disabled={saving}
+                  loading={saving}
                   className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {saving
-                    ? "Saving product..."
-                    : editingProduct
-                      ? "Update Product"
-                      : "Create Product"}
-                </button>
+                  {editingProduct ? "Update Product" : "Create Product"}
+                </LoadingButton>
               </div>
             </form>
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={Boolean(productToDelete)}
+        title="Delete product?"
+        message={
+          productToDelete
+            ? `Delete "${productToDelete.name}"? This will remove it from the storefront.`
+            : "This product will be removed from the storefront."
+        }
+        confirmLabel="Delete"
+        onClose={() => setProductToDelete(null)}
+        onConfirm={() => {
+          if (!productToDelete) return;
+          const product = productToDelete;
+          setProductToDelete(null);
+          void handleDelete(product);
+        }}
+      />
     </main>
   );
 }

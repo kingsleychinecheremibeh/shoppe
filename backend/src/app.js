@@ -19,7 +19,6 @@ import swaggerDocument from '../swagger.json' with { type: 'json' };
 import { AppError } from './utils/AppError.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import { requireAllowedOrigin } from './middleware/originMiddleware.js';
-import { cacheMiddleware } from './middleware/cacheMiddleware.js';
 
 
 export const app = express();
@@ -55,7 +54,6 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
-app.use(cacheMiddleware());
 
 app.use(cookieparser());
 app.use('/api', requireAllowedOrigin);

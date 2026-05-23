@@ -17,6 +17,7 @@ import {
   Phone,
   Home
 } from "lucide-react";
+import { ConfirmModal, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -50,6 +51,8 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [submittingAddress, setSubmittingAddress] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
 
   // Address Form State
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -97,8 +100,9 @@ export default function AccountPage() {
 
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAddressError("");
     if (!formData.fullName || !formData.phone || !formData.street || !formData.city || !formData.state) {
-      toast.error("Please fill in all address details.");
+      setAddressError("Please fill in all address details.");
       return;
     }
 
@@ -117,15 +121,13 @@ export default function AccountPage() {
         country: "Nigeria",
       });
     } catch {
-      toast.error("Failed to add new address. Please try again.");
+      setAddressError("Failed to add new address. Please try again.");
     } finally {
       setSubmittingAddress(false);
     }
   };
 
   const handleDeleteAddress = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this shipping address?")) return;
-
     try {
       await api.deleteAddress(id);
       setAddresses(addresses.filter((addr) => addr.id !== id));
@@ -262,6 +264,7 @@ export default function AccountPage() {
                     Cancel
                   </button>
                 </div>
+                <FieldError message={addressError} />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -336,20 +339,13 @@ export default function AccountPage() {
                 </div>
 
                 <div className="pt-2 flex justify-end">
-                  <button
+                  <LoadingButton
                     type="submit"
-                    disabled={submittingAddress}
+                    loading={submittingAddress}
                     className="inline-flex items-center px-4 py-2.5 bg-black hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow-sm transition"
                   >
-                    {submittingAddress ? (
-                      <>
-                        <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                        Saving Address...
-                      </>
-                    ) : (
-                      "Save Location Address"
-                    )}
-                  </button>
+                    Save Location Address
+                  </LoadingButton>
                 </div>
               </form>
             )}
@@ -379,7 +375,7 @@ export default function AccountPage() {
                       </div>
 
                       <button
-                        onClick={() => handleDeleteAddress(address.id)}
+                        onClick={() => setAddressToDelete(address.id)}
                         className="text-gray-400 hover:text-rose-600 transition p-0.5"
                         title="Delete Address"
                       >
@@ -407,6 +403,19 @@ export default function AccountPage() {
         </div>
 
       </div>
+      <ConfirmModal
+        open={Boolean(addressToDelete)}
+        title="Delete address?"
+        message="This shipping address will be removed from your account."
+        confirmLabel="Delete"
+        onClose={() => setAddressToDelete(null)}
+        onConfirm={() => {
+          if (!addressToDelete) return;
+          const id = addressToDelete;
+          setAddressToDelete(null);
+          void handleDeleteAddress(id);
+        }}
+      />
     </main>
   );
 }

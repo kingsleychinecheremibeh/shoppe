@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { AlertBanner, FieldError, LoadingButton } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
@@ -60,6 +61,8 @@ export default function CheckoutPage() {
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [paymentGateway, setPaymentGateway] = useState<"STRIPE" | "PAYSTACK">("PAYSTACK");
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
+  const [checkoutError, setCheckoutError] = useState("");
+  const [addressFormError, setAddressFormError] = useState("");
 
   // Address creation form state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -125,11 +128,12 @@ export default function CheckoutPage() {
     // Simple Validation
     const { fullName, phone, street, city, state, country } = addressForm;
     if (!fullName || !phone || !street || !city || !state || !country) {
-      toast.error("All address fields are required.");
+      setAddressFormError("All address fields are required.");
       return;
     }
 
     try {
+      setAddressFormError("");
       setCreatingAddress(true);
       const newAddress = (await api.createAddress(addressForm)) as Address;
       toast.success("New address added successfully!");
@@ -147,7 +151,7 @@ export default function CheckoutPage() {
         country: "United States",
       });
     } catch {
-      toast.error("Failed to save new address.");
+      setAddressFormError("Failed to save new address.");
     } finally {
       setCreatingAddress(false);
     }
@@ -155,12 +159,13 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     if (!selectedAddressId) {
-      toast.error("Please select or add a delivery address.");
+      setCheckoutError("Please select or add a delivery address.");
       return;
     }
 
     if (paymentGateway === "PAYSTACK") {
       try {
+        setCheckoutError("");
         setSubmittingOrder(true);
 
         // Pre-create order record in DB as PENDING
@@ -188,12 +193,12 @@ export default function CheckoutPage() {
         }
       } catch {
         setSubmittingOrder(false);
-        toast.error("Failed to initialize payment. Please try again or contact support");
+        setCheckoutError("Failed to initialize payment. Please try again or contact support.");
       }
       return;
     }
 
-    toast.error("Stripe checkout is not connected yet. Please choose Paystack.");
+    setCheckoutError("Stripe checkout is not connected yet. Please choose Paystack.");
   };
 
   // Math totals
@@ -231,6 +236,12 @@ export default function CheckoutPage() {
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">Checkout</h1>
           <p className="mt-2 text-sm text-gray-600">Enter details to complete your order.</p>
         </div>
+
+        {checkoutError ? (
+          <div className="mb-6">
+            <AlertBanner variant="error" message={checkoutError} />
+          </div>
+        ) : null}
 
         {/* Checkout Columns */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
@@ -299,6 +310,7 @@ export default function CheckoutPage() {
               {/* Inline Form for creating a new address */}
               {showAddressForm && (
                 <form onSubmit={handleCreateAddress} className="space-y-4 border-t border-gray-100 pt-4">
+                  <FieldError message={addressFormError} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Recipient Full Name</label>
@@ -389,13 +401,13 @@ export default function CheckoutPage() {
                     >
                       Cancel
                     </button>
-                    <button
+                    <LoadingButton
                       type="submit"
-                      disabled={creatingAddress}
+                      loading={creatingAddress}
                       className="rounded-md bg-gray-950 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition disabled:opacity-50"
                     >
-                      {creatingAddress ? "Saving..." : "Save Address"}
-                    </button>
+                      Save Address
+                    </LoadingButton>
                   </div>
                 </form>
               )}
@@ -513,20 +525,14 @@ export default function CheckoutPage() {
               </div>
 
               {/* Action Order Button */}
-              <button
+              <LoadingButton
                 onClick={handlePlaceOrder}
-                disabled={submittingOrder || !selectedAddressId}
+                loading={submittingOrder}
+                disabled={!selectedAddressId}
                 className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gray-950 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm disabled:opacity-50"
               >
-                {submittingOrder ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Placing Order...
-                  </>
-                ) : (
-                  "Place Order Now"
-                )}
-              </button>
+                Place Order Now
+              </LoadingButton>
             </div>
 
           </aside>

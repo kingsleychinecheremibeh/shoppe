@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, SyntheticEvent, useState } from "react";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { AlertBanner, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
 
 type RegisterFormData = {
@@ -30,17 +31,21 @@ export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setFormError("");
+    setPasswordError("");
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match.");
+      setPasswordError("Passwords do not match.");
       return;
     }
 
     if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+      setPasswordError("Password must be at least 6 characters.");
       return;
     }
 
@@ -56,7 +61,7 @@ export default function RegisterPage() {
       toast.success("Account created successfully!");
       window.location.assign("/");
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      setFormError(getErrorMessage(error));
       setLoading(false);
     }
   };
@@ -83,6 +88,8 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {formError ? <AlertBanner variant="error" message={formError} /> : null}
+
             <div>
               <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-900">
                 Full Name
@@ -152,6 +159,7 @@ export default function RegisterPage() {
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="Confirm password"
               />
+              <FieldError message={passwordError} />
             </div>
 
             <div className="flex items-start">
@@ -173,13 +181,13 @@ export default function RegisterPage() {
               </label>
             </div>
 
-            <button
+            <LoadingButton
               type="submit"
-              disabled={loading}
+              loading={loading}
               className="w-full rounded-lg bg-gray-950 py-3 font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Creating account..." : "Create Account"}
-            </button>
+              Create Account
+            </LoadingButton>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">

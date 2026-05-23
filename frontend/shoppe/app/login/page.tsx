@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, SyntheticEvent, useState } from "react";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
 
 type LoginFormData = {
@@ -32,9 +33,11 @@ export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setFormError("");
     setLoading(true);
 
     try {
@@ -42,7 +45,7 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       window.location.assign(result.user?.role === "ADMIN" ? "/admin" : "/account");
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      setFormError(getErrorMessage(error));
       setLoading(false);
     }
   };
@@ -69,6 +72,8 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {formError ? <AlertBanner variant="error" message={formError} /> : null}
+
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-900">
                 Email Address
@@ -119,13 +124,13 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <button
+            <LoadingButton
               type="submit"
-              disabled={loading}
+              loading={loading}
               className="w-full rounded-lg bg-gray-950 py-3 font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Logging in..." : "Login"}
-            </button>
+              Login
+            </LoadingButton>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">

@@ -1,4 +1,5 @@
 import app from './app.js';
+import { connectRedis } from './config/redis.js';
 
 process.on('uncaughtException', (err) => {
   console.error('[Uncaught Exception] Shutting down...', err.name, err.message, err.stack);
@@ -6,6 +7,10 @@ process.on('uncaughtException', (err) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV !== 'test') {
+  await connectRedis();
+}
 
 export const server = process.env.NODE_ENV === 'test'
   ? null

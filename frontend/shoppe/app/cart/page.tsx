@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, Truck, ShieldCheck } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowRight, Truck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { ConfirmModal, EmptyState } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 
@@ -46,6 +47,7 @@ export default function CartPage() {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+  const [clearCartOpen, setClearCartOpen] = useState(false);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -120,8 +122,6 @@ export default function CartPage() {
   };
 
   const handleClearCart = async () => {
-    if (!confirm("Are you sure you want to empty your cart?")) return;
-
     try {
       setLoading(true);
       await api.clearCart();
@@ -294,7 +294,7 @@ export default function CartPage() {
                 </Link>
                 
                 <button
-                  onClick={handleClearCart}
+                  onClick={() => setClearCartOpen(true)}
                   className="rounded-lg border border-red-200 bg-red-50 text-red-600 px-5 py-2.5 text-sm font-semibold hover:bg-red-100 hover:text-red-700 transition"
                 >
                   Clear Shopping Cart
@@ -352,24 +352,33 @@ export default function CartPage() {
           </div>
         ) : (
           /* Empty state view */
-          <div className="rounded-2xl border border-dashed border-gray-300 py-16 px-6 text-center max-w-lg mx-auto bg-white shadow-xs">
-            <div className="mx-auto h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 mb-4 border border-gray-100">
-              <ShoppingBag className="h-8 w-8" />
-            </div>
-            <h2 className="text-2xl font-extrabold text-gray-950 mb-2">Your cart is empty</h2>
-            <p className="text-gray-500 text-sm mb-8 leading-relaxed max-w-sm mx-auto">
-              Looks like you haven&apos;t added any items to your shopping cart yet. Explore our high-quality catalog to find premium collections.
-            </p>
-            <Link
-              href="/products"
-              className="inline-flex items-center justify-center rounded-lg bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm"
-            >
-              Start Shopping
-            </Link>
-          </div>
+          <EmptyState
+            title="Your cart is empty"
+            message="Explore the catalog to find premium collections for your next order."
+            action={
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center rounded-lg bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm"
+              >
+                Start Shopping
+              </Link>
+            }
+          />
         )}
 
       </div>
+      <ConfirmModal
+        open={clearCartOpen}
+        title="Empty cart?"
+        message="This will remove every item from your cart."
+        confirmLabel="Empty cart"
+        loading={loading}
+        onClose={() => setClearCartOpen(false)}
+        onConfirm={() => {
+          setClearCartOpen(false);
+          void handleClearCart();
+        }}
+      />
     </main>
   );
 }

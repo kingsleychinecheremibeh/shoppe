@@ -1,9 +1,13 @@
-import NodeCache from "node-cache";
+import { isRedisReady, redisClient } from "../config/redis.js";
 
-const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
+const CACHE_KEY_PREFIX = "cache:response:";
+
+const getCacheKey = (req) => {
+    return `${CACHE_KEY_PREFIX}${req.originalUrl || req.url}`;
+};
 
 export const cacheMiddleware = (durationSeconds = 300) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         if (req.method !== "GET") {
             return next();
         }
@@ -12,16 +16,30 @@ export const cacheMiddleware = (durationSeconds = 300) => {
             return next();
         }
 
-        const key = req.originalUrl || req.url;
-        const cachedResponse = cache.get(key);
-        if (cachedResponse) {
-            return res.status(200).json(cachedResponse);
+        if (!isRedisReady()) {
+            return next();
+        }
+
+        const key = getCacheKey(req);
+
+        try {
+            const cachedResponse = await redisClient.get(key);
+            if (cachedResponse) {
+                console.log("[Redis] HIT", key)
+                return res.status(200).json(JSON.parse(cachedResponse));
+            }
+        } catch (err) {
+            console.error("[Redis] Cache read failed:", err.message);
+            return next();
         }
 
         const originalJson = res.json;
         res.json = function (body) {
             if (res.statusCode === 200) {
-                cache.set(key, body, durationSeconds);
+                console.log("[Redis] SET", key);
+                redisClient
+                    .setEx(key, durationSeconds, JSON.stringify(body))
+                    .catch((err) => console.error("[Redis] Cache write failed:", err.message));
             }
             return originalJson.call(this, body);
         };
@@ -30,10 +48,21 @@ export const cacheMiddleware = (durationSeconds = 300) => {
     };
 };
 
-export const invalidateCache = (urlPattern) => {
-    const keys = cache.keys();
-    const matchedKeys = keys.filter((key) => key.includes(urlPattern));
-    if (matchedKeys.length > 0) {
-        matchedKeys.forEach((key) => cache.del(key));
+export const invalidateCache = async (urlPattern) => {
+    if (!isRedisReady()) return;
+
+    const matchPattern = `${CACHE_KEY_PREFIX}*${urlPattern}*`;
+    const keysToDelete = [];
+
+    try {
+        for await (const key of redisClient.scanIterator({ MATCH: matchPattern, COUNT: 100 })) {
+            keysToDelete.push(key);
+        }
+
+        if (keysToDelete.length > 0) {
+            await redisClient.del(keysToDelete);
+        }
+    } catch (err) {
+        console.error("[Redis] Cache invalidation failed:", err.message);
     }
 };

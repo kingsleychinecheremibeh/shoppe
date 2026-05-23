@@ -3,6 +3,7 @@
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { Edit, ImageIcon, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { AlertBanner, ConfirmModal, EmptyState, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api, getAssetUrl } from "@/lib/api";
 
 type UserData = {
@@ -47,10 +48,14 @@ export default function AdminCategoriesPage() {
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [formData, setFormData] = useState(initialFormData);
+  const [fetchError, setFetchError] = useState("");
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof CategoryFormData, string>>>({});
 
   const fetchCategories = async () => {
     try {
+      setFetchError("");
       const me = (await api.getMe()) as MeResponse;
 
       if (me.user.role !== "ADMIN") {
@@ -62,7 +67,9 @@ export default function AdminCategoriesPage() {
       const data = await api.getCategories();
       setCategories((data as Category[]) || []);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to fetch categories."));
+      const message = getErrorMessage(error, "Failed to fetch categories.");
+      setFetchError(message);
+      toast.error(message);
       window.location.assign("/login");
     } finally {
       setLoading(false);
@@ -105,10 +112,23 @@ export default function AdminCategoriesPage() {
     setShowModal(false);
     setEditingCategory(null);
     setFormData(initialFormData);
+    setFormErrors({});
   };
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const nextErrors: Partial<Record<keyof CategoryFormData, string>> = {};
+
+    if (formData.name.trim().length < 2) {
+      nextErrors.name = "Category name must be at least 2 characters.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFormErrors(nextErrors);
+      return;
+    }
+
+    setFormErrors({});
     setSaving(true);
 
     const payload = {
@@ -128,6 +148,7 @@ export default function AdminCategoriesPage() {
       setShowModal(false);
       setEditingCategory(null);
       setFormData(initialFormData);
+      setFormErrors({});
       await fetchCategories();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to save category."));
@@ -143,15 +164,13 @@ export default function AdminCategoriesPage() {
       ...current,
       [name]: value,
     }));
+    setFormErrors((current) => ({
+      ...current,
+      [name]: undefined,
+    }));
   };
 
   const handleDelete = async (category: Category) => {
-    const confirmed = window.confirm(
-      `Delete "${category.name}"? This cannot be undone.`
-    );
-
-    if (!confirmed) return;
-
     try {
       await api.deleteCategory(category.id);
       toast.success("Category deleted successfully.");
@@ -200,6 +219,12 @@ export default function AdminCategoriesPage() {
             </button>
           </div>
         </div>
+
+        {fetchError && (
+          <div className="mb-6">
+            <AlertBanner variant="error" message={fetchError} />
+          </div>
+        )}
 
         {/* Table List Layout */}
         <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
@@ -259,7 +284,7 @@ export default function AdminCategoriesPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDelete(category)}
+                              onClick={() => setCategoryToDelete(category)}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 transition hover:bg-red-50"
                               aria-label={`Delete ${category.name}`}
                             >
@@ -271,8 +296,15 @@ export default function AdminCategoriesPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                        {query ? "No categories match your search." : "No categories yet."}
+                      <td colSpan={5} className="px-6 py-12">
+                        <EmptyState
+                          title={query ? "No categories match your search" : "No categories yet"}
+                          message={
+                            query
+                              ? "Try a different search term."
+                              : "Create your first category before adding catalog products."
+                          }
+                        />
                       </td>
                     </tr>
                   )}
@@ -322,6 +354,7 @@ export default function AdminCategoriesPage() {
                   className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                   placeholder="e.g. Modern Accessories"
                 />
+                <FieldError message={formErrors.name} />
               </div>
 
               <div>
@@ -348,22 +381,35 @@ export default function AdminCategoriesPage() {
                 >
                   Cancel
                 </button>
-                <button
+                <LoadingButton
                   type="submit"
-                  disabled={saving}
+                  loading={saving}
                   className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {saving
-                    ? "Saving category..."
-                    : editingCategory
-                      ? "Update Category"
-                      : "Create Category"}
-                </button>
+                  {editingCategory ? "Update Category" : "Create Category"}
+                </LoadingButton>
               </div>
             </form>
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={Boolean(categoryToDelete)}
+        title="Delete category?"
+        message={
+          categoryToDelete
+            ? `Delete "${categoryToDelete.name}"? This cannot be undone.`
+            : "This category will be removed."
+        }
+        confirmLabel="Delete"
+        onClose={() => setCategoryToDelete(null)}
+        onConfirm={() => {
+          if (!categoryToDelete) return;
+          const category = categoryToDelete;
+          setCategoryToDelete(null);
+          void handleDelete(category);
+        }}
+      />
     </main>
   );
 }
