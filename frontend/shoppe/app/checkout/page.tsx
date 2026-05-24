@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft } from "lucide-react";
+import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft, Truck } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
@@ -12,6 +12,14 @@ import useSWR, { mutate } from "swr";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
+type ShippingMethod = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: string | number;
+  estimatedDays: string | null;
+};
 
 type Address = {
   id: string;
@@ -75,14 +83,17 @@ export default function CheckoutPage() {
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
   const [checkoutError, setCheckoutError] = useState("");
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string>("");
 
   // SWR Fetching
   const { data: cartData, isLoading: loadingCart, error: cartError } = useSWR('/cart', () => api.getCart());
   const { data: addressesData, isLoading: loadingAddresses } = useSWR('/addresses', () => api.getAddresses());
+  const { data: shippingData, isLoading: loadingShipping } = useSWR('/shipping-methods', () => api.getShippingMethods());
 
-  const cart = cartData as Cart | null;
-  const addresses = addressesData as Address[] | [];
-  const loading = loadingCart || loadingAddresses;
+  const cart = (cartData as Cart | undefined) ?? null;
+  const addresses = useMemo(() => (addressesData as Address[] | undefined) ?? [], [addressesData]);
+  const shippingMethods = useMemo(() => (shippingData as ShippingMethod[] | undefined) ?? [], [shippingData]);
+  const loading = loadingCart || loadingAddresses || loadingShipping;
 
   // React Hook Form
   const {
@@ -106,11 +117,11 @@ export default function CheckoutPage() {
     }
   }, [cart, cartError, router]);
 
-  useEffect(() => {
-    if (addresses.length > 0 && !selectedAddressId) {
-      setSelectedAddressId(addresses[0].id);
-    }
-  }, [addresses, selectedAddressId]);
+  const activeAddressId = selectedAddressId || addresses[0]?.id || "";
+
+  // Derive the active shipping method: use explicit user choice or fall back to the first available
+  const selectedShippingMethod = selectedShippingMethodId || shippingMethods[0]?.id || "";
+  const setSelectedShippingMethod = setSelectedShippingMethodId;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -137,8 +148,13 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = async () => {
-    if (!selectedAddressId) {
+    if (!activeAddressId) {
       setCheckoutError("Please select or add a delivery address.");
+      return;
+    }
+
+    if (!selectedShippingMethod) {
+      setCheckoutError("Please select a shipping method.");
       return;
     }
 
@@ -147,7 +163,7 @@ export default function CheckoutPage() {
         setCheckoutError("");
         setSubmittingOrder(true);
 
-        const order = (await api.createOrder(selectedAddressId, {
+        const order = (await api.createOrder(activeAddressId, selectedShippingMethod, {
           idempotencyKey,
           paymentGateway: "PAYSTACK",
         })) as { id: string };
@@ -184,7 +200,11 @@ export default function CheckoutPage() {
     return cart.items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   }, [cart]);
 
-  const shipping = subtotal > 150 ? 0 : 15;
+  const selectedMethod = useMemo(() => {
+    return shippingMethods.find(m => m.id === selectedShippingMethod);
+  }, [shippingMethods, selectedShippingMethod]);
+
+  const shipping = selectedMethod ? Number(selectedMethod.price) : 0;
   const total = subtotal + shipping;
 
   if (loading) {
@@ -252,7 +272,7 @@ export default function CheckoutPage() {
                       <button
                         key={address.id}
                         onClick={() => setSelectedAddressId(address.id)}
-                        className={`text-left p-4 rounded-xl border text-sm transition relative ${selectedAddressId === address.id
+                        className={`text-left p-4 rounded-xl border text-sm transition relative ${activeAddressId === address.id
                           ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
                           : "border-gray-200 hover:border-gray-300"
                           }`}
@@ -265,7 +285,7 @@ export default function CheckoutPage() {
                           </p>
                           <p className="text-gray-500 font-semibold text-[11px] mb-1">{address.phone}</p>
                         </div>
-                        {selectedAddressId === address.id && (
+                        {activeAddressId === address.id && (
                           <CheckCircle className="absolute top-4 right-4 h-5 w-5 text-gray-950 fill-white" />
                         )}
                       </button>
@@ -375,6 +395,40 @@ export default function CheckoutPage() {
                   </div>
                 </form>
               )}
+            </div>
+
+            {/* Shipping Method Selector */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
+              <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2 mb-4">
+                <Truck className="h-5 w-5 text-gray-900" />
+                Shipping Method
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {shippingMethods.length > 0 ? (
+                  shippingMethods.map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => setSelectedShippingMethod(method.id)}
+                      className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all hover:bg-gray-50 ${selectedShippingMethod === method.id
+                        ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
+                        : "border-gray-200 bg-white"
+                        }`}
+                    >
+                      <div className="flex items-center gap-2 w-full justify-between mb-2">
+                        <span className="text-sm font-bold text-gray-950">{method.name}</span>
+                        <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${selectedShippingMethod === method.id ? "border-gray-950 bg-gray-950" : "border-gray-300"}`}>
+                          {selectedShippingMethod === method.id && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </div>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-900 mb-1">{currencyFormatter.format(Number(method.price))}</p>
+                      {method.estimatedDays && <p className="text-[11px] text-gray-500 leading-relaxed">Est. delivery: {method.estimatedDays}</p>}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No shipping methods available.</p>
+                )}
+              </div>
             </div>
 
             {/* Payment Method Selector */}
@@ -487,7 +541,7 @@ export default function CheckoutPage() {
               <LoadingButton
                 onClick={handlePlaceOrder}
                 loading={submittingOrder}
-                disabled={!selectedAddressId}
+                disabled={!activeAddressId}
                 className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gray-950 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm disabled:opacity-50"
               >
                 Place Order Now

@@ -13,6 +13,11 @@ const orderRepository = {
 
 await jest.unstable_mockModule('../src/repositories/orderRepository.js', () => ({ orderRepository }));
 
+const shippingService = {
+  getActiveMethodById: jest.fn(),
+};
+await jest.unstable_mockModule('../src/services/shippingServices.js', () => ({ shippingService }));
+
 const { orderService } = await import('../src/services/orderService.js');
 
 describe('orderService', () => {
@@ -30,6 +35,7 @@ describe('orderService', () => {
     orderRepository.findAddressById.mockResolvedValue({ id: 'addr-1', userId: 'user-1' });
     orderRepository.findCartByUserId.mockResolvedValue(cart);
     orderRepository.createOrderTransaction.mockResolvedValue({ id: 'order-1' });
+    shippingService.getActiveMethodById.mockResolvedValue({ id: 'ship-1', price: 0, name: 'Standard' });
 
     const result = await orderService.createOrder('user-1', 'addr-1');
 
@@ -39,6 +45,10 @@ describe('orderService', () => {
       address: { id: 'addr-1', userId: 'user-1' },
       cart,
       total: 125,
+      subtotal: 125,
+      shippingFee: 0,
+      shippingMethodId: 'ship-1',
+      shippingMethodName: 'Standard',
       idempotencyKey: undefined,
       paymentGateway: undefined,
     });

@@ -17,13 +17,17 @@ export const orderRepository = {
     },
 
     // address is validated and fetched in the service layer before being passed here
-    createOrderTransaction: async ({ userId, addressId, address, cart, total, idempotencyKey, paymentGateway }) => {
+    createOrderTransaction: async ({ userId, addressId, address, cart, subtotal, shippingFee, total, shippingMethodId, shippingMethodName, idempotencyKey, paymentGateway }) => {
         return prisma.$transaction(async (tx) => {
             const createdOrder = await tx.order.create({
                 data: {
                     userId,
                     addressId,
+                    subtotal,
+                    shippingFee,
                     total,
+                    shippingMethodId,
+                    shippingMethodName,
                     shippingName: address.fullName,
                     shippingPhone: address.phone,
                     shippingStreet: address.street,

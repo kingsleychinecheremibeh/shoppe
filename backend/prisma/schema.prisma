@@ -129,26 +129,37 @@ model Order {
   id         String      @id @default(uuid())
   userId     String
   addressId  String
+
+  subtotal   Decimal     @default(0) @db.Decimal(10, 2)
+  shippingFee Decimal    @default(0) @db.Decimal(10, 2)
   total      Decimal     @db.Decimal(10, 2)
+
   status     OrderStatus @default(PENDING)
-  shippingName    String
-  shippingPhone   String
-  shippingStreet  String
-  shippingCity    String
-  shippingState   String
-  shippingCountry String
+
+  shippingMethodId    String?
+  shippingMethodName  String?
+  shippingName        String
+  shippingPhone       String
+  shippingStreet      String
+  shippingCity        String
+  shippingState       String
+  shippingCountry     String
+
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  idempotencyKey   String?     @unique
-  paymentGateway   String?     
-  paymentReference String?  
+  idempotencyKey   String? @unique
+  paymentGateway   String?
+  paymentReference String?
 
-  address    Address     @relation(fields: [addressId], references: [id], onDelete: Restrict)
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItems OrderItem[]
+  shippingMethod ShippingMethod? @relation(fields: [shippingMethodId], references: [id], onDelete: SetNull)
+  address        Address         @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems     OrderItem[]
+
   @@index([userId, createdAt])
   @@index([status])
+  @@index([shippingMethodId])
 }
 
 model OrderItem {
@@ -178,6 +189,19 @@ model AuditLog {
   @@index([userId, createdAt])
   @@index([entity])
   @@index([entityId])
+}
+
+model ShippingMethod {
+  id            String   @id @default(uuid())
+  name          String   
+  description   String?
+  price         Decimal  @db.Decimal(10, 2)
+  estimatedDays String?  
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orders        Order[]
 }
 
 enum Role {

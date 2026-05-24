@@ -1,4 +1,5 @@
 import { orderRepository } from "../repositories/orderRepository.js";
+import { shippingService } from "../services/shippingServices.js";
 import { AppError } from "../utils/AppError.js";
 
 
@@ -11,7 +12,7 @@ const ORDER_STATUSES = {
 };
 
 export const orderService = {
-  async createOrder(userId, addressId, idempotencyKey, paymentGateway) {
+  async createOrder(userId, addressId, shippingMethodId, idempotencyKey, paymentGateway) {
     if (!addressId) {
       throw new AppError("Address ID is required", 400);
     }
@@ -37,16 +38,25 @@ export const orderService = {
       }
     }
 
-    const total = cart.items.reduce((sum, item) => {
-      return sum + item.product.price * item.quantity;
+    const shippingMethod = await shippingService.getActiveMethodById(shippingMethodId);
+
+    const subtotal = cart.items.reduce((sum, item) => {
+      return sum + Number(item.product.price) * item.quantity;
     }, 0);
+
+    const shippingFee = Number(shippingMethod.price);
+    const total = subtotal + shippingFee;
 
     return orderRepository.createOrderTransaction({
       userId,
       addressId,
       address,
       cart,
+      subtotal,
+      shippingFee,
       total,
+      shippingMethodId: shippingMethod.id,
+      shippingMethodName: shippingMethod.name,
       idempotencyKey,
       paymentGateway,
     });

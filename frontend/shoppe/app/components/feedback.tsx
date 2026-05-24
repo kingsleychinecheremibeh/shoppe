@@ -17,8 +17,10 @@ export function AlertBanner({
     message,
 }: {
     variant?: AlertVariant;
-    message: string;
+    message?: string;
 }) {
+    if (!message) return null;
+
     const Icon = variant === "error" ? AlertTriangle : variant === "success" ? CheckCircle2 : Info;
 
     return (

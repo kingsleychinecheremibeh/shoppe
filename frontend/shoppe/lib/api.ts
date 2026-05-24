@@ -15,8 +15,6 @@ async function request<T>(
   options: RequestOptions = {}
 ): Promise<T> {
   const { skipRefresh, ...fetchOptions } = options;
-  const method = (fetchOptions.method || "GET").toUpperCase();
-
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string> | undefined),
   };
@@ -126,6 +124,30 @@ export const api = {
       method: "DELETE",
     }),
 
+
+  //shipping 
+  getShippingMethods: () => request("/shipping-methods"),
+
+  getAdminShippingMethods: () => request("/shipping-methods/admin"),
+
+  createShippingMethod: (data: unknown) =>
+    request("/shipping-methods", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updateShippingMethod: (id: string, data: unknown) =>
+    request(`/shipping-methods/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),  
+
+  deleteShippingMethod: (id: string) =>
+    request(`/shipping-methods/${id}`, {
+      method: "DELETE",
+    }),  
+
+    
   // Categories
   getCategories: () => request("/categories"),
 
@@ -192,10 +214,10 @@ export const api = {
     }),
 
   // Orders
-  createOrder: (addressId: string, options?: { idempotencyKey?: string; paymentGateway?: string }) =>
+  createOrder: (addressId: string, shippingMethodId: string, options?: { idempotencyKey?: string; paymentGateway?: string }) =>
     request("/orders", {
       method: "POST",
-      body: JSON.stringify({ addressId, paymentGateway: options?.paymentGateway }),
+      body: JSON.stringify({ addressId, shippingMethodId, paymentGateway: options?.paymentGateway }),
       headers: options?.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : undefined,
     }),
 

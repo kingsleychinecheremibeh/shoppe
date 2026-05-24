@@ -32,7 +32,7 @@ describe('orderController', () => {
 
     await createOrder(req, res);
 
-    expect(orderService.createOrder).toHaveBeenCalledWith('user-1', 'addr-1', undefined, undefined);
+    expect(orderService.createOrder).toHaveBeenCalledWith('user-1', 'addr-1', undefined, undefined, undefined);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ id: 'order-1' });
   });

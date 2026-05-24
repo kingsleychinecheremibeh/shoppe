@@ -13,6 +13,7 @@ import addressRoutes from './routes/addressRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import shippingRoutes from './routes/shippingRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json' with { type: 'json' };
 
@@ -92,6 +93,7 @@ app.use('/api/v1/addresses', addressRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/shipping-methods', shippingRoutes);
 
 // Serve uploaded image files statically
 app.use('/uploads', express.static('uploads'));

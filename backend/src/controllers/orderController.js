@@ -6,7 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const createOrder = asyncHandler(async (req, res) => {
   const headers = req.headers || {};
   const idempotencyKey = headers["idempotency-key"];
-  const { addressId, paymentGateway } = req.body;
+  const { addressId, shippingMethodId, paymentGateway } = req.body;
 
   if (idempotencyKey) {
     const existingOrder = await orderRepository.findOrderByIdempotencyKey(idempotencyKey);
@@ -18,6 +18,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   const order = await orderService.createOrder(
     req.user.id,
     addressId,
+    shippingMethodId,
     idempotencyKey,
     paymentGateway
   );
