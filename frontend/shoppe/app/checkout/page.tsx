@@ -81,7 +81,7 @@ export default function CheckoutPage() {
   const { data: addressesData, isLoading: loadingAddresses } = useSWR('/addresses', () => api.getAddresses());
 
   const cart = cartData as Cart | null;
-  const addresses = (addressesData as Address[]) || [];
+  const addresses = addressesData as Address[] | [];
   const loading = loadingCart || loadingAddresses;
 
   // React Hook Form
