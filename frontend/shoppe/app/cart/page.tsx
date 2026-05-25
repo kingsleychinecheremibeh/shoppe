@@ -142,11 +142,15 @@ export default function CartPage() {
     return cart.items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   }, [cart]);
 
-  const shipping = subtotal > 150000 ? 0 : 5000;
-  const total = subtotal + shipping;
 
-  const freeShippingThreshold = 150000;
-  const progressToFreeShipping = Math.min((subtotal / freeShippingThreshold) * 100, 100);
+  
+
+  const FREE_SHIPPING_THRESHOLD = 150000;
+  const DEFAULT_ESTIMATED_SHIPPING = 2500;
+  const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const estimatedShipping = qualifiesForFreeShipping ? 0 : DEFAULT_ESTIMATED_SHIPPING;
+  const total = subtotal + estimatedShipping;
+  const progressToFreeShipping = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
 
   if (loading) {
     return (
@@ -179,17 +183,17 @@ export default function CartPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <Truck className="h-5 w-5 text-gray-900" />
                   <p className="text-sm font-semibold text-gray-950">
-                    {subtotal >= freeShippingThreshold ? (
+                    {qualifiesForFreeShipping ? (
                       <span className="text-green-600 font-bold">You qualify for FREE shipping!</span>
                     ) : (
-                      <>Add <span className="font-bold text-gray-950">{currencyFormatter.format(freeShippingThreshold - subtotal)}</span> more for FREE shipping</>
+                      <>Add <span className="font-bold text-gray-950">{currencyFormatter.format(FREE_SHIPPING_THRESHOLD - subtotal)}</span> more for FREE shipping</>
                     )}
                   </p>
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-500 rounded-full ${
-                      subtotal >= freeShippingThreshold ? "bg-green-500" : "bg-gray-950"
+                      qualifiesForFreeShipping ? "bg-green-500" : "bg-gray-950"
                     }`}
                     style={{ width: `${progressToFreeShipping}%` }}
                   />
@@ -314,9 +318,9 @@ export default function CartPage() {
                     <span className="font-semibold text-gray-950">{currencyFormatter.format(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Shipping</span>
+                    <span>Estimated Shipping</span>
                     <span className="font-semibold text-gray-950">
-                      {shipping === 0 ? "Free" : currencyFormatter.format(shipping)}
+                      {estimatedShipping === 0 ? "Free" : currencyFormatter.format(estimatedShipping)}
                     </span>
                   </div>
                   
