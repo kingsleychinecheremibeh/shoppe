@@ -1,15 +1,31 @@
 import { prisma } from "../config/db.js";
 
 export const categoryRepository = {
-  findAll: () => {
-    return prisma.category.findMany({
+  findAll: async () => {
+    const categories = await prisma.category.findMany({
       where: {
         isDeleted: false,
       },
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        _count: {
+          select: {
+            products: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        },
+      },
     });
+
+    return categories.map(({ _count, ...category }) => ({
+      ...category,
+      activeProductCount: _count.products,
+    }));
   },
 
   findById: (id) => {

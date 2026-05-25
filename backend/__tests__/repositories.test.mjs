@@ -26,14 +26,34 @@ describe('repositories', () => {
   beforeEach(() => jest.clearAllMocks());
 
   test('categoryRepository delegates to prisma with expected filters', async () => {
-    await categoryRepository.findAll();
+    prisma.category.findMany.mockResolvedValue([
+      { id: 'cat-1', name: 'Shoes', _count: { products: 2 } },
+    ]);
+
+    await expect(categoryRepository.findAll()).resolves.toEqual([
+      { id: 'cat-1', name: 'Shoes', activeProductCount: 2 },
+    ]);
     await categoryRepository.findById('cat-1');
     await categoryRepository.findBySlug('shoes');
     await categoryRepository.create({ name: 'Shoes' });
     await categoryRepository.update('cat-1', { name: 'Bags' });
     await categoryRepository.delete('cat-1');
 
-    expect(prisma.category.findMany).toHaveBeenCalledWith({ where: { isDeleted: false }, orderBy: { createdAt: 'desc' } });
+    expect(prisma.category.findMany).toHaveBeenCalledWith({
+      where: { isDeleted: false },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            products: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        },
+      },
+    });
     expect(prisma.category.findFirst).toHaveBeenCalledWith({ where: { id: 'cat-1', isDeleted: false }, include: { products: true } });
     expect(prisma.category.findFirst).toHaveBeenCalledWith({ where: { slug: 'shoes', isDeleted: false } });
     expect(prisma.category.create).toHaveBeenCalledWith({ data: { name: 'Shoes' } });

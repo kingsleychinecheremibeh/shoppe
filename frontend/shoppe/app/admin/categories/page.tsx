@@ -23,7 +23,7 @@ type Category = {
   slug: string;
   image?: string | null;
   createdAt?: string;
-  products?: unknown[];
+  activeProductCount?: number;
 };
 
 type CategoryFormData = {
@@ -263,7 +263,7 @@ export default function AdminCategoriesPage() {
                           </code>
                         </td>
                         <td className="px-6 py-4 text-xs font-semibold text-gray-600">
-                          {category.products?.length ?? 0} active items
+                          {category.activeProductCount ?? 0} active items
                         </td>
                         <td className="px-6 py-4 text-xs">
                           {category.image ? (
