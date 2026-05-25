@@ -257,10 +257,12 @@ export default function AccountPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
+                    <label htmlFor="fullName" className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
                     <input
+                      id="fullName"
                       {...register("fullName")}
                       type="text"
+                      autoComplete="name"
                       placeholder="e.g. Kingsley Ibeh"
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
@@ -268,10 +270,12 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
+                    <label htmlFor="phone" className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
                     <input
+                      id="phone"
                       {...register("phone")}
                       type="tel"
+                      autoComplete="tel"
                       placeholder="e.g. +234 812 345 6789"
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
@@ -279,10 +283,12 @@ export default function AccountPage() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
+                    <label htmlFor="street" className="block text-xs font-semibold text-gray-500 mb-1.5">Street Address</label>
                     <input
+                      id="street"
                       {...register("street")}
                       type="text"
+                      autoComplete="street-address"
                       placeholder="e.g. 15 Akinwunmi Street, Ejigbo"
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
@@ -290,10 +296,12 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
+                    <label htmlFor="city" className="block text-xs font-semibold text-gray-500 mb-1.5">City / Town</label>
                     <input
+                      id="city"
                       {...register("city")}
                       type="text"
+                      autoComplete="address-level2"
                       placeholder="e.g. Ikeja"
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />
@@ -301,10 +309,12 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
+                    <label htmlFor="state" className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
                     <input
+                      id="state"
                       {...register("state")}
                       type="text"
+                      autoComplete="address-level1"
                       placeholder="e.g. Lagos"
                       className="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:outline-none focus:border-black transition"
                     />

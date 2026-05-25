@@ -53,6 +53,10 @@ type MeResponse = {
   user: UserData;
 };
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "NGN",
+});
 
 export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -266,10 +270,10 @@ export default function MyOrdersPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-gray-900">
-                        ${(Number(item.price) * item.quantity).toFixed(2)}
+                        {currencyFormatter.format(Number(item.price) * item.quantity)}
                       </p>
                       <p className="text-[11px] text-gray-400">
-                        ${Number(item.price).toFixed(2)} each
+                        {currencyFormatter.format(Number(item.price))} each
                       </p>
                     </div>
                   </div>
@@ -290,7 +294,7 @@ export default function MyOrdersPage() {
                       Amount Paid
                     </span>
                     <span className="text-2xl font-bold text-gray-900">
-                      ${Number(order.total).toFixed(2)}
+                      {currencyFormatter.format(Number(order.total))}
                     </span>
                   </div>
 

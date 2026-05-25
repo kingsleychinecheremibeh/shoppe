@@ -205,7 +205,7 @@ export function Header() {
           {/* Search form in Header */}
           {showStorefrontTools ? (
             <form onSubmit={handleSearch} className="hidden min-w-0 max-w-xs flex-1 md:block">
-              <label className="relative block">
+              <label htmlFor="desktopProductSearch" className="relative block">
                 <span className="sr-only">Search products</span>
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
@@ -362,7 +362,7 @@ export function Header() {
           <div className="border-t border-gray-100 py-6 lg:hidden animate-in slide-in-from-top duration-300">
             {showStorefrontTools && (
               <form onSubmit={handleSearch} className="mb-6">
-                <label className="relative block">
+                <label htmlFor="mobileProductSearch" className="relative block">
                   <span className="sr-only">Search products</span>
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input

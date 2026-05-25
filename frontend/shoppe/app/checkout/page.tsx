@@ -312,20 +312,24 @@ export default function CheckoutPage() {
                   {errors.root && <AlertBanner variant="error" message={errors.root.message} />}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Recipient Full Name</label>
+                      <label htmlFor="fullName" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Recipient Full Name</label>
                       <input
+                        id="fullName"
                         {...register("fullName")}
                         type="text"
+                        autoComplete="name"
                         placeholder="John Doe"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
                       {errors.fullName && <span className="text-red-500 text-xs mt-1 block">{errors.fullName.message}</span>}
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Phone Number</label>
+                      <label htmlFor="phone" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Phone Number</label>
                       <input
+                        id="phone"
                         {...register("phone")}
-                        type="text"
+                        type="tel"
+                        autoComplete="tel"
                         placeholder="+1 (555) 019-2834"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
@@ -334,10 +338,12 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Street Address</label>
+                    <label htmlFor="street" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Street Address</label>
                     <input
+                      id="street"
                       {...register("street")}
                       type="text"
+                      autoComplete="street-address"
                       placeholder="123 Shopping Lane, Suite 4B"
                       className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                     />
@@ -346,29 +352,35 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">City</label>
+                      <label htmlFor="city" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">City</label>
                       <input
+                        id="city"
                         {...register("city")}
                         type="text"
+                        autoComplete="address-level2"
                         placeholder="New York"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
                       {errors.city && <span className="text-red-500 text-xs mt-1 block">{errors.city.message}</span>}
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">State / Province</label>
+                      <label htmlFor="state" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">State / Province</label>
                       <input
+                        id="state"
                         {...register("state")}
                         type="text"
+                        autoComplete="address-level1"
                         placeholder="NY"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
                       {errors.state && <span className="text-red-500 text-xs mt-1 block">{errors.state.message}</span>}
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Country</label>
+                      <label htmlFor="country" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Country</label>
                       <select
+                        id="country"
                         {...register("country")}
+                        autoComplete="country-name"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       >
                         <option value="United States">United States</option>

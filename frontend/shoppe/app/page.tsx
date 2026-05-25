@@ -203,7 +203,7 @@ export default async function Home() {
             <Truck className="h-5 w-5 text-gray-400 shrink-0" />
             <div>
               <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Free Standard Shipping</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">Complimentary shipping on all orders over $150</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">Complimentary shipping on all orders over ₦150,000</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3.5 border-y sm:border-y-0 sm:border-x border-gray-100 py-4 sm:py-0 sm:px-6">

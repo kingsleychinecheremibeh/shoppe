@@ -142,10 +142,10 @@ export default function CartPage() {
     return cart.items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   }, [cart]);
 
-  const shipping = subtotal > 150 ? 0 : 15;
+  const shipping = subtotal > 150000 ? 0 : 5000;
   const total = subtotal + shipping;
 
-  const freeShippingThreshold = 150;
+  const freeShippingThreshold = 150000;
   const progressToFreeShipping = Math.min((subtotal / freeShippingThreshold) * 100, 100);
 
   if (loading) {

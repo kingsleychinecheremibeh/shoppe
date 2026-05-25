@@ -96,7 +96,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between gap-4">
-              <label className="flex items-center">
+              <label htmlFor="rememberMe" className="flex items-center">
                 <input
                   id="rememberMe"
                   name="rememberMe"
