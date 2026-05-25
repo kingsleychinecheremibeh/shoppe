@@ -268,7 +268,10 @@ export function Header() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setAccountOpen((open) => !open)}
+                onClick={() => {
+                  setAccountOpen((open) => !open)
+                  setMobileOpen(false);
+                }}
                 className={`flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 ${
                   accountOpen ? "bg-gray-50 text-gray-950" : ""
                 }`}
@@ -340,7 +343,10 @@ export function Header() {
             {/* Mobile Menu Toggle */}
             <button
               type="button"
-              onClick={() => setMobileOpen((open) => !open)}
+              onClick={() => {
+                setMobileOpen((open) => !open)
+                setAccountOpen(false);
+              }}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 lg:hidden"
               aria-label="Menu"
               aria-expanded={mobileOpen}
