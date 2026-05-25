@@ -9,6 +9,9 @@ type RequestOptions = RequestInit & {
 
 let refreshPromise: Promise<unknown> | null = null;
 
+const isAuthCheckEndpoint = (endpoint: string) => endpoint === "/auth/me";
+const isRefreshEndpoint = (endpoint: string) => endpoint === "/auth/refresh-token";
+
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
@@ -31,7 +34,12 @@ async function request<T>(
     credentials: "include",
   });
 
-  if (response.status === 401 && !skipRefresh && endpoint !== "auth/me") {
+  if (
+    response.status === 401 &&
+    !skipRefresh &&
+    !isAuthCheckEndpoint(endpoint) &&
+    !isRefreshEndpoint(endpoint)
+  ) {
     if (!refreshPromise) {
       refreshPromise = request("/auth/refresh-token", {
         method: "POST",
@@ -41,7 +49,11 @@ async function request<T>(
       });
     }
 
-    await refreshPromise;
+    try {
+      await refreshPromise;
+    } catch {
+      throw new Error("Please log in to continue.");
+    }
 
     return request<T>(endpoint, {
       ...options,
@@ -54,6 +66,10 @@ async function request<T>(
     const error = await response
       .json()
       .catch(() => ({ message: "Request failed" }));
+
+    if (response.status === 401 && isAuthCheckEndpoint(endpoint)) {
+      throw new Error("Please log in to continue.");
+    }
 
     throw new Error(error.message || `HTTP ${response.status}`);
   }
