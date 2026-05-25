@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+
 import { Trash2, Plus, Minus, ArrowRight, Truck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -42,7 +42,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 export default function CartPage() {
-  const router = useRouter();
 
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,14 +54,14 @@ export default function CartPage() {
         const cartData = await api.getCart();
         setCart((cartData as Cart) || null);
       } catch {
-        toast.error("Please login to view your cart.");
-        router.push("/login");
+        // Guest users get a 401 — just show empty cart, don't redirect
+        setCart(null);
       } finally {
         setLoading(false);
       }
     };
     void fetchCart();
-  }, [router]);
+  }, []);
 
   const handleUpdateQuantity = async (item: CartItem, newQuantity: number) => {
     if (newQuantity <= 0) {

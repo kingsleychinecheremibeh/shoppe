@@ -58,14 +58,30 @@ app.use(cors(corsOptions));
 
 app.use(cookieparser());
 app.use('/api', requireAllowedOrigin);
-app.use(express.json({ 
+
+const isPaymentWebhookRequest = (req) =>
+  req.originalUrl?.includes('/payment/stripe-webhook') ||
+  req.originalUrl?.includes('/payment/paystack-webhook');
+
+const paymentWebhookRawParser = express.raw({
+  type: 'application/json',
+  limit: '1mb',
+});
+
+app.use('/api/v1/payment/stripe-webhook', paymentWebhookRawParser);
+app.use('/api/v1/payment/paystack-webhook', paymentWebhookRawParser);
+
+const jsonParser = express.json({
   limit: '10kb',
-  verify: (req, res, buf) => {
-    if (req.originalUrl && req.originalUrl.includes('webhook')) {
-      req.rawBody = buf;
-    }
+});
+
+app.use((req, res, next) => {
+  if (isPaymentWebhookRequest(req)) {
+    return next();
   }
-}));
+
+  return jsonParser(req, res, next);
+});
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));

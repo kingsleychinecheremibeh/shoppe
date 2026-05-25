@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { ConfirmModal, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
+import { useHydrated } from "@/app/hooks/use-hydrated";
 import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 import { useForm } from "react-hook-form";
@@ -63,6 +64,7 @@ export default function AccountPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const mounted = useHydrated();
 
   // 1. SWR Data Fetching (Replaces useEffect, loading state, and profile/address state!)
   const { data: profileData, isLoading: loadingProfile, error: profileError } = useSWR('/auth/me', () => api.getMe());
@@ -72,11 +74,12 @@ export default function AccountPage() {
   const addresses = (addressesData as Address[]) || [];
   const loading = loadingProfile || loadingAddresses;
 
-  // Handle redirect if unauthenticated
-  if (profileError) {
+  useEffect(() => {
+    if (!profileError) return;
+
     toast.error("Please login to access your account dashboard.");
     router.push("/login");
-  }
+  }, [profileError, router]);
 
   // 2. React Hook Form Setup (Replaces manual form state!)
   const {
@@ -124,7 +127,7 @@ export default function AccountPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50/50">
         <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />

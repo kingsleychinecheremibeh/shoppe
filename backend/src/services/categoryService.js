@@ -89,7 +89,8 @@ export const categoryService = {
       throw new AppError("Category not found", 404);
     }
 
-    if (existingCategory.products.length > 0) {
+    const activeProducts = existingCategory.products.filter(product => !product.deletedAt);
+    if (activeProducts.length > 0) {
       throw new AppError(
         "Cannot delete category with products", 400
       );

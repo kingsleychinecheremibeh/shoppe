@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
+import { DevServiceWorkerCleanup } from "@/app/components/dev-service-worker-cleanup";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -43,6 +44,7 @@ export const metadata: Metadata = {
     title: "Shoppe",
   },
   icons: {
+    icon: "/favicon.ico",
     apple: "/icons/icon-192x192.png",
   },
 };
@@ -55,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col font-sans">
+        <DevServiceWorkerCleanup />
         <Header />
         <div className="flex-1">
           {children}

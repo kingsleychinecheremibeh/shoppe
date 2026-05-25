@@ -11,18 +11,10 @@ const router = express.Router();
 // Initialize endpoint requires active authentication
 router.post("/initialize", protect, initializePayment);
 
-// Stripe Webhook Endpoint (requires raw body parser)
-router.post(
-  "/stripe-webhook",
-  express.raw({ type: "application/json" }),
-  handleStripeWebhook
-);
+// Stripe webhook receives a raw body parser in app.js before JSON parsing.
+router.post("/stripe-webhook", handleStripeWebhook);
 
-// Paystack Webhook Endpoint (requires raw body parser)
-router.post(
-  "/paystack-webhook",
-  express.raw({ type: "application/json" }),
-  handlePaystackWebhook
-);
+// Paystack webhook receives a raw body parser in app.js before JSON parsing.
+router.post("/paystack-webhook", handlePaystackWebhook);
 
 export default router;

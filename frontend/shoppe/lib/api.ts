@@ -1,8 +1,7 @@
-const DEFAULT_API_BASE = process.env.VERCEL
-  ? "https://shoppe-backend-yko6.onrender.com/api/v1"
-  : "http://localhost:5000/api/v1";
+const LOCAL_API_BASE = "http://localhost:5000/api/v1";
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE;
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? LOCAL_API_BASE : "");
 
 type RequestOptions = RequestInit & {
   skipRefresh?: boolean;
@@ -14,6 +13,10 @@ async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
+  if (!API_BASE) {
+    throw new Error("NEXT_PUBLIC_API_URL is required outside development.");
+  }
+
   const { skipRefresh, ...fetchOptions } = options;
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string> | undefined),
@@ -28,7 +31,7 @@ async function request<T>(
     credentials: "include",
   });
 
-  if (response.status === 401 && !skipRefresh) {
+  if (response.status === 401 && !skipRefresh && endpoint !== "auth/me") {
     if (!refreshPromise) {
       refreshPromise = request("/auth/refresh-token", {
         method: "POST",
@@ -147,7 +150,7 @@ export const api = {
       method: "DELETE",
     }),  
 
-    
+
   // Categories
   getCategories: () => request("/categories"),
 
@@ -259,6 +262,7 @@ export const api = {
 export const getAssetUrl = (url?: string | null) => {
   if (!url) return null;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (!API_BASE) return url;
 
   const apiOrigin = API_BASE.replace(/\/api\/v1$/, "");
   return `${apiOrigin}${url.startsWith("/") ? "" : "/"}${url}`;

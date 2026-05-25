@@ -95,6 +95,11 @@ export const orderService = {
     if (!existingOrder) {
       throw new AppError("Order not found", 404);
     }
+
+    if (existingOrder.status === status) {
+      return existingOrder; // No-op: exit gracefully if status is already correct
+    }
+
     const allowedStatuses = ORDER_STATUSES[existingOrder.status];
 
     if (!allowedStatuses) {

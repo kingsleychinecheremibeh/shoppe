@@ -47,6 +47,7 @@ const adminNavLinks = [
   { href: "/admin/products", label: "Products" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/categories", label: "Categories" },
+  { href: "/admin/shipping", label: "Shipping" },
 ];
 
 export function Header() {
@@ -79,28 +80,29 @@ export function Header() {
   }, [showStorefrontTools]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     let ignore = false;
 
-    const loadAccountState = () => {
-      api
-        .getMe()
-        .then((data) => {
-          if (ignore) return undefined;
+    const loadAccountState = async () => {
+      try {
+        const data = await api.getMe();
 
-          setUser((data as MeResponse).user);
-          if (!showStorefrontTools) return undefined;
+        if (ignore) return;
 
-          return api.getCart();
-        })
-        .then((data) => {
-          if (!ignore && data) setCart(data as Cart);
-        })
-        .catch(() => {
-          if (!ignore) {
-            setUser(null);
-            setCart(null);
-          }
-        });
+        setUser((data as MeResponse).user);
+        if (!showStorefrontTools) return;
+
+        const cartData = await api.getCart();
+
+        if (!ignore) {
+          setCart(cartData as Cart);
+        }
+      } catch {
+        if (!ignore) {
+          setUser(null);
+          setCart(null);
+        }
+      }
     };
 
     const scheduleIdleWork =

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
+import { useHydrated } from "@/app/hooks/use-hydrated";
 import useSWR, { mutate } from "swr";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -84,6 +85,7 @@ export default function CheckoutPage() {
   const [checkoutError, setCheckoutError] = useState("");
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string>("");
+  const mounted = useHydrated();
 
   // SWR Fetching
   const { data: cartData, isLoading: loadingCart, error: cartError } = useSWR('/cart', () => api.getCart());
@@ -207,7 +209,7 @@ export default function CheckoutPage() {
   const shipping = selectedMethod ? Number(selectedMethod.price) : 0;
   const total = subtotal + shipping;
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-black" />

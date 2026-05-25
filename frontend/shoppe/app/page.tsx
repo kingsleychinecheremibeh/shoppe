@@ -22,36 +22,22 @@ type Product = {
   category?: Category;
 };
 
-// // Curated high-fashion lookbook images to dynamically assign based on Category Slug
-// const categoryImages: Record<string, string> = {
-//   apparel: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
-//   clothing: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
-//   accessories: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
-//   bags: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
-//   footwear: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-//   shoes: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-//   home: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
-// };
-
-// const getCategoryImage = (category: Category) => {
-//   if (category.image) return category.image;
-//   const slug = category.slug?.toLowerCase();
-//   return categoryImages[slug] || "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80";
-// };
-
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "NGN",
 });
 
-const DEFAULT_API_BASE = process.env.VERCEL
-  ? "https://shoppe-backend-yko6.onrender.com/api/v1"
-  : "http://localhost:5000/api/v1";
+const LOCAL_API_BASE = "http://localhost:5000/api/v1";
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE;
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? LOCAL_API_BASE : "");
 
 async function getHomeData() {
   try {
+    if (!API_BASE) {
+      return { categories: [] as Category[], products: [] as Product[] };
+    }
+
     const [categoriesResponse, productsResponse] = await Promise.all([
       fetch(`${API_BASE}/categories`, { next: { revalidate: 60 } }),
       fetch(`${API_BASE}/products`, { next: { revalidate: 60 } }),
