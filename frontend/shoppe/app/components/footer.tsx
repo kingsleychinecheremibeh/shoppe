@@ -122,6 +122,13 @@ export function Footer() {
             <a href="#" className="text-[11px] text-gray-400 hover:text-gray-950 transition font-medium">
               Privacy Settings
             </a>
+            <a
+              href="mailto:codewithneche@gmail.com?subject=I%20want%20a%20website%20like%20this"
+              className="text-[11px] text-gray-400 hover:text-gray-950 transition font-medium inline-flex items-center gap-1"
+              title="Want a website like this? Hire the developer!"
+            >
+              Built by <span className="font-bold">codewithneche</span>
+            </a>
           </div>
         </div>
 

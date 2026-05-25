@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
 import { DevServiceWorkerCleanup } from "@/app/components/dev-service-worker-cleanup";
+import { PwaInstallPrompt } from "@/app/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col font-sans">
         <DevServiceWorkerCleanup />
+        <PwaInstallPrompt />
         <Header />
         <div className="flex-1">
           {children}

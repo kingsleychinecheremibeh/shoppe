@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
         protocol: apiImagesHost.protocol.replace(":", "") as "http" | "https",
         hostname: apiImagesHost.hostname,
         port: apiImagesHost.port,
-        pathname: "/uploads/**",
+        pathname: "/**",
       },
       {
         protocol: "https",

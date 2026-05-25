@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Code2,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -401,6 +402,20 @@ export function Header() {
                 </Link>
               )}
             </nav>
+
+            {/* Developer Signature */}
+            <div className="mt-6 border-t border-gray-100 pt-6">
+              <a
+                href="mailto:codewithneche@gmail.com?subject=I%20want%20a%20website%20like%20this"
+                className="flex items-center gap-2.5 rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-950 transition group"
+                onClick={closeMenus}
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-100 text-gray-500 group-hover:bg-gray-950 group-hover:text-white transition">
+                  <Code2 className="h-3 w-3" />
+                </span>
+                Hire the Developer
+              </a>
+            </div>
           </div>
         )}
       </div>
