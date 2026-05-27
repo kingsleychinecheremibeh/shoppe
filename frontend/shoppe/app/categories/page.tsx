@@ -123,13 +123,13 @@ export default function CategoriesPage() {
                           style={{ backgroundImage: `url("${imageUrl}")` }}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-300 transition-colors group-hover:text-gray-400">
+                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 text-gray-300 transition-colors group-hover:text-gray-400">
                           <Grid3X3 className="h-10 w-10" />
                         </div>
                       )}
 
                       {/* Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-950/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      <div className="absolute inset-0 bg-linear-to-t from-gray-950/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </div>
 
                     {/* Label */}
