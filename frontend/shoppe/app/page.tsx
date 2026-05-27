@@ -62,7 +62,7 @@ async function getHomeData() {
   }
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, priority = false }: { product: Product, priority?: boolean }) {
   const imageUrl = getAssetUrl(product.image);
   return (
     <Link 
@@ -76,6 +76,7 @@ function ProductCard({ product }: { product: Product }) {
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={priority}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
@@ -105,7 +106,7 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-function CategoryCard({ category }: { category: Category }) {
+function CategoryCard({ category, priority = false }: { category: Category, priority?: boolean }) {
   const imageUrl = getAssetUrl(category.image);
   return (
     <Link
@@ -119,6 +120,7 @@ function CategoryCard({ category }: { category: Category }) {
             alt={category.name}
             className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={priority}
           />
         ) : (
           <div className="flex h-full w-full">
@@ -235,8 +237,8 @@ export default async function Home() {
         
         {categories.length ? (
           <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-3 max-w-5xl mx-auto">
-            {categories.slice(0, 3).map((category) => (
-              <CategoryCard key={category.id} category={category} />
+            {categories.slice(0, 3).map((category, index) => (
+              <CategoryCard key={category.id} category={category} priority={index < 3} />
             ))}
           </div>
         ) : (
@@ -258,8 +260,8 @@ export default async function Home() {
           </div>
           
           <div className="grid grid-cols-2 gap-4 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {newArrivals.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {newArrivals.slice(0, 4).map((product, index) => (
+              <ProductCard key={product.id} product={product} priority={index < 4} />
             ))}
           </div>
         </div>

@@ -8,9 +8,10 @@ type ProductImageProps = {
   height?: number;
   fill?: boolean;
   sizes: string;
+  priority?: boolean;
 };
 
-export function ProductImage({ src, alt, className, width = 500, height = 500, fill = false, sizes }: ProductImageProps) {
+export function ProductImage({ src, alt, className, width = 500, height = 500, fill = false, sizes, priority = false }: ProductImageProps) {
   return (
     <Image
       src={src}
@@ -19,7 +20,7 @@ export function ProductImage({ src, alt, className, width = 500, height = 500, f
       width={fill ? undefined : width}
       height={fill ? undefined : height}
       className={className}
-      loading="lazy"
+      priority={priority}
       decoding="async"
       referrerPolicy="no-referrer"
       sizes={sizes}

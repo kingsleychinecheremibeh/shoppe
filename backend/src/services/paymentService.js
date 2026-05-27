@@ -179,4 +179,40 @@ export const paymentService = {
 
     return null;
   },
+
+  /**
+   * Synchronously verify a Paystack transaction by reference
+   * @param {string} reference - The Paystack transaction reference
+   */
+  async verifyPaystackTransaction(reference) {
+    if (!reference) {
+      throw new AppError("Transaction reference is required", 400);
+    }
+
+    try {
+      const response = await axios.get(
+        `https://api.paystack.co/transaction/verify/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          },
+        }
+      );
+
+      const { data } = response.data;
+      if (data.status === "success") {
+        const { orderId } = data.metadata;
+        return await markOrderPaidFromWebhook({
+          orderId,
+          gateway: "PAYSTACK",
+          paidAmount: data.amount,
+        });
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Paystack synchronous verification error:", error.response?.data || error.message);
+      return null; // Return null instead of throwing to allow polling to continue
+    }
+  },
 };

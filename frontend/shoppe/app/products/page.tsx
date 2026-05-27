@@ -316,7 +316,7 @@ function ProductCatalogContent() {
             {filteredProducts.length ? (
               <>
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredProducts.map((product) => {
+                {filteredProducts.map((product, index) => {
                   const isOutOfStock = product.stock <= 0;
                   const imageUrl = getAssetUrl(product.image);
                   return (
@@ -333,6 +333,7 @@ function ProductCatalogContent() {
                               alt={product.name}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              priority={index < 4}
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-gray-600">
@@ -370,17 +371,21 @@ function ProductCatalogContent() {
                       </div>
 
                       {/* Product Info Block */}
-                      <div className="flex flex-1 flex-col p-5">
-                        <span className="text-xs uppercase tracking-wider text-gray-600 font-semibold mb-1">
+                      <div className="flex flex-1 flex-col p-4 sm:p-5">
+                        <span className="text-[10px] sm:text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">
                           {product.category?.name || "Uncategorized"}
                         </span>
-                        <Link href={`/products/${product.id}`} className="hover:underline">
-                          <h3 className="font-bold text-gray-950 line-clamp-1 text-base">{product.name}</h3>
+                        <Link href={`/products/${product.id}`} className="hover:underline mb-1">
+                          <h3 className="font-bold text-gray-900 line-clamp-2 text-sm sm:text-base leading-tight">
+                            {product.name}
+                          </h3>
                         </Link>
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2 flex-1">{product.description || "View product details, price, and availability before adding to cart."}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 mb-4">
+                          {product.description || "View product details, price, and availability before adding to cart."}
+                        </p>
                         
-                        <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-                          <p className="text-lg font-black text-gray-950">
+                        <div className="mt-auto flex flex-col items-start gap-3 border-t border-gray-100 pt-4 xl:flex-row xl:items-center xl:justify-between">
+                          <p className="text-base sm:text-lg font-black text-gray-900">
                             {currencyFormatter.format(Number(product.price))}
                           </p>
 
@@ -388,12 +393,12 @@ function ProductCatalogContent() {
                             <LoadingButton
                               onClick={(e) => handleAddToCart(e, product)}
                               loading={addingToCart === product.id}
-                              className="inline-flex items-center gap-1.5 bg-gray-950 px-3 py-2 text-xs font-semibold text-white rounded-md transition hover:bg-gray-800 disabled:opacity-50"
+                              className="inline-flex w-full xl:w-auto items-center justify-center gap-1.5 bg-gray-950 px-4 py-2.5 text-xs font-bold text-white rounded-lg transition hover:bg-gray-800 disabled:opacity-50"
                             >
                               Add to Cart
                             </LoadingButton>
                           ) : (
-                            <span className="text-xs font-bold text-red-600 uppercase">Out of Stock</span>
+                            <span className="inline-flex w-full xl:w-auto items-center justify-center bg-red-50 text-xs font-bold text-red-600 uppercase px-3 py-2.5 rounded-lg">Out of Stock</span>
                           )}
                         </div>
                       </div>

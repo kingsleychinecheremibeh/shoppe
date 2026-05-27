@@ -3,6 +3,7 @@ import {
   initializePayment,
   handleStripeWebhook,
   handlePaystackWebhook,
+  verifyPaystackPayment,
 } from "../controllers/paymentController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -16,5 +17,8 @@ router.post("/stripe-webhook", handleStripeWebhook);
 
 // Paystack webhook receives a raw body parser in app.js before JSON parsing.
 router.post("/paystack-webhook", handlePaystackWebhook);
+
+// Synchronously verify a paystack payment (useful for frontend callback redirect on localhost)
+router.post("/verify-paystack", protect, verifyPaystackPayment);
 
 export default router;

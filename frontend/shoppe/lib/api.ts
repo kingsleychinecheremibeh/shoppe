@@ -246,6 +246,12 @@ export const api = {
       body: JSON.stringify({ orderId, gateway }),
     }),
 
+  verifyPaystack: (reference: string) =>
+    request("/payment/verify-paystack", {
+      method: "POST",
+      body: JSON.stringify({ reference }),
+    }),
+
   getMyOrders: () => request("/orders/my-orders"),
 
   getOrders: () => request("/orders"),

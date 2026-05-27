@@ -15,6 +15,7 @@ function SuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get("orderId");
+  const reference = searchParams.get("reference");
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,9 +32,19 @@ function SuccessPageContent() {
 
     let isMounted = true;
     let pollInterval: NodeJS.Timeout | null = null;
+    let hasAttemptedVerification = false;
 
     const fetchOrder = async () => {
       try {
+        if (reference && !hasAttemptedVerification) {
+          hasAttemptedVerification = true;
+          try {
+            await api.verifyPaystack(reference);
+          } catch (e) {
+            console.error("Manual paystack verification failed:", e);
+          }
+        }
+
         const res = (await api.getOrder(orderId)) as unknown as Order;
         if (!isMounted) return;
         setOrder(res);
