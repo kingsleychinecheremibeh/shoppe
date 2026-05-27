@@ -24,7 +24,14 @@ import { requireAllowedOrigin } from './middleware/originMiddleware.js';
 
 export const app = express();
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "same-origin" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  })
+);
+
 
 const normalizeOrigin = (origin) => {
   if (!origin) return null;
