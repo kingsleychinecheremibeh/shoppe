@@ -12,12 +12,47 @@ const apiOrigin = new URL(apiUrl).origin;
 const apiImagesHost = new URL(apiOrigin);
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   turbopack: {},
   async rewrites() {
     return [
       {
         source: "/backend/:path*",
         destination: "https://shoppe-backend-yko6.onrender.com/:path*",
+      },
+    ];
+  },
+
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
       },
     ];
   },
