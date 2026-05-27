@@ -5,35 +5,35 @@ import { Footer } from "@/app/components/footer";
 import { DevServiceWorkerCleanup } from "@/app/components/dev-service-worker-cleanup";
 import { PwaInstallPrompt } from "@/app/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
+import {storeConfig } from "@/lib/store-config";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Shoppe",
-    default: "Shoppe — Curated Objects of Design",
+    template: `%s | ${storeConfig.storeName}`,
+    default: `${storeConfig.storeName} - Curated Objects of Design`,
   },
-  description: "Sourced globally, curated locally. Premium clothing, objects, and accessories crafted for modern life.",
-  keywords: ["Shoppe", "Curated Design", "Luxury Clothing", "Designer Accessories", "Minimalist Living", "Home Decor", "Premium Fashion"],
-  authors: [{ name: "Shoppe Design Team" }],
-  creator: "Shoppe",
+  description:  "Shop premium clothing, accessories, and lifestyle products curated for modern everyday living.",
+  keywords: ["Shoppe", "Ecommerce", "Online Store", "Clothing", "Accessories", "Fashion",  "Lifestyle Products",],
+  authors: [{ name: storeConfig.storeName }],
+  creator: storeConfig.storeName,
   manifest: "/manifest.json",
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(storeConfig.siteUrl),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Shoppe — Curated Objects of Design",
-    description: "Sourced globally, curated locally. Premium clothing, objects, and accessories crafted for modern life.",
-    url: "https://shoppe.com",
-    siteName: "Shoppe",
+    title: `${storeConfig.storeName} - Curated Objects of Design`,
+    description: "Shop premium clothing, accessories, and lifestyle products curated for modern everyday living.",
+    url: storeConfig.siteUrl,
+    siteName: storeConfig.storeName,
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shoppe — Curated Objects of Design",
-    description: "Sourced globally, curated locally. Premium clothing, objects, and accessories crafted for modern life.",
-    creator: "@shoppe",
+    title: `${storeConfig.storeName} - Curated Objects of Design`,
+    description: "Shop premium clothing, accessories, and lifestyle products curated for modern everyday living.",
   },
   robots: {
     index: true,
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Shoppe",
+    title: storeConfig.storeName,
   },
   icons: {
     icon: "/favicon.ico",

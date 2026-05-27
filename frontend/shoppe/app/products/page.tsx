@@ -91,9 +91,9 @@ function ProductCatalogContent() {
   }, [selectedCategory, categories]);
 
   const currentCategoryDesc = useMemo(() => {
-    if (selectedCategory === "all") return "Browse through our highly curated collection of high-quality products.";
+    if (selectedCategory === "all") return "Browse available products and choose what fits your needs.";
     const found = categories.find((c) => c.slug.toLowerCase() === selectedCategory.toLowerCase());
-    return found ? `Browse our curated collection of premium ${found.name.toLowerCase()} items.` : "Browse through our highly curated collection of high-quality products.";
+    return found ? `Browse available ${found.name.toLowerCase()} products.` : "Browse available products and choose what fits your needs.";
   }, [selectedCategory, categories]);
 
   // Load Categories once on mount
@@ -376,7 +376,7 @@ function ProductCatalogContent() {
                         <Link href={`/products/${product.id}`} className="hover:underline">
                           <h3 className="font-bold text-gray-950 line-clamp-1 text-base">{product.name}</h3>
                         </Link>
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2 flex-1">{product.description || "Premium quality craftsmanship, styled for the modern lifestyle."}</p>
+                        <p className="mt-1 text-sm text-gray-500 line-clamp-2 flex-1">{product.description || "View product details, price, and availability before adding to cart."}</p>
                         
                         <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
                           <p className="text-lg font-black text-gray-950">

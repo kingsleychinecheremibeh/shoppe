@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProductImage } from "@/app/components/product-image";
 import { getAssetUrl } from "@/lib/api";
+import { storeConfig } from "@/lib/store-config";
 
 type Category = {
   id: string;
@@ -139,19 +140,19 @@ export default async function Home() {
   return (
     <main className="bg-white">
       
-      {/* Editorial Split Hero Section */}
+      {/* Hero Section */}
       <section className="relative bg-gray-50 border-b border-gray-200 py-16 md:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
             
             {/* Left Content */}
             <div className="lg:col-span-7 max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 block">Spring / Summer Edition</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 block">New Arrivals</span>
               <h1 className="mb-6 text-5xl font-black md:text-7xl leading-tight font-serif text-gray-950">
-                The Art of <br className="hidden md:inline" /> Essentials
+                Shop Quality <br className="hidden md:inline" /> Products Online
               </h1>
               <p className="mb-8 text-base md:text-lg text-gray-600 leading-relaxed font-sans">
-                Carefully curated items sourced from designers worldwide. Sourced globally, curated locally. Premium clothing, objects, and functional utilities designed to elevate the quiet details of everyday life.
+                Discover products for everyday use, compare options, add items to your cart, and check out securely with delivery support across selected locations.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
@@ -162,10 +163,10 @@ export default async function Home() {
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="/products?category=apparel"
+                  href="/products"
                   className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-8 py-3.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                 >
-                  View Lookbook
+                  Browse Products
                 </Link>
               </div>
             </div>
@@ -175,7 +176,7 @@ export default async function Home() {
               <div className="relative aspect-4/5 w-full rounded-2xl bg-gray-100 border border-gray-200 shadow-sm p-4">
                 <Image
                   src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"
-                  alt="Editorial lookbook showcase"
+                  alt="Featured product showcase"
                   className="h-full w-full object-cover rounded-xl"
                   width={600}
                   height={800}
@@ -183,10 +184,10 @@ export default async function Home() {
                   sizes="(max-width: 1024px) 100vw, 42vw"
                 />
                 <div className="absolute bottom-8 left-6 lg:-left-8 bg-white p-5 rounded-xl border border-gray-100 shadow-lg max-w-50">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Featured Capsule</p>
-                  <p className="font-serif font-bold text-gray-950 mt-1 leading-snug">Minimalist Wardrobe Series</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Featured Picks</p>
+                  <p className="font-serif font-bold text-gray-950 mt-1 leading-snug">Popular Products</p>
                   <Link href="/products" className="text-xs font-bold text-gray-900 hover:underline mt-2 inline-flex items-center gap-1">
-                    Shop capsule <ArrowRight className="w-3 h-3" />
+                    Shop products <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -196,14 +197,14 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Editorial Value Props Banner */}
+      {/* Value Props Banner */}
       <section className="border-b border-gray-100 py-8 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center gap-3.5">
             <Truck className="h-5 w-5 text-gray-400 shrink-0" />
             <div>
-              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Free Standard Shipping</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">Complimentary shipping on all orders over ₦150,000</p>
+              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Fast Delivery</h4>
+              <p className="text-[11px] text-gray-500 mt-0.5">Delivery available across supported locations</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3.5 border-y sm:border-y-0 sm:border-x border-gray-100 py-4 sm:py-0 sm:px-6">
@@ -217,7 +218,7 @@ export default async function Home() {
             <RefreshCw className="h-5 w-5 text-gray-400 shrink-0" />
             <div>
               <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Easy Returns</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">Worry-free 30-day return policy</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">{storeConfig.returnWindowDays}-day return window</p>
             </div>
           </div>
         </div>
@@ -226,7 +227,7 @@ export default async function Home() {
       {/* Category Section */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 bg-white">
         <div className="text-center max-w-md mx-auto mb-12">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Curated Ranges</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Categories</span>
           <h2 className="text-3xl font-bold font-serif text-gray-950">Shop by Category</h2>
         </div>
         
@@ -262,34 +263,34 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Editorial lookbook Promo Split section */}
+      {/* Checkout Confidence Section */}
       <section className="grid grid-cols-1 lg:grid-cols-2 overflow-hidden bg-gray-950 text-white">
         
-        {/* Lookbook Image Container */}
+        {/* Product Image Container */}
         <div className="aspect-video lg:aspect-auto min-h-87.5 relative">
           <Image
             src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80"
-            alt="Summer collection lifestyle shoot"
+            alt="Product collection showcase"
             className="h-full w-full object-cover"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
         </div>
 
-        {/* Lookbook Promo Copy */}
+        {/* Checkout Confidence Copy */}
         <div className="flex flex-col justify-center p-8 sm:p-16 md:p-24 max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Summer Lookbook</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Shop With Confidence</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold font-serif leading-tight mb-5">
-            Structured Shapes & Minimal Textures
+            Reliable Products, Easy Checkout
           </h2>
           <p className="text-gray-400 text-sm leading-relaxed mb-8">
-            An exploration of form, tone, and organic breathability. Tailored for comfort in warm climates, featuring premium European linens, structured organic cottons, and functional details engineered to last a lifetime.
+            Browse products, add items to cart, and complete checkout securely with clear delivery and return support.
           </p>
           <Link
-            href="/products?category=apparel"
+            href="/products"
             className="self-start inline-flex items-center gap-2 border border-white/30 rounded-lg px-6 py-3 text-xs font-bold uppercase tracking-wider hover:bg-white hover:text-gray-950 transition"
           >
-            Explore Lookbook
+            Browse Products
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -301,8 +302,8 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Our Curation</span>
-              <h2 className="text-3xl font-bold font-serif text-gray-950">Curated Classics</h2>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Featured</span>
+              <h2 className="text-3xl font-bold font-serif text-gray-950">Featured Products</h2>
             </div>
             <Link href="/products" className="text-xs font-bold uppercase tracking-wider border-b border-gray-950 pb-0.5 hover:opacity-75 transition shrink-0 self-start sm:self-auto mt-4 sm:mt-0">
               View Collection
@@ -321,30 +322,28 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
+      {/* Support Section */}
       <section className="bg-gray-50 border-t border-gray-200 py-24 text-center">
         <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Weekly Editorial</span>
-          <h2 className="mb-4 text-3xl font-bold font-serif text-gray-950">Join the Editorial</h2>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Customer Support</span>
+          <h2 className="mb-4 text-3xl font-bold font-serif text-gray-950">Need Help With An Order?</h2>
           <p className="mb-8 text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
-            Subscribe to receive priority notifications on curated product drops, private lookbooks, and periodic design narratives.
+            Contact us for delivery questions, returns, payment confirmation, or product support.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              id="editorialEmail"
-              name="editorialEmail"
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-950 placeholder-gray-400 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-              required
-            />
-            <button
-              type="button"
-              className="rounded-lg bg-gray-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto justify-center">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-lg bg-gray-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
-              Subscribe
-            </button>
-          </form>
+              Contact Support
+            </Link>
+            <a
+              href={`mailto:${storeConfig.supportEmail}`}
+              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
+            >
+              Email Us
+            </a>
+          </div>
         </div>
       </section>
 

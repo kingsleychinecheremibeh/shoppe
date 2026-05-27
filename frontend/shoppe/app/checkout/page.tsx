@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft, Truck } from "lucide-react";
+import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft, Truck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
@@ -451,6 +451,16 @@ export default function CheckoutPage() {
                 <CreditCard className="h-5 w-5 text-gray-900" />
                 Payment Method
               </h3>
+              <div className="mb-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" />
+                <p className="text-[11px] leading-5 text-gray-600">
+                  Secure payment handled by Paystack. We do not store full card details.{" "}
+                  <Link href="/secure-checkout" className="font-semibold text-gray-950 underline">
+                    Learn more
+                  </Link>
+                  .
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Paystack Card Option */}
@@ -560,6 +570,21 @@ export default function CheckoutPage() {
               >
                 Place Order Now
               </LoadingButton>
+              <p className="mt-3 text-center text-[11px] leading-5 text-gray-500">
+                By placing your order, you agree to our{" "}
+                <Link href="/terms" className="font-semibold text-gray-950 underline">
+                  Terms
+                </Link>
+                ,{" "}
+                <Link href="/privacy-policy" className="font-semibold text-gray-950 underline">
+                  Privacy Policy
+                </Link>
+                , and{" "}
+                <Link href="/refund-policy" className="font-semibold text-gray-950 underline">
+                  Refund Policy
+                </Link>
+                .
+              </p>
             </div>
 
           </aside>

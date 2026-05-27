@@ -37,10 +37,9 @@ type MeResponse = {
 
 const primaryNavLinks = [
   { href: "/products", label: "Shop" },
-  { href: "/category/men", label: "Men" },
-  { href: "/category/women", label: "Women" },
-  { href: "/category/accessories", label: "Accessories" },
   { href: "/products?sort=newest", label: "New Arrivals" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const adminNavLinks = [

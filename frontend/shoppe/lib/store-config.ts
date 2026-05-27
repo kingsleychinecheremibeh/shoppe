@@ -1,0 +1,15 @@
+export  const storeConfig = {
+    storeName: "Shoppe",
+    siteUrl: "https://shoppe-flame-chi.vercel.app",
+    supportEmail: "kingsleyibeh363@gmail.com",
+    supportPhone: "+234 707 358 0700",
+    whatsappNumber: "+234 813 751 1883",
+    businessAddress: "Online store serving customers across Nigeria",
+    country: "Nigeria",
+    currency: "NGN",
+    returnWindowDays: 7,
+    refundProcessingDays: "5-10 business days",
+    deliveryAreas: ["lagos", "Abuja", "Port Harcourt", "Nationwide"],
+    deliveryTime: "2-5 business days",
+    socialLinks: { instagram: "", twitter: "", facebook: "", tiktok: ""},
+};
