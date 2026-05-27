@@ -191,7 +191,7 @@ export default function AdminOrdersPage() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Order Flow Desk</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Order Flow Desk</span>
             <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Store Purchases</h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
               Monitor active checkout orders, trace full client shipping structures, and transition logistics delivery stages.
@@ -200,7 +200,7 @@ export default function AdminOrdersPage() {
 
           <label className="relative block lg:w-96">
             <span className="sr-only">Search orders</span>
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
             <input
               id="adminOrderSearch"
               name="adminOrderSearch"
@@ -244,7 +244,7 @@ export default function AdminOrdersPage() {
                             <p className="text-xs font-bold text-gray-900">
                               {order.user?.name || "N/A"}
                             </p>
-                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                            <p className="text-[10px] text-gray-600 font-medium mt-0.5">
                               {order.user?.email || "N/A"}
                             </p>
                           </div>
@@ -371,12 +371,12 @@ function OrderDetailsModal({
         <div className="flex items-center justify-between border-b border-gray-100 p-6">
           <div>
             <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">Fulfillment Details</h2>
-            <p className="mt-1.5 text-[10px] text-gray-400 font-mono">ORDER ID: #{order.id.toUpperCase()}</p>
+            <p className="mt-1.5 text-[10px] text-gray-600 font-mono">ORDER ID: #{order.id.toUpperCase()}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-950"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />
@@ -393,7 +393,7 @@ function OrderDetailsModal({
             </InfoBlock>
             <InfoBlock label="Registered Account">
               <span className="block text-xs font-bold text-gray-950">{order.user?.name || "N/A"}</span>
-              <span className="block text-[10px] text-gray-400 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
+              <span className="block text-[10px] text-gray-600 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
             </InfoBlock>
             <InfoBlock label="Total">
               {currencyFormatter.format(getNumber(order.total))}
@@ -424,7 +424,7 @@ function OrderDetailsModal({
                   </div>
                 ))
               ) : (
-                <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-xs font-semibold text-gray-400">
+                <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-xs font-semibold text-gray-600">
                   No items listed inside order register records.
                 </p>
               )}
@@ -501,7 +501,7 @@ function InfoBlock({
 function SummaryRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex justify-between text-xs font-medium">
-      <span className="text-gray-400">{label}</span>
+      <span className="text-gray-600">{label}</span>
       <span className="text-gray-950">{currencyFormatter.format(value)}</span>
     </div>
   );
@@ -512,7 +512,7 @@ function ItemThumbnail({ item }: { item: OrderItem }) {
 
   if (!image) {
     return (
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-400">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
         <ImageIcon className="h-5 w-5" />
       </div>
     );

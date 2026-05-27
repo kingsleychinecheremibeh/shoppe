@@ -71,7 +71,7 @@ export function Footer() {
                   <a
                     key={link.label}
                     href={link.href}
-                    className="text-gray-400 hover:text-gray-950 transition"
+                    className="text-gray-600 hover:text-gray-950 transition"
                     aria-label={link.label}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -85,7 +85,7 @@ export function Footer() {
 
           {/* Column 2: Shop */}
           <div className="md:col-span-2 space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Shop</h4>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Shop</h3>
             <nav className="flex flex-col gap-2">
               <Link href="/products" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
                 All Products
@@ -104,10 +104,10 @@ export function Footer() {
 
           {/* Column 3: Customer Care */}
           <div className="md:col-span-2 space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Customer Care</h4>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Customer Care</h3>
             <nav className="flex flex-col gap-2">
               <Link href="/shipping-policy" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition inline-flex items-center gap-1">
-                Shipping & Returns <ArrowUpRight className="h-3 w-3 text-gray-400" />
+                Shipping & Returns <ArrowUpRight className="h-3 w-3 text-gray-600" />
               </Link>
               <Link href="/faq" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
                 FAQ
@@ -126,7 +126,7 @@ export function Footer() {
 
           {/* Column 4: Support */}
           <div className="md:col-span-4 space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Support</h4>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Support</h3>
             <p className="text-xs text-gray-500 leading-relaxed font-sans">
               Need help with an order, delivery, or return? Contact our support team.
             </p>
@@ -150,17 +150,17 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-gray-400 font-medium">
+          <p className="text-[11px] text-gray-600 font-medium">
             &copy; {currentYear} SHOPPE. All rights reserved. Sourced globally, curated locally.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/terms" className="text-[11px] text-gray-400 hover:text-gray-950 transition font-medium">
+            <Link href="/terms" className="text-[11px] text-gray-600 hover:text-gray-950 transition font-medium">
               Terms of Service
             </Link>
-            <Link href="/refund-policy" className="text-[11px] text-gray-400 hover:text-gray-950 transition font-medium">
+            <Link href="/refund-policy" className="text-[11px] text-gray-600 hover:text-gray-950 transition font-medium">
               Refund Policy
             </Link>
-            <Link href="/privacy-policy" className="text-[11px] text-gray-400 hover:text-gray-950 transition font-medium">
+            <Link href="/privacy-policy" className="text-[11px] text-gray-600 hover:text-gray-950 transition font-medium">
               Privacy Settings
             </Link>
           </div>

@@ -67,7 +67,16 @@ export default function AccountPage() {
   const mounted = useHydrated();
 
   // 1. SWR Data Fetching (Replaces useEffect, loading state, and profile/address state!)
-  const { data: profileData, isLoading: loadingProfile, error: profileError } = useSWR('/auth/me', () => api.getMe());
+  const { data: profileData, isLoading: loadingProfile, error: profileError } = useSWR(
+    '/auth/me',
+    () => api.getMe(),
+    {
+      shouldRetryOnError: (err) => {
+        if (err.message === "Please log in to continue.") return false;
+        return true;
+      }
+    }
+  );
   const { data: addressesData, isLoading: loadingAddresses } = useSWR('/addresses', () => api.getAddresses());
 
   const profile = (profileData as MeResponse)?.user;
@@ -188,12 +197,12 @@ export default function AccountPage() {
 
               <div className="w-full space-y-3.5 text-left border-t border-gray-100 pt-5">
                 <div className="flex items-center text-sm text-gray-600">
-                  <Mail className="h-4 w-4 mr-3 text-gray-400 shrink-0" />
+                  <Mail className="h-4 w-4 mr-3 text-gray-600 shrink-0" />
                   <span className="truncate">{profile?.email}</span>
                 </div>
 
                 <div className="flex items-center text-sm text-gray-600">
-                  <Shield className="h-4 w-4 mr-3 text-gray-400 shrink-0" />
+                  <Shield className="h-4 w-4 mr-3 text-gray-600 shrink-0" />
                   <span>Joined {new Date(profile?.createdAt || "").toLocaleDateString("en-US", { year: "numeric", month: "short" })}</span>
                 </div>
               </div>
@@ -224,7 +233,7 @@ export default function AccountPage() {
           <div className="bg-white border border-gray-150 rounded-3xl p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-2.5">
-                <MapPin className="h-5 w-5 text-gray-400" />
+                <MapPin className="h-5 w-5 text-gray-600" />
                 <h3 className="font-bold text-lg text-gray-900">Address Book</h3>
               </div>
 
@@ -249,7 +258,7 @@ export default function AccountPage() {
                   <button
                     type="button"
                     onClick={() => setShowAddressForm(false)}
-                    className="text-xs font-semibold text-gray-400 hover:text-black transition"
+                    className="text-xs font-semibold text-gray-600 hover:text-black transition"
                   >
                     Cancel
                   </button>
@@ -339,7 +348,7 @@ export default function AccountPage() {
               <div className="text-center py-12 border-2 border-dashed border-gray-150 rounded-2xl">
                 <MapPin className="mx-auto h-8 w-8 text-gray-300 mb-3" />
                 <p className="text-sm font-semibold text-gray-900 mb-1">No shipping address recorded</p>
-                <p className="text-xs text-gray-400 max-w-60 mx-auto">
+                <p className="text-xs text-gray-600 max-w-60 mx-auto">
                   Add shipping destinations to enable rapid one-click checkout on future purchases!
                 </p>
               </div>
@@ -352,7 +361,7 @@ export default function AccountPage() {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center space-x-1.5">
-                        <Home className="h-3.5 w-3.5 text-gray-400" />
+                        <Home className="h-3.5 w-3.5 text-gray-600" />
                         <h4 className="text-xs font-bold text-gray-800 truncate max-w-30">
                           {address.fullName}
                         </h4>
@@ -360,7 +369,7 @@ export default function AccountPage() {
 
                       <button
                         onClick={() => setAddressToDelete(address.id)}
-                        className="text-gray-400 hover:text-rose-600 transition p-0.5"
+                        className="text-gray-600 hover:text-rose-600 transition p-0.5"
                         title="Delete Address"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -372,7 +381,7 @@ export default function AccountPage() {
                       <p>{address.city}, {address.state}</p>
                       <p className="font-semibold text-gray-600">{address.country}</p>
 
-                      <div className="flex items-center text-[10px] text-gray-400 mt-2.5 pt-2 border-t border-gray-100">
+                      <div className="flex items-center text-[10px] text-gray-600 mt-2.5 pt-2 border-t border-gray-100">
                         <Phone className="h-3 w-3 mr-1 text-gray-300" />
                         {address.phone}
                       </div>

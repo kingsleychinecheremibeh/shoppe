@@ -220,9 +220,10 @@ export default function CartPage() {
                             src={getAssetUrl(item.product.image) || item.product.image}
                             alt={item.product.name}
                             className="h-full w-full object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-400">
+                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
                             No image
                           </div>
                         )}
@@ -239,7 +240,7 @@ export default function CartPage() {
                               {currencyFormatter.format(Number(item.product.price) * item.quantity)}
                             </p>
                           </div>
-                          <p className="text-xs text-gray-400 uppercase font-semibold mb-3">
+                          <p className="text-xs text-gray-600 uppercase font-semibold mb-3">
                             {item.product.category?.name || "Premium Catalog"}
                           </p>
                         </div>
@@ -341,7 +342,7 @@ export default function CartPage() {
 
               {/* Guarantees panel */}
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
+                <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-xs font-bold text-gray-900 mb-0.5">Secure Checkout Guaranteed</h4>
                   <p className="text-[10px] text-gray-500 leading-normal">

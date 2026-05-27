@@ -286,7 +286,7 @@ export default function AdminProductsPage() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Inventory Catalog</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Inventory Catalog</span>
             <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Store Products</h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
               Manage product listings, pricing edits, instant stock allocations, and shop taxonomy updates.
@@ -296,7 +296,7 @@ export default function AdminProductsPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="relative block sm:w-80">
               <span className="sr-only">Search products</span>
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
               <input
                 id="adminProductSearch"
                 name="adminProductSearch"
@@ -389,7 +389,7 @@ export default function AdminProductsPage() {
                           {product.image ? (
                             <span className="text-green-700">Set</span>
                           ) : (
-                            <span className="text-gray-400">None</span>
+                            <span className="text-gray-600">None</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -437,14 +437,14 @@ export default function AdminProductsPage() {
                 <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">
                   {editingProduct ? "Modify Product Details" : "Create New Product"}
                 </h2>
-                <p className="mt-1.5 text-[10px] text-gray-400 font-medium">
+                <p className="mt-1.5 text-[10px] text-gray-600 font-medium">
                   All slugs, indexing paths, and search arrays are updated dynamically on save.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-950"
+                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
                 aria-label="Close modal"
               >
                 <X className="h-4.5 w-4.5" />
@@ -648,7 +648,7 @@ function ProductThumbnail({ product }: { product: Product }) {
 
   if (!imageUrl) {
     return (
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-400">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
         <ImageIcon className="h-4.5 w-4.5" />
       </div>
     );

@@ -166,14 +166,14 @@ function SuccessPageContent() {
             {/* Order Identification Box */}
             {orderId ? (
               <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-8 text-left">
-                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                <span className="text-[10px] uppercase font-bold text-gray-600 tracking-wider block mb-1">
                   Order Reference ID
                 </span>
                 <span className="font-mono text-xs font-bold text-gray-800 break-all block">
                   {orderId}
                 </span>
                 
-                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mt-3 mb-1">
+                <span className="text-[10px] uppercase font-bold text-gray-600 tracking-wider block mt-3 mb-1">
                   Order Status
                 </span>
                 <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md ${
@@ -184,7 +184,7 @@ function SuccessPageContent() {
                   {order?.status === "PAID" ? "PAID" : "PENDING CONFIRMATION"}
                 </span>
 
-                <span className="text-[11px] text-gray-400 block mt-3">
+                <span className="text-[11px] text-gray-600 block mt-3">
                   {order?.status === "PAID"
                     ? "A copy of your receipt has been generated in your account order tracker."
                     : "You can safely close this tab. We will process your order and email your receipt as soon as Paystack confirms the transfer."}

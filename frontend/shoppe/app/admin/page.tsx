@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
         {/* Editorial Top Title */}
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
               Welcome back{user ? `, ${user.name}` : ""}
             </span>
             <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">
@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
                             {order.user?.name || "N/A"}
                           </div>
                           {order.user?.email && (
-                            <div className="text-[10px] text-gray-400 font-medium mt-0.5">{order.user.email}</div>
+                            <div className="text-[10px] text-gray-600 font-medium mt-0.5">{order.user.email}</div>
                           )}
                         </td>
                         <td className="px-6 py-4 text-xs font-medium text-gray-500">
@@ -308,7 +308,7 @@ export default function AdminDashboardPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-xs font-medium text-gray-400">
+                      <td colSpan={5} className="px-6 py-12 text-center text-xs font-medium text-gray-600">
                         No orders recorded yet.
                       </td>
                     </tr>
@@ -323,9 +323,9 @@ export default function AdminDashboardPage() {
             <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
                 <h2 className="text-base font-serif font-black tracking-tight text-gray-950">Stock Watch</h2>
-                <p className="mt-1 text-[10px] text-gray-400 font-medium">Critical levels requiring attention.</p>
+                <p className="mt-1 text-[10px] text-gray-600 font-medium">Critical levels requiring attention.</p>
               </div>
-              <TrendingUp className="h-4.5 w-4.5 text-gray-400" />
+              <TrendingUp className="h-4.5 w-4.5 text-gray-600" />
             </div>
 
             <div className="space-y-3.5">
@@ -339,7 +339,7 @@ export default function AdminDashboardPage() {
                       <p className="truncate text-xs font-bold text-gray-950">
                         {product.name}
                       </p>
-                      <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                      <p className="text-[10px] text-gray-600 font-medium mt-0.5">
                         {product.category?.name || "Uncategorized"}
                       </p>
                     </div>
@@ -351,7 +351,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center">
                   <p className="text-xs font-semibold text-gray-500">All levels look healthy</p>
-                  <p className="text-[10px] text-gray-400 font-medium mt-1">Products have sufficient inventory.</p>
+                  <p className="text-[10px] text-gray-600 font-medium mt-1">Products have sufficient inventory.</p>
                 </div>
               )}
             </div>
@@ -365,7 +365,7 @@ export default function AdminDashboardPage() {
 
 function TableHead({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-6 py-3.5 text-left text-[10px] font-bold uppercase tracking-wider text-gray-400">
+    <th className="px-6 py-3.5 text-left text-[10px] font-bold uppercase tracking-wider text-gray-600">
       {children}
     </th>
   );
@@ -397,7 +397,7 @@ function StatCard({ label, value, helper, icon: Icon, tone }: StatCardProps) {
       </div>
       <p className="text-2xl font-serif font-black tracking-tight text-gray-950">{value}</p>
       <p className="mt-1 text-xs font-bold text-gray-600 uppercase tracking-wide">{label}</p>
-      <p className="mt-3.5 text-[10px] text-gray-400 font-medium border-t border-gray-100/50 pt-2">{helper}</p>
+      <p className="mt-3.5 text-[10px] text-gray-600 font-medium border-t border-gray-100/50 pt-2">{helper}</p>
     </section>
   );
 }

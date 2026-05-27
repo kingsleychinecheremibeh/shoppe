@@ -164,7 +164,7 @@ export default function AdminShippingPage() {
         {/* Header */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
               Fulfillment Settings
             </span>
             <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">
@@ -236,7 +236,7 @@ export default function AdminShippingPage() {
                       <tr key={method.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-400">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
                               <Truck className="h-4.5 w-4.5" />
                             </div>
                             <div>
@@ -244,7 +244,7 @@ export default function AdminShippingPage() {
                                 {method.name}
                               </p>
                               {method.description && (
-                                <p className="text-[10px] text-gray-400 mt-0.5 max-w-xs truncate">
+                                <p className="text-[10px] text-gray-600 mt-0.5 max-w-xs truncate">
                                   {method.description}
                                 </p>
                               )}
@@ -263,7 +263,7 @@ export default function AdminShippingPage() {
                               Active
                             </span>
                           ) : (
-                            <span className="text-gray-400 font-bold uppercase text-[9px] bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">
+                            <span className="text-gray-600 font-bold uppercase text-[9px] bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">
                               Inactive
                             </span>
                           )}
@@ -347,7 +347,7 @@ export default function AdminShippingPage() {
                     ? "Edit Shipping Method"
                     : "New Shipping Method"}
                 </h2>
-                <p className="mt-1.5 text-[10px] text-gray-400 font-medium">
+                <p className="mt-1.5 text-[10px] text-gray-600 font-medium">
                   {editingMethod
                     ? "Update method details. Changes apply to future orders only."
                     : "Define a new delivery option for your storefront checkout."}
@@ -356,7 +356,7 @@ export default function AdminShippingPage() {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-950"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
                 aria-label="Close modal"
               >
                 <X className="h-4 w-4" />
@@ -392,7 +392,7 @@ export default function AdminShippingPage() {
                   className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
                 >
                   Description
-                  <span className="ml-1 text-[9px] text-gray-400 normal-case tracking-normal font-normal">
+                  <span className="ml-1 text-[9px] text-gray-600 normal-case tracking-normal font-normal">
                     (optional)
                   </span>
                 </label>
@@ -439,7 +439,7 @@ export default function AdminShippingPage() {
                     className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
                   >
                     Est. Delivery
-                    <span className="ml-1 text-[9px] text-gray-400 normal-case tracking-normal font-normal">
+                    <span className="ml-1 text-[9px] text-gray-600 normal-case tracking-normal font-normal">
                       (optional)
                     </span>
                   </label>

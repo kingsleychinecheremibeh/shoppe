@@ -187,7 +187,7 @@ export default function AdminCategoriesPage() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Inventory Taxonomy</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Inventory Taxonomy</span>
             <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Store Categories</h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
               Organize your catalog into distinct shopping ranges, map fallback imagery, and monitor product volume counts.
@@ -197,7 +197,7 @@ export default function AdminCategoriesPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="relative block sm:w-72">
               <span className="sr-only">Search categories</span>
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
               <input
                 id="adminCategorySearch"
                 name="adminCategorySearch"
@@ -253,7 +253,7 @@ export default function AdminCategoriesPage() {
                             <CategoryThumbnail category={category} />
                             <div>
                               <p className="text-xs font-bold text-gray-900">{category.name}</p>
-                              <p className="text-[10px] text-gray-400 font-mono mt-0.5">ID {category.id.slice(0, 8).toUpperCase()}</p>
+                              <p className="text-[10px] text-gray-600 font-mono mt-0.5">ID {category.id.slice(0, 8).toUpperCase()}</p>
                             </div>
                           </div>
                         </td>
@@ -269,7 +269,7 @@ export default function AdminCategoriesPage() {
                           {category.image ? (
                             <span className="text-emerald-700 font-bold uppercase text-[9px] bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">Bound</span>
                           ) : (
-                            <span className="text-gray-400 font-bold uppercase text-[9px] bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">Empty</span>
+                            <span className="text-gray-600 font-bold uppercase text-[9px] bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">Empty</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -323,14 +323,14 @@ export default function AdminCategoriesPage() {
                 <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">
                   {editingCategory ? "Modify Category Details" : "Create New Category"}
                 </h2>
-                <p className="mt-1.5 text-[10px] text-gray-400 font-medium">
+                <p className="mt-1.5 text-[10px] text-gray-600 font-medium">
                   Categories must match storefront slugs exactly for route mapping redirects.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-950"
+                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
                 aria-label="Close modal"
               >
                 <X className="h-4.5 w-4.5" />
@@ -437,7 +437,7 @@ function CategoryThumbnail({ category }: { category: Category }) {
 
   if (!imageUrl) {
     return (
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-400">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
         <ImageIcon className="h-4.5 w-4.5" />
       </div>
     );

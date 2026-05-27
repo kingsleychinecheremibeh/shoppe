@@ -7,9 +7,10 @@ type ProductImageProps = {
   width?: number;
   height?: number;
   fill?: boolean;
+  sizes: string;
 };
 
-export function ProductImage({ src, alt, className, width = 500, height = 500, fill = false }: ProductImageProps) {
+export function ProductImage({ src, alt, className, width = 500, height = 500, fill = false, sizes }: ProductImageProps) {
   return (
     <Image
       src={src}
@@ -21,6 +22,7 @@ export function ProductImage({ src, alt, className, width = 500, height = 500, f
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
+      sizes={sizes}
     />
   );
 }

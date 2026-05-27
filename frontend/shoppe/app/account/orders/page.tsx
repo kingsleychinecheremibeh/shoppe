@@ -173,7 +173,7 @@ export default function MyOrdersPage() {
               {(user?.name || "User").slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <p className="text-xs text-gray-400 font-medium">Account Owner</p>
+              <p className="text-xs text-gray-600 font-medium">Account Owner</p>
               <p className="text-sm font-semibold text-gray-800">{user.name}</p>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function MyOrdersPage() {
       {orders.length === 0 ? (
         /* Empty State */
         <div className="text-center py-20 bg-white border border-gray-100 rounded-3xl shadow-sm">
-          <div className="mx-auto h-16 w-16 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center mb-6">
+          <div className="mx-auto h-16 w-16 bg-gray-50 text-gray-600 rounded-2xl flex items-center justify-center mb-6">
             <ShoppingBag className="h-8 w-8" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders placed yet</h3>
@@ -208,11 +208,11 @@ export default function MyOrdersPage() {
               {/* Order Header Summary */}
               <div className="bg-gray-50/75 border-b border-gray-100 px-6 py-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
                     Order Placed
                   </p>
                   <p className="text-sm font-medium text-gray-800 flex items-center">
-                    <Calendar className="h-3.5 w-3.5 text-gray-400 mr-1.5" />
+                    <Calendar className="h-3.5 w-3.5 text-gray-600 mr-1.5" />
                     {new Date(order.createdAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
@@ -222,7 +222,7 @@ export default function MyOrdersPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
                     Order ID
                   </p>
                   <p className="text-sm font-mono font-medium text-gray-700 uppercase">
@@ -231,13 +231,13 @@ export default function MyOrdersPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
                     Payment Gateway
                   </p>
                   <div className="flex items-center space-x-2 mt-0.5">
                     {getGatewayBadge(order.paymentGateway)}
                     {order.paymentReference && (
-                      <span className="text-[10px] font-mono text-gray-400">
+                      <span className="text-[10px] font-mono text-gray-600">
                         ({order.paymentReference.slice(0, 6)}...)
                       </span>
                     )}
@@ -258,6 +258,7 @@ export default function MyOrdersPage() {
                         src={getAssetUrl(item.product.image) || "https://images.pexels.com/photos/1036856/pexels-photo-1036856.jpeg"}
                         alt={item.product.name}
                         className="h-full w-full object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -272,7 +273,7 @@ export default function MyOrdersPage() {
                       <p className="text-sm font-bold text-gray-900">
                         {currencyFormatter.format(Number(item.price) * item.quantity)}
                       </p>
-                      <p className="text-[11px] text-gray-400">
+                      <p className="text-[11px] text-gray-600">
                         {currencyFormatter.format(Number(item.price))} each
                       </p>
                     </div>
@@ -290,7 +291,7 @@ export default function MyOrdersPage() {
 
                 <div className="flex items-center justify-between w-full md:w-auto md:space-x-8">
                   <div>
-                    <span className="text-xs text-gray-400 font-medium uppercase tracking-wider block">
+                    <span className="text-xs text-gray-600 font-medium uppercase tracking-wider block">
                       Amount Paid
                     </span>
                     <span className="text-2xl font-bold text-gray-900">

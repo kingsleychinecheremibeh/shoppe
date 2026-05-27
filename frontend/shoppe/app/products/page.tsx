@@ -184,7 +184,7 @@ function ProductCatalogContent() {
             <aside className="space-y-6 hidden lg:block">
               <div className="h-40 animate-pulse rounded bg-gray-200" />
             </aside>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="h-96 animate-pulse rounded-lg bg-gray-200" />
               ))}
@@ -236,7 +236,7 @@ function ProductCatalogContent() {
                     }}
                     className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                   />
-                  <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-600" />
                 </div>
                 <button
                   type="button"
@@ -315,7 +315,7 @@ function ProductCatalogContent() {
 
             {filteredProducts.length ? (
               <>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product) => {
                   const isOutOfStock = product.stock <= 0;
                   const imageUrl = getAssetUrl(product.image);
@@ -332,9 +332,10 @@ function ProductCatalogContent() {
                               src={imageUrl}
                               alt={product.name}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-gray-400">
+                            <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-gray-600">
                               No image
                             </div>
                           )}
@@ -370,7 +371,7 @@ function ProductCatalogContent() {
 
                       {/* Product Info Block */}
                       <div className="flex flex-1 flex-col p-5">
-                        <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">
+                        <span className="text-xs uppercase tracking-wider text-gray-600 font-semibold mb-1">
                           {product.category?.name || "Uncategorized"}
                         </span>
                         <Link href={`/products/${product.id}`} className="hover:underline">

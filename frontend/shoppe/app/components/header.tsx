@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ChevronDown,
   Code2,
+  Grid3X3,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -15,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 
 type UserData = {
   id: string;
@@ -33,6 +35,13 @@ type Cart = {
 
 type MeResponse = {
   user: UserData;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string | null;
 };
 
 const primaryNavLinks = [
@@ -56,9 +65,11 @@ export function Header() {
 
   const [user, setUser] = useState<UserData | null>(null);
   const [cart, setCart] = useState<Cart | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const isAdmin = user?.role === "ADMIN";
   const isAdminRoute = pathname.startsWith("/admin");
@@ -84,6 +95,18 @@ export function Header() {
     let ignore = false;
 
     const loadAccountState = async () => {
+      if (showStorefrontTools) {
+        api.getCategories()
+          .then((categoriesData) => {
+            if (!ignore) {
+              setCategories((categoriesData as Category[]) || []);
+            }
+          })
+          .catch(() => {
+            if (!ignore) setCategories([]);
+          });
+      }
+
       try {
         const data = await api.getMe();
 
@@ -141,6 +164,7 @@ export function Header() {
   const closeMenus = () => {
     setAccountOpen(false);
     setMobileOpen(false);
+    setCategoriesOpen(false);
   };
 
   const handleSearch = (event: SyntheticEvent<HTMLFormElement>) => {
@@ -181,6 +205,73 @@ export function Header() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden items-center gap-6 lg:flex">
+            {/* Categories Dropdown (Jumia-style) */}
+            {showStorefrontTools && categories.length > 0 && (
+              <div
+                className="relative"
+                onMouseEnter={() => setCategoriesOpen(true)}
+                onMouseLeave={() => setCategoriesOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setCategoriesOpen((o) => !o)}
+                  className={`relative flex items-center gap-1 py-1 text-[11px] font-bold uppercase tracking-widest transition duration-300 after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-950 after:transition-all hover:after:w-full ${
+                    categoriesOpen || pathname.startsWith("/category")
+                      ? "text-gray-950 after:w-full"
+                      : "text-gray-600 hover:text-gray-950"
+                  }`}
+                >
+                  Categories
+                  <ChevronDown
+                    className={`h-3 w-3 transition-transform duration-200 ${
+                      categoriesOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {categoriesOpen && (
+                  <div className="absolute left-0 top-full pt-3 z-50">
+                    <div className="w-64 overflow-hidden rounded-xl border border-gray-200/80 bg-white/95 backdrop-blur-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="max-h-80 overflow-y-auto overscroll-contain">
+                        {categories.map((cat) => {
+                          const imgUrl = getAssetUrl(cat.image);
+                          return (
+                            <Link
+                              key={cat.id}
+                              href={`/category/${cat.slug}`}
+                              className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 hover:text-gray-950 group"
+                              onClick={closeMenus}
+                            >
+                              {imgUrl ? (
+                                <div
+                                  className="h-8 w-8 shrink-0 rounded-lg bg-gray-100 bg-cover bg-center border border-gray-200/50 group-hover:border-gray-300 transition"
+                                  style={{ backgroundImage: `url("${imgUrl}")` }}
+                                />
+                              ) : (
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200/50 text-gray-400 group-hover:bg-gray-100 group-hover:text-gray-600 transition">
+                                  <Grid3X3 className="h-3.5 w-3.5" />
+                                </div>
+                              )}
+                              <span className="truncate">{cat.name}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                      <div className="border-t border-gray-100">
+                        <Link
+                          href="/categories"
+                          className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 transition hover:bg-gray-50 hover:text-gray-950"
+                          onClick={closeMenus}
+                        >
+                          View All Categories
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {navLinks.map((link) => {
               const active =
                 pathname === link.href ||
@@ -191,7 +282,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   className={`relative py-1 text-[11px] font-bold uppercase tracking-widest transition duration-300 after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-950 after:transition-all hover:after:w-full ${
-                    active ? "text-gray-950 after:w-full" : "text-gray-400 hover:text-gray-950"
+                    active ? "text-gray-950 after:w-full" : "text-gray-600 hover:text-gray-950"
                   }`}
                   onClick={closeMenus}
                 >
@@ -206,7 +297,7 @@ export function Header() {
             <form onSubmit={handleSearch} className="hidden min-w-0 max-w-xs flex-1 md:block">
               <label htmlFor="desktopProductSearch" className="relative block">
                 <span className="sr-only">Search products</span>
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                 <input
                   id="desktopProductSearch"
                   name="productSearch"
@@ -288,7 +379,7 @@ export function Header() {
                         <p className="truncate text-xs font-bold text-gray-950">
                           {user.name}
                         </p>
-                        <p className="truncate text-[10px] text-gray-400 font-medium mt-0.5">
+                        <p className="truncate text-[10px] text-gray-600 font-medium mt-0.5">
                           {user.email}
                         </p>
                       </div>
@@ -363,7 +454,7 @@ export function Header() {
               <form onSubmit={handleSearch} className="mb-6">
                 <label htmlFor="mobileProductSearch" className="relative block">
                   <span className="sr-only">Search products</span>
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                   <input
                     id="mobileProductSearch"
                     name="productSearch"
@@ -378,6 +469,17 @@ export function Header() {
             )}
 
             <nav className="grid gap-2">
+              {/* Jumia-style: single Browse Categories link on mobile */}
+              {showStorefrontTools && categories.length > 0 && (
+                <Link
+                  href="/categories"
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                  onClick={closeMenus}
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                  Browse Categories
+                </Link>
+              )}
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -412,7 +514,7 @@ export function Header() {
             <div className="mt-6 border-t border-gray-100 pt-6">
               <a
                 href="mailto:codewithneche@gmail.com?subject=I%20want%20a%20website%20like%20this"
-                className="flex items-center gap-2.5 rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-gray-950 transition group"
+                className="flex items-center gap-2.5 rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition group"
                 onClick={closeMenus}
               >
                 <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-100 text-gray-500 group-hover:bg-gray-950 group-hover:text-white transition">

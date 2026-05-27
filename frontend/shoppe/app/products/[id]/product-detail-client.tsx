@@ -133,9 +133,10 @@ export default function ProductDetailClient({ productId }: { productId: string }
                 src={imageUrl}
                 alt={product.name}
                 className="h-full w-full object-cover transition duration-300"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ) : (
-              <span className="text-sm font-semibold text-gray-400">No product image</span>
+              <span className="text-sm font-semibold text-gray-600">No product image</span>
             )}
             
             {isOutOfStock && (
@@ -149,7 +150,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
           <div className="flex flex-col">
             
             {/* Category Breadcrumb */}
-            <span className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">
+            <span className="text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">
               {product.category?.name || "Uncategorized"}
             </span>
             
@@ -224,21 +225,21 @@ export default function ProductDetailClient({ productId }: { productId: string }
             {/* Value Props Grid */}
             <div className="border-t border-gray-100 pt-6 mt-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="flex items-center gap-3">
-                <Truck className="h-5 w-5 text-gray-400 shrink-0" />
+                <Truck className="h-5 w-5 text-gray-600 shrink-0" />
                 <div>
                   <p className="text-xs font-bold text-gray-900">Fast Delivery</p>
                   <p className="text-[10px] text-gray-500">Supported delivery locations</p>
                 </div>
               </div>
               <Link href="/secure-checkout" className="flex items-center gap-3 rounded-lg transition hover:bg-gray-50">
-                <ShieldCheck className="h-5 w-5 text-gray-400 shrink-0" />
+                <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0" />
                 <div>
                   <p className="text-xs font-bold text-gray-900">Secure Checkout</p>
                   <p className="text-[10px] text-gray-500">Payment handled by Paystack</p>
                 </div>
               </Link>
               <div className="flex items-center gap-3">
-                <RefreshCw className="h-5 w-5 text-gray-400 shrink-0" />
+                <RefreshCw className="h-5 w-5 text-gray-600 shrink-0" />
                 <div>
                   <p className="text-xs font-bold text-gray-900">Easy Returns</p>
                   <p className="text-[10px] text-gray-500">{storeConfig.returnWindowDays}-day return window</p>

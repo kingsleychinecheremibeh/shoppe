@@ -512,7 +512,7 @@ export default function CheckoutPage() {
 
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
               <h3 className="text-lg font-bold text-gray-950 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-gray-400" />
+                <ShoppingCart className="h-5 w-5 text-gray-600" />
                 Order Review
               </h3>
 
@@ -526,6 +526,7 @@ export default function CheckoutPage() {
                           src={getAssetUrl(item.product.image) || item.product.image}
                           alt={item.product.name}
                           className="h-full w-full object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       ) : (
                         <div className="h-full w-full bg-gray-100" />

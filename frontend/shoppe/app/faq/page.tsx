@@ -33,7 +33,7 @@ export default function FaqPage() {
     <main className="min-h-screen bg-gray-50 py-12">
       <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">
             Help
           </p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">

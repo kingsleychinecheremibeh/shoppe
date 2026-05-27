@@ -89,7 +89,7 @@ export function PwaInstallPrompt() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-white/10 hover:text-white"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition hover:bg-white/10 hover:text-white"
               aria-label="Dismiss install banner"
             >
               <X className="h-3.5 w-3.5" />

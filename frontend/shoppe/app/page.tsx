@@ -75,9 +75,10 @@ function ProductCard({ product }: { product: Product }) {
             src={imageUrl}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-400">
+          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
             No image
           </div>  
         )}
@@ -91,7 +92,7 @@ function ProductCard({ product }: { product: Product }) {
 
       <div className="mt-4 flex justify-between items-start">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
             {product.category?.name || "Premium Collection"}
           </span>
           <h3 className="mt-0.5 text-sm font-bold text-gray-950 group-hover:underline line-clamp-1">{product.name}</h3>
@@ -117,6 +118,7 @@ function CategoryCard({ category }: { category: Category }) {
             src={imageUrl}
             alt={category.name}
             className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
           <div className="flex h-full w-full">
@@ -147,7 +149,7 @@ export default async function Home() {
             
             {/* Left Content */}
             <div className="lg:col-span-7 max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 block">New Arrivals</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-4 block">New Arrivals</span>
               <h1 className="mb-6 text-5xl font-black md:text-7xl leading-tight font-serif text-gray-950">
                 Shop Quality <br className="hidden md:inline" /> Products Online
               </h1>
@@ -184,7 +186,7 @@ export default async function Home() {
                   sizes="(max-width: 1024px) 100vw, 42vw"
                 />
                 <div className="absolute bottom-8 left-6 lg:-left-8 bg-white p-5 rounded-xl border border-gray-100 shadow-lg max-w-50">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Featured Picks</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Featured Picks</p>
                   <p className="font-serif font-bold text-gray-950 mt-1 leading-snug">Popular Products</p>
                   <Link href="/products" className="text-xs font-bold text-gray-900 hover:underline mt-2 inline-flex items-center gap-1">
                     Shop products <ArrowRight className="w-3 h-3" />
@@ -199,26 +201,26 @@ export default async function Home() {
 
       {/* Value Props Banner */}
       <section className="border-b border-gray-100 py-8 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row items-center gap-3.5">
-            <Truck className="h-5 w-5 text-gray-400 shrink-0" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-3 gap-3 sm:gap-6 text-center">
+          <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left">
+            <Truck className="h-5 w-5 text-gray-600 shrink-0" />
             <div>
-              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Fast Delivery</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">Delivery available across supported locations</p>
+              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Fast Delivery</h3>
+              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">Delivery available across supported locations</p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3.5 border-y sm:border-y-0 sm:border-x border-gray-100 py-4 sm:py-0 sm:px-6">
-            <ShieldCheck className="h-5 w-5 text-gray-400 shrink-0" />
+          <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left border-x border-gray-100 px-2 sm:px-6">
+            <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0" />
             <div>
-              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Warranty Guarantee</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">Physical quality audits before packaging</p>
+              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Warranty Guarantee</h3>
+              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">Physical quality audits before packaging</p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3.5">
-            <RefreshCw className="h-5 w-5 text-gray-400 shrink-0" />
+          <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left">
+            <RefreshCw className="h-5 w-5 text-gray-600 shrink-0" />
             <div>
-              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Easy Returns</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">{storeConfig.returnWindowDays}-day return window</p>
+              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Easy Returns</h3>
+              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">{storeConfig.returnWindowDays}-day return window</p>
             </div>
           </div>
         </div>
@@ -227,12 +229,12 @@ export default async function Home() {
       {/* Category Section */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 bg-white">
         <div className="text-center max-w-md mx-auto mb-12">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Categories</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Categories</span>
           <h2 className="text-3xl font-bold font-serif text-gray-950">Shop by Category</h2>
         </div>
         
         {categories.length ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-3 max-w-5xl mx-auto">
             {categories.slice(0, 3).map((category) => (
               <CategoryCard key={category.id} category={category} />
             ))}
@@ -247,7 +249,7 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Just Released</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Just Released</span>
               <h2 className="text-3xl font-bold font-serif text-gray-950">New Arrivals</h2>
             </div>
             <Link href="/products" className="text-xs font-bold uppercase tracking-wider border-b border-gray-950 pb-0.5 hover:opacity-75 transition shrink-0 self-start sm:self-auto mt-4 sm:mt-0">
@@ -255,7 +257,7 @@ export default async function Home() {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 gap-4 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {newArrivals.slice(0, 4).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -279,11 +281,11 @@ export default async function Home() {
 
         {/* Checkout Confidence Copy */}
         <div className="flex flex-col justify-center p-8 sm:p-16 md:p-24 max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Shop With Confidence</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-3 block">Shop With Confidence</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold font-serif leading-tight mb-5">
             Reliable Products, Easy Checkout
           </h2>
-          <p className="text-gray-400 text-sm leading-relaxed mb-8">
+          <p className="text-gray-600 text-sm leading-relaxed mb-8">
             Browse products, add items to cart, and complete checkout securely with clear delivery and return support.
           </p>
           <Link
@@ -302,7 +304,7 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Featured</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Featured</span>
               <h2 className="text-3xl font-bold font-serif text-gray-950">Featured Products</h2>
             </div>
             <Link href="/products" className="text-xs font-bold uppercase tracking-wider border-b border-gray-950 pb-0.5 hover:opacity-75 transition shrink-0 self-start sm:self-auto mt-4 sm:mt-0">
@@ -311,7 +313,7 @@ export default async function Home() {
           </div>
 
           {featuredProducts.length ? (
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -325,7 +327,7 @@ export default async function Home() {
       {/* Support Section */}
       <section className="bg-gray-50 border-t border-gray-200 py-24 text-center">
         <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Customer Support</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-3 block">Customer Support</span>
           <h2 className="mb-4 text-3xl font-bold font-serif text-gray-950">Need Help With An Order?</h2>
           <p className="mb-8 text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
             Contact us for delivery questions, returns, payment confirmation, or product support.
