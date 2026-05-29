@@ -4,7 +4,7 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
   dest: "public",
-  register: true,
+  register: false,
   disable: process.env.NODE_ENV === "development",
 });
 
@@ -36,6 +36,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
               "style-src 'self' 'unsafe-inline' https:",
               "img-src 'self' data: https:",
+              "worker-src 'self'",
               "connect-src 'self' https: http:",
               "frame-ancestors 'self'",
             ].join("; "),
