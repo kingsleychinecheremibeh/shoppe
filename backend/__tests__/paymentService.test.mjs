@@ -8,6 +8,7 @@ const orderRepository = {
 
 const axios = {
   post: jest.fn(),
+  get: jest.fn(),
 };
 
 const paymentIntentsCreate = jest.fn();
@@ -199,5 +200,47 @@ describe("paymentService", () => {
 
     expect(orderRepository.updateOrderStatus).not.toHaveBeenCalled();
     expect(result).toEqual({ orderId: "order-1", status: "PAID", alreadyProcessed: true });
+  });
+
+  test("verifies a Paystack transaction using only a validated reference path segment", async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        data: {
+          status: "success",
+          amount: 7500,
+          metadata: { orderId: "order-1" },
+        },
+      },
+    });
+    orderRepository.findOrderById.mockResolvedValue({
+      id: "order-1",
+      userId: "user-1",
+      status: "PENDING",
+      total: 75,
+      paymentGateway: "PAYSTACK",
+    });
+
+    const result = await paymentService.verifyPaystackTransaction("ref_123-ABC.45");
+
+    expect(axios.get).toHaveBeenCalledWith(
+      "https://api.paystack.co/transaction/verify/ref_123-ABC.45",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer paystack-secret",
+        }),
+      })
+    );
+    expect(orderRepository.updateOrderStatus).toHaveBeenCalledWith("order-1", "PAID");
+    expect(result).toEqual({ orderId: "order-1", status: "PAID" });
+  });
+
+  test("rejects malformed Paystack references before making an outbound request", async () => {
+    await expect(
+      paymentService.verifyPaystackTransaction("../balance?x=1")
+    ).rejects.toThrow("Invalid transaction reference");
+
+    expect(axios.get).not.toHaveBeenCalled();
+    expect(orderRepository.findOrderById).not.toHaveBeenCalled();
+    expect(orderRepository.updateOrderStatus).not.toHaveBeenCalled();
   });
 });

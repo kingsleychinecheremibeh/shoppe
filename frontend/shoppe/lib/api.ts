@@ -5,12 +5,38 @@ const API_BASE =
 
 type RequestOptions = RequestInit & {
   skipRefresh?: boolean;
+  csrfRetried?: boolean;
 };
 
 let refreshPromise: Promise<unknown> | null = null;
+let csrfToken: string | null = null;
 
 const isAuthCheckEndpoint = (endpoint: string) => endpoint === "/auth/me";
 const isRefreshEndpoint = (endpoint: string) => endpoint === "/auth/refresh-token";
+const isCsrfEndpoint = (endpoint: string) => endpoint === "/auth/csrf-token";
+const requiresCsrfToken = (method?: string) => {
+  const normalizedMethod = (method || "GET").toUpperCase();
+  return !["GET", "HEAD", "OPTIONS"].includes(normalizedMethod);
+};
+
+async function getCsrfToken(): Promise<string> {
+  if (csrfToken) {
+    return csrfToken;
+  }
+
+  const response = await fetch(`${API_BASE}/auth/csrf-token`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to prepare secure request.");
+  }
+
+  const data = (await response.json()) as { csrfToken: string };
+  csrfToken = data.csrfToken;
+  return csrfToken;
+}
 
 async function request<T>(
   endpoint: string,
@@ -20,12 +46,15 @@ async function request<T>(
     throw new Error("NEXT_PUBLIC_API_URL is required outside development.");
   }
 
-  const { skipRefresh, ...fetchOptions } = options;
+  const { skipRefresh, csrfRetried, ...fetchOptions } = options;
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string> | undefined),
   };
   if (!(fetchOptions.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
+  }
+  if (requiresCsrfToken(fetchOptions.method) && !isCsrfEndpoint(endpoint)) {
+    headers["X-CSRF-Token"] = await getCsrfToken();
   }
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -33,6 +62,21 @@ async function request<T>(
     headers,
     credentials: "include",
   });
+
+  if (response.status === 403 && requiresCsrfToken(fetchOptions.method) && !csrfRetried) {
+    const error = await response
+      .clone()
+      .json()
+      .catch(() => ({ message: "" }));
+
+    if (error.message === "Invalid CSRF token") {
+      csrfToken = null;
+      return request<T>(endpoint, {
+        ...options,
+        csrfRetried: true,
+      });
+    }
+  }
 
   if (
     response.status === 401 &&

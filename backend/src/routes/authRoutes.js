@@ -1,6 +1,6 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
-import { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken } from "../controllers/authController.js";
+import { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken, getCsrfToken } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validateMiddleware.js";
 import { registerSchema, loginSchema } from "../validators/authValidator.js";
@@ -32,6 +32,7 @@ const refreshLimiter = rateLimit({
     legacyHeaders: false,
     message: "Too many token refresh attempts, please try again in an 15 minutes.",
 });
+router.get("/csrf-token", getCsrfToken);
 router.post("/register", registerLimiter, validate(registerSchema), registerUser);
 router.post("/login", loginLimiter, validate(loginSchema), loginUser);
 router.post("/refresh-token", refreshLimiter, refreshAccessToken);

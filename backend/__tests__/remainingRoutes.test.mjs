@@ -18,6 +18,7 @@ const addressHandlers = {
   deleteAddress: jest.fn((req, res) => res.json({ handler: 'deleteAddress' })),
 };
 const authHandlers = {
+  getCsrfToken: jest.fn((req, res) => res.json({ csrfToken: 'csrf-token' })),
   registerUser: jest.fn((req, res) => res.status(201).json({ handler: 'registerUser' })),
   loginUser: jest.fn((req, res) => res.json({ handler: 'loginUser' })),
   refreshAccessToken: jest.fn((req, res) => res.json({ handler: 'refreshAccessToken' })),
@@ -94,6 +95,7 @@ describe('remaining routes', () => {
   });
 
   test('auth routes call their handlers', async () => {
+    expect((await request(app).get('/auth/csrf-token')).body).toEqual({ csrfToken: 'csrf-token' });
     expect((await request(app).post('/auth/register').send({ name: 'Ada', email: 'ada@example.com', password: 'secret1' })).status).toBe(201);
     expect((await request(app).post('/auth/login').send({ email: 'ada@example.com', password: 'secret1' })).body).toEqual({ handler: 'loginUser' });
     expect((await request(app).post('/auth/refresh-token')).body).toEqual({ handler: 'refreshAccessToken' });

@@ -20,6 +20,10 @@ const sendAuthResponse = (res, statusCode, result) => {
         .json({ user });
 };
 
+export const getCsrfToken = asyncHandler(async (req, res) => {
+    res.status(200).json({ csrfToken: req.csrfToken() });
+});
+
 export const refreshAccessToken = asyncHandler(async (req, res) => {
     const refreshToken = req.cookies?.[refreshCookieName];
 

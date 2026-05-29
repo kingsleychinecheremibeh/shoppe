@@ -6,8 +6,13 @@ import { orderRepository } from "../repositories/orderRepository.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy");
 
+const PAYSTACK_REFERENCE_PATTERN = /^[A-Za-z0-9._=-]{1,100}$/;
+
 const toMinorUnit = (amount) => Math.round(Number(amount) * 100);
 const isStripeEnabled = () => process.env.STRIPE_ENABLED === "true";
+const isValidPaystackReference = (reference) => {
+  return typeof reference === "string" && PAYSTACK_REFERENCE_PATTERN.test(reference);
+};
 const buildCheckoutCallbackUrl = (orderId) => {
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
   const callbackUrl = new URL("/checkout/success", frontendUrl);
@@ -189,9 +194,13 @@ export const paymentService = {
       throw new AppError("Transaction reference is required", 400);
     }
 
+    if (!isValidPaystackReference(reference)) {
+      throw new AppError("Invalid transaction reference", 400);
+    }
+
     try {
       const response = await axios.get(
-        `https://api.paystack.co/transaction/verify/${reference}`,
+        `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,

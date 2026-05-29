@@ -1,8 +1,9 @@
 import { logger } from "../utils/logger.js";
 
 export const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = statusCode === 500 ? 'Internal Server Error' : err.message;
+  const statusCode = err.code === "EBADCSRFTOKEN" ? 403 : err.statusCode || 500;
+  const resolvedMessage = err.code === "EBADCSRFTOKEN" ? "Invalid CSRF token" : err.message;
+  const message = statusCode === 500 ? 'Internal Server Error' : resolvedMessage;
 
   if (process.env.NODE_ENV !== 'test') {
     if (statusCode >= 500) {
@@ -12,7 +13,7 @@ export const errorHandler = (err, req, res, next) => {
     }
   }
 
-  const status = err.status || (statusCode >= 500 ? 'error' : 'fail');
+  const status = typeof err.status === "string" ? err.status : (statusCode >= 500 ? 'error' : 'fail');
 
   res.status(statusCode).json({
     status,

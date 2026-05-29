@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieparser from 'cookie-parser';
+import csrf from 'csurf';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -63,6 +64,16 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+const apilimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests, slow down please.',
+});
+
+app.use('/api', apilimiter);
+
 app.use(cookieparser());
 app.use('/api', requireAllowedOrigin);
 
@@ -81,6 +92,13 @@ app.use('/api/v1/payment/paystack-webhook', paymentWebhookRawParser);
 const jsonParser = express.json({
   limit: '10kb',
 });
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  },
+});
 
 app.use((req, res, next) => {
   if (isPaymentWebhookRequest(req)) {
@@ -90,19 +108,16 @@ app.use((req, res, next) => {
   return jsonParser(req, res, next);
 });
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use((req, res, next) => {
+  if (isPaymentWebhookRequest(req)) {
+    return next();
+  }
+
+  return csrfProtection(req, res, next);
+});
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
-
-const apilimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests, slow down please.',
-});
-
-app.use('/api', apilimiter);
 
 if (process.env.NODE_ENV === 'production') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
