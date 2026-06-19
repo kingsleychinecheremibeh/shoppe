@@ -1,4 +1,5 @@
 import app from './app.js';
+import { validateEnv } from './config/env.js';
 import { connectRedis } from './config/redis.js';
 
 process.on('uncaughtException', (err) => {
@@ -9,6 +10,7 @@ process.on('uncaughtException', (err) => {
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV !== 'test') {
+  validateEnv();
   await connectRedis();
 }
 

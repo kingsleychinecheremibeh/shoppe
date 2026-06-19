@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
+import { PasswordField } from "@/app/components/password-field";
 import { api } from "@/lib/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,38 +100,23 @@ export default function RegisterPage() {
               {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
             </div>
 
-            <div>
-              <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-900">
-                Password
-              </label>
-              <input
-                {...register("password")}
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
-                placeholder="Password"
-              />
-              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
-            </div>
+            <PasswordField
+              {...register("password")}
+              id="password"
+              label="Password"
+              autoComplete="new-password"
+              placeholder="Password"
+              error={errors.password?.message}
+            />
 
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-gray-900"
-              >
-                Confirm Password
-              </label>
-              <input
-                {...register("confirmPassword")}
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
-                placeholder="Confirm password"
-              />
-              {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>}
-            </div>
+            <PasswordField
+              {...register("confirmPassword")}
+              id="confirmPassword"
+              label="Confirm Password"
+              autoComplete="new-password"
+              placeholder="Confirm password"
+              error={errors.confirmPassword?.message}
+            />
 
             <div className="flex items-start">
               <input

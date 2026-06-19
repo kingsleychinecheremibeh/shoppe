@@ -22,12 +22,15 @@ type Product = {
   image?: string | null;
   stock: number;
   category?: Category;
+  images?: { id: string; url: string; color?: string | null; isPrimary: boolean }[];
 };
 
 type CartItem = {
   id: string;
   productId: string;
   quantity: number;
+  selectedColor?: string | null;
+  productImageId?: string | null;
   product: Product;
 };
 
@@ -169,7 +172,7 @@ export default function CartPage() {
         {/* Header Title */}
         <div className="mb-8 border-b border-gray-200 pb-5">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">Shopping Cart</h1>
-          <p className="mt-2 text-sm text-gray-600">Review items selected for purchase.</p>
+          <p className="mt-2 text-sm text-gray-600">Review your items before checkout.</p>
         </div>
 
         {hasItems ? (
@@ -215,18 +218,21 @@ export default function CartPage() {
                         href={`/products/${item.productId}`}
                         className="aspect-square w-24 sm:w-28 shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 block"
                       >
-                        {item.product.image ? (
-                          <ProductImage
-                            src={getAssetUrl(item.product.image) || item.product.image}
-                            alt={item.product.name}
-                            className="h-full w-full object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
-                            No image
-                          </div>
-                        )}
+                        {(() => {
+                          const imgUrl = item.product.images?.find(i => i.id === item.productImageId)?.url || item.product.image;
+                          return imgUrl ? (
+                            <ProductImage
+                              src={getAssetUrl(imgUrl) || imgUrl}
+                              alt={item.product.name}
+                              className="h-full w-full object-cover"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
+                              No image
+                            </div>
+                          );
+                        })()}
                       </Link>
 
                       {/* Text details */}
@@ -241,7 +247,12 @@ export default function CartPage() {
                             </p>
                           </div>
                           <p className="text-xs text-gray-600 uppercase font-semibold mb-3">
-                            {item.product.category?.name || "Premium Catalog"}
+                            {item.product.category?.name || "Product"}
+                            {item.selectedColor && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 normal-case">
+                                {item.selectedColor}
+                              </span>
+                            )}
                           </p>
                         </div>
 
@@ -326,7 +337,7 @@ export default function CartPage() {
                   </div>
                   
                   <div className="border-t border-gray-100 pt-3.5 flex justify-between items-end">
-                    <span className="text-base font-bold text-gray-900">Total Price</span>
+                    <span className="text-base font-bold text-gray-900">Estimated Total</span>
                     <span className="text-2xl font-black text-gray-950">{currencyFormatter.format(total)}</span>
                   </div>
                 </div>
@@ -344,9 +355,9 @@ export default function CartPage() {
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 flex items-start gap-3">
                 <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 mb-0.5">Secure Checkout Guaranteed</h4>
+                  <h4 className="text-xs font-bold text-gray-900 mb-0.5">Secure Checkout</h4>
                   <p className="text-[10px] text-gray-500 leading-normal">
-                    Your personal credentials and payment transactions are fully encrypted. All items undergo physical audits before shipping.
+                    Your payment is handled securely. Products are checked before they are shipped.
                   </p>
                 </div>
               </div>
@@ -358,7 +369,7 @@ export default function CartPage() {
           /* Empty state view */
           <EmptyState
             title="Your cart is empty"
-            message="Explore the catalog to find premium collections for your next order."
+            message="Browse products and add items when you are ready to order."
             action={
               <Link
                 href="/products"

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { refreshTokenRepository } from "../repositories/refreshTokenRepository.js";
 import { userRepository } from "../repositories/userRepository.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -40,11 +41,21 @@ export const protect = asyncHandler(async (req, res, next) => {
         throw new AppError("Not authorized, user not found", 401);
     }
 
+    const activeSession = await refreshTokenRepository.findActiveSession({
+        sessionId: decoded.sessionId,
+        userId: decoded.userId,
+    });
+
+    if (!activeSession) {
+        throw new AppError("Not authorized, session revoked", 401);
+    }
+
     req.user = {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
+        managerPermissions: user.managerPermissions || [],
         createdAt: user.createdAt,
     };
     next();
@@ -53,4 +64,24 @@ export const protect = asyncHandler(async (req, res, next) => {
 export const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === "ADMIN") return next();
     next(new AppError("Access denied. Admin only.", 403));
+};
+
+export const staffWithPermission = (permission) => (req, res, next) => {
+    if (!req.user) {
+        return next(new AppError("Please log in to continue.", 401));
+    }
+
+    if (req.user.role === "ADMIN") {
+        return next();
+    }
+
+    if (
+        req.user.role === "MANAGER" &&
+        Array.isArray(req.user.managerPermissions) &&
+        req.user.managerPermissions.includes(permission)
+    ) {
+        return next();
+    }
+
+    next(new AppError("You do not have permission to perform this action.", 403));
 };

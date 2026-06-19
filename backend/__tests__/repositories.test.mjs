@@ -14,6 +14,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      findMany: jest.fn(),
     },
   },
 }));
@@ -24,6 +25,16 @@ const { userRepository } = await import('../src/repositories/userRepository.js')
 
 describe('repositories', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  const publicUserSelect = {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    managerPermissions: true,
+    createdAt: true,
+    deletedAt: true,
+  };
 
   test('categoryRepository delegates to prisma with expected filters', async () => {
     prisma.category.findMany.mockResolvedValue([
@@ -70,20 +81,20 @@ describe('repositories', () => {
 
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { email: 'ada@example.com' },
-      select: { id: true, name: true, email: true, role: true, createdAt: true, deletedAt: true },
+      select: publicUserSelect,
     });
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: 'user-1' },
-      select: { id: true, name: true, email: true, role: true, createdAt: true, deletedAt: true },
+      select: publicUserSelect,
     });
     expect(prisma.user.create).toHaveBeenCalledWith({
       data: { name: 'Ada' },
-      select: { id: true, name: true, email: true, role: true, createdAt: true, deletedAt: true },
+      select: publicUserSelect,
     });
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
       data: { name: 'Ada B' },
-      select: { id: true, name: true, email: true, role: true, createdAt: true, deletedAt: true },
+      select: publicUserSelect,
     });
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },

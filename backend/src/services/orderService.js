@@ -1,5 +1,6 @@
 import { orderRepository } from "../repositories/orderRepository.js";
 import { shippingService } from "../services/shippingServices.js";
+import { notificationService } from "./notificationService.js";
 import { AppError } from "../utils/AppError.js";
 
 
@@ -112,7 +113,17 @@ export const orderService = {
       );
     }
 
-    return orderRepository.updateOrderStatus(orderId, status);
+    const updatedOrder = await orderRepository.updateOrderStatus(orderId, status);
+
+    if (status === "SHIPPED") {
+      await notificationService.notifyOrderShipped(updatedOrder);
+    }
+
+    if (status === "DELIVERED") {
+      await notificationService.notifyOrderDelivered(updatedOrder);
+    }
+
+    return updatedOrder;
   },
 
   async deleteOrder(orderId) {

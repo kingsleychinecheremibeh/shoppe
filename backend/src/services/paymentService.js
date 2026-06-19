@@ -3,6 +3,7 @@ import axios from "axios";
 import crypto from "crypto";
 import { AppError } from "../utils/AppError.js";
 import { orderRepository } from "../repositories/orderRepository.js";
+import { notificationService } from "./notificationService.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy");
 
@@ -48,7 +49,11 @@ const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount }) => {
     throw new AppError("Payment amount does not match order total", 400);
   }
 
-  await orderRepository.updateOrderStatus(orderId, "PAID");
+  const paidOrder = await orderRepository.updateOrderStatus(orderId, "PAID");
+  await notificationService.notifyPaymentReceived({
+    ...order,
+    ...paidOrder,
+  });
   return { orderId, status: "PAID" };
 };
 

@@ -25,6 +25,22 @@ export const refreshTokenRepository = {
     });
   },
 
+  findActiveSession: ({ sessionId, userId }) => {
+    return prisma.session.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+        refreshTokens: {
+          some: {
+            revokedAt: null,
+            expiresAt: { gt: new Date() },
+          },
+        },
+      },
+      select: { id: true },
+    });
+  },
+
   revokeByHash: (tokenHash) => {
     return prisma.refreshToken.updateMany({
       where: {

@@ -154,7 +154,7 @@ export default function AccountPage() {
             My Account
           </h1>
           <p className="text-gray-500 text-sm">
-            Manage your personal profile settings, shipping details, and shopping records.
+            Manage your account, delivery addresses, and orders.
           </p>
         </div>
 
@@ -218,8 +218,8 @@ export default function AccountPage() {
                 <ShoppingBag className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-bold text-sm">Shopping History</h4>
-                <p className="text-xs text-neutral-400">View and track all past orders</p>
+                <h4 className="font-bold text-sm">My Orders</h4>
+                <p className="text-xs text-neutral-400">View your past orders and order status</p>
               </div>
             </div>
             <ArrowRight className="h-5 w-5 text-neutral-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
@@ -243,7 +243,7 @@ export default function AccountPage() {
                   className="inline-flex items-center px-3.5 py-2 bg-black hover:bg-neutral-800 text-white text-xs font-semibold rounded-xl shadow-sm transition duration-200"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" />
-                  New Address
+                  Add Address
                 </button>
               )}
             </div>
@@ -253,7 +253,7 @@ export default function AccountPage() {
               <form onSubmit={handleSubmit(onSubmitAddress)} className="bg-gray-50 border border-gray-150 rounded-2xl p-5 mb-6 space-y-4">
                 <div className="flex justify-between items-center border-b border-gray-150 pb-3 mb-2">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    Add New Shipping Location
+                    Add Delivery Address
                   </h4>
                   <button
                     type="button"
@@ -266,7 +266,7 @@ export default function AccountPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="fullName" className="block text-xs font-semibold text-gray-500 mb-1.5">Recipient Full Name</label>
+                    <label htmlFor="fullName" className="block text-xs font-semibold text-gray-500 mb-1.5">Full Name</label>
                     <input
                       id="fullName"
                       {...register("fullName")}
@@ -279,7 +279,7 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="phone" className="block text-xs font-semibold text-gray-500 mb-1.5">Contact Phone Number</label>
+                    <label htmlFor="phone" className="block text-xs font-semibold text-gray-500 mb-1.5">Phone Number</label>
                     <input
                       id="phone"
                       {...register("phone")}
@@ -318,7 +318,7 @@ export default function AccountPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="state" className="block text-xs font-semibold text-gray-500 mb-1.5">State / Province</label>
+                    <label htmlFor="state" className="block text-xs font-semibold text-gray-500 mb-1.5">State</label>
                     <input
                       id="state"
                       {...register("state")}
@@ -337,7 +337,7 @@ export default function AccountPage() {
                     loading={isSubmitting}
                     className="inline-flex items-center px-4 py-2.5 bg-black hover:bg-neutral-800 text-white text-xs font-bold rounded-xl shadow-sm transition"
                   >
-                    Save Location Address
+                    Save Address
                   </LoadingButton>
                 </div>
               </form>
@@ -347,9 +347,9 @@ export default function AccountPage() {
             {addresses.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-gray-150 rounded-2xl">
                 <MapPin className="mx-auto h-8 w-8 text-gray-300 mb-3" />
-                <p className="text-sm font-semibold text-gray-900 mb-1">No shipping address recorded</p>
+                <p className="text-sm font-semibold text-gray-900 mb-1">No delivery address saved</p>
                 <p className="text-xs text-gray-600 max-w-60 mx-auto">
-                  Add shipping destinations to enable rapid one-click checkout on future purchases!
+                  Add an address so checkout is faster next time.
                 </p>
               </div>
             ) : (

@@ -13,6 +13,7 @@ model User {
   password      String
   name          String
   role          Role           @default(USER)
+  managerPermissions ManagerPermission[] @default([])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   deletedAt     DateTime?
@@ -20,6 +21,7 @@ model User {
   cart          Cart?
   orders        Order[]
   sessions      Session[]
+  notifications Notification[]
   @@index([deletedAt])
 }
 
@@ -78,9 +80,28 @@ model Product {
   deletedAt   DateTime?
   cartItems   CartItem[]
   orderItems  OrderItem[]
+  images      ProductImage[]
   category    Category    @relation(fields: [categoryId], references: [id])
   @@index([categoryId])
   @@index([deletedAt])
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  url       String
+  publicId  String?
+  altText   String?
+  color     String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([color])
 }
 
 model Cart {
@@ -102,10 +123,11 @@ model CartItem {
   cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  productImageId String?
+  selectedColor  String?
   
   @@index([cartId])
   @@index([productId])
-  @@unique([cartId, productId])
 }
 
 model Address {
@@ -148,7 +170,7 @@ model Order {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  idempotencyKey   String? @unique
+  idempotencyKey   String?
   paymentGateway   String?
   paymentReference String?
 
@@ -160,6 +182,7 @@ model Order {
   @@index([userId, createdAt])
   @@index([status])
   @@index([shippingMethodId])
+  @@unique([userId, idempotencyKey])
 }
 
 model OrderItem {
@@ -172,6 +195,10 @@ model OrderItem {
   productId String
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id])
+
+  productImageId String?
+  selectedColor  String?
+
   @@index([orderId])
   @@index([productId])
 }
@@ -204,9 +231,47 @@ model ShippingMethod {
   orders        Order[]
 }
 
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String?
+  audience  NotificationAudience
+  type      NotificationType
+  title     String
+  message   String
+  metadata  Json?
+  dedupeKey String?          @unique
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([audience, createdAt])
+  @@index([type, createdAt])
+}
+
 enum Role {
   USER
+  MANAGER
   ADMIN
+}
+
+enum ManagerPermission {
+  ORDER_MANAGEMENT
+  PRODUCT_MANAGEMENT
+  SHIPPING_MANAGEMENT
+  ANALYTICS
+}
+
+enum NotificationAudience {
+  CUSTOMER
+  STAFF
+}
+
+enum NotificationType {
+  PAYMENT_RECEIVED
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  NEW_PRODUCT
 }
 
 enum AuditEntity {

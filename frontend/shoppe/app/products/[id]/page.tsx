@@ -25,6 +25,13 @@ type Product = {
   image?: string | null;
   stock: number;
   category?: Category;
+  images?: ProductGalleryImage[];
+};
+
+type ProductGalleryImage = {
+  id: string;
+  url: string;
+  isPrimary: boolean;
 };
 
 const API_BASE =
@@ -58,6 +65,14 @@ function getProductDescription(product: Product) {
   );
 }
 
+function getPreferredProductImage(product: Product) {
+  return (
+    product.images?.find((image) => image.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    product.image
+  );
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -75,7 +90,7 @@ export async function generateMetadata({
   }
 
   const description = getProductDescription(product);
-  const imageUrl = getAssetUrl(product.image) || undefined;
+  const imageUrl = getAssetUrl(getPreferredProductImage(product)) || undefined;
   const productUrl = `${storeConfig.siteUrl}/products/${product.id}`;
 
   return {
@@ -116,7 +131,7 @@ export default async function ProductPage({ params }: PageProps) {
     notFound();
   }
 
-  const imageUrl = getAssetUrl(product.image);
+  const imageUrl = getAssetUrl(getPreferredProductImage(product));
   const productUrl = `${storeConfig.siteUrl}/products/${product.id}`;
 
   const productSchema = {

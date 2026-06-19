@@ -23,9 +23,12 @@ type OrderItem = {
   productId: string;
   quantity: number;
   price: number;
+  selectedColor?: string | null;
+  productImageId?: string | null;
   product: {
     name: string;
     image: string;
+    images?: { id: string; url: string }[];
   };
 };
 
@@ -254,20 +257,32 @@ export default function MyOrdersPage() {
                 {order.orderItems.map((item) => (
                   <div key={item.id} className="py-5 flex items-center space-x-4">
                     <div className="h-20 w-16 relative shrink-0 bg-gray-50 border border-gray-100 rounded-xl overflow-hidden">
-                      <ProductImage
-                        src={getAssetUrl(item.product.image) || "https://images.pexels.com/photos/1036856/pexels-photo-1036856.jpeg"}
-                        alt={item.product.name}
-                        className="h-full w-full object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
+                      {(() => {
+                        const imgUrl = item.product.images?.find(i => i.id === item.productImageId)?.url || item.product.image;
+                        return (
+                          <ProductImage
+                            src={getAssetUrl(imgUrl) || "https://images.pexels.com/photos/1036856/pexels-photo-1036856.jpeg"}
+                            alt={item.product.name}
+                            className="h-full w-full object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        );
+                      })()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-bold text-gray-900 truncate mb-1">
                         {item.product.name}
                       </h4>
-                      <p className="text-xs text-gray-500 font-medium">
-                        Qty: {item.quantity}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500 font-medium">
+                          Qty: {item.quantity}
+                        </p>
+                        {item.selectedColor && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
+                            {item.selectedColor}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-gray-900">

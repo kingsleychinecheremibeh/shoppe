@@ -106,7 +106,7 @@ export default function CheckoutPage() {
     formState: { errors, isSubmitting },
   } = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
-    defaultValues: { country: "United States" }
+    defaultValues: { country: "Nigeria" }
   });
 
   useEffect(() => {
@@ -233,7 +233,7 @@ export default function CheckoutPage() {
         {/* Title Block */}
         <div className="mb-8 border-b border-gray-200 pb-5">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">Checkout</h1>
-          <p className="mt-2 text-sm text-gray-600">Enter details to complete your order.</p>
+          <p className="mt-2 text-sm text-gray-600">Choose your delivery address, shipping option, and payment method.</p>
         </div>
 
         {checkoutError ? (
@@ -261,7 +261,7 @@ export default function CheckoutPage() {
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-900 hover:underline"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    Add New Address
+                    Add Address
                   </button>
                 )}
               </div>
@@ -294,12 +294,12 @@ export default function CheckoutPage() {
                     ))
                   ) : (
                     <div className="sm:col-span-2 rounded-lg border border-dashed border-gray-200 p-8 text-center bg-gray-50">
-                      <p className="text-sm text-gray-500 mb-3">No saved addresses found.</p>
+                      <p className="text-sm text-gray-500 mb-3">You do not have a saved delivery address yet.</p>
                       <button
                         onClick={() => setShowAddressForm(true)}
                         className="inline-flex items-center justify-center rounded-md bg-gray-950 px-4 py-2 text-xs font-semibold text-white transition hover:bg-gray-800"
                       >
-                        Add Address Form
+                        Add Address
                       </button>
                     </div>
                   )}
@@ -312,7 +312,7 @@ export default function CheckoutPage() {
                   {errors.root && <AlertBanner variant="error" message={errors.root.message} />}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="fullName" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Recipient Full Name</label>
+                      <label htmlFor="fullName" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Full Name</label>
                       <input
                         id="fullName"
                         {...register("fullName")}
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
                         {...register("phone")}
                         type="tel"
                         autoComplete="tel"
-                        placeholder="+1 (555) 019-2834"
+                        placeholder="+234 812 345 6789"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
                       {errors.phone && <span className="text-red-500 text-xs mt-1 block">{errors.phone.message}</span>}
@@ -338,13 +338,13 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="street" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Street Address</label>
+                      <label htmlFor="street" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Street Address</label>
                     <input
                       id="street"
                       {...register("street")}
                       type="text"
                       autoComplete="street-address"
-                      placeholder="123 Shopping Lane, Suite 4B"
+                      placeholder="15 Akinwunmi Street"
                       className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                     />
                     {errors.street && <span className="text-red-500 text-xs mt-1 block">{errors.street.message}</span>}
@@ -358,19 +358,19 @@ export default function CheckoutPage() {
                         {...register("city")}
                         type="text"
                         autoComplete="address-level2"
-                        placeholder="New York"
+                        placeholder="Ikeja"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
                       {errors.city && <span className="text-red-500 text-xs mt-1 block">{errors.city.message}</span>}
                     </div>
                     <div>
-                      <label htmlFor="state" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">State / Province</label>
+                      <label htmlFor="state" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">State</label>
                       <input
                         id="state"
                         {...register("state")}
                         type="text"
                         autoComplete="address-level1"
-                        placeholder="NY"
+                        placeholder="Lagos"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       />
                       {errors.state && <span className="text-red-500 text-xs mt-1 block">{errors.state.message}</span>}
@@ -383,10 +383,10 @@ export default function CheckoutPage() {
                         autoComplete="country-name"
                         className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
                       >
+                        <option value="Nigeria">Nigeria</option>
                         <option value="United States">United States</option>
                         <option value="Canada">Canada</option>
                         <option value="United Kingdom">United Kingdom</option>
-                        <option value="Nigeria">Nigeria</option>
                       </select>
                     </div>
                   </div>
@@ -436,7 +436,7 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <p className="text-xs font-semibold text-gray-900 mb-1">{currencyFormatter.format(Number(method.price))}</p>
-                      {method.estimatedDays && <p className="text-[11px] text-gray-500 leading-relaxed">Est. delivery: {method.estimatedDays}</p>}
+                      {method.estimatedDays && <p className="text-[11px] text-gray-500 leading-relaxed">Delivery time: {method.estimatedDays}</p>}
                     </button>
                   ))
                 ) : (
@@ -473,14 +473,14 @@ export default function CheckoutPage() {
                     }`}
                 >
                   <div className="flex items-center gap-2 w-full justify-between mb-2">
-                    <span className="text-sm font-bold text-gray-950">Paystack (Local)</span>
+                    <span className="text-sm font-bold text-gray-950">Paystack</span>
                     <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${paymentGateway === "PAYSTACK" ? "border-gray-950 bg-gray-950" : "border-gray-300"
                       }`}>
                       {paymentGateway === "PAYSTACK" && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                     </div>
                   </div>
                   <p className="text-[11px] text-gray-500 leading-relaxed">
-                    Pay securely using bank transfers, local African debit cards, USSD codes, or mobile money.
+                    Pay securely with card, bank transfer, USSD, or mobile money.
                   </p>
                 </button>
 
@@ -498,7 +498,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <p className="text-[11px] text-gray-500 leading-relaxed">
-                    Pay securely with Apple Pay, Google Pay, international cards (Visa, MasterCard), or Klarna.
+                    This payment option is not available yet.
                   </p>
                 </button>
               </div>
@@ -569,7 +569,7 @@ export default function CheckoutPage() {
                 disabled={!activeAddressId}
                 className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gray-950 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm disabled:opacity-50"
               >
-                Place Order Now
+                Place Order
               </LoadingButton>
               <p className="mt-3 text-center text-[11px] leading-5 text-gray-500">
                 By placing your order, you agree to our{" "}

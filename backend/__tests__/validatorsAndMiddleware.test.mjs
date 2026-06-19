@@ -27,7 +27,8 @@ describe('validate middleware and zod validators', () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      message: 'Validation failed',
+      status: 'fail',
+      message: 'Please check the highlighted fields and try again.',
       errors: expect.arrayContaining([
         expect.objectContaining({ field: 'email' }),
         expect.objectContaining({ field: 'password' }),

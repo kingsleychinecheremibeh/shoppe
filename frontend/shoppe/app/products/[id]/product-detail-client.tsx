@@ -24,6 +24,15 @@ type Product = {
   image?: string | null;
   stock: number;
   category?: Category;
+  images?: ProductGalleryImage[];
+};
+
+type ProductGalleryImage = {
+  id: string;
+  url: string;
+  altText?: string | null;
+  isPrimary: boolean;
+  color?: string | null;
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -31,10 +40,32 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "NGN",
 });
 
+const colorSwatches: Record<string, string> = {
+  black: "#111827",
+  blue: "#2563eb",
+  brown: "#92400e",
+  gray: "#6b7280",
+  green: "#16a34a",
+  grey: "#6b7280",
+  orange: "#ea580c",
+  pink: "#db2777",
+  purple: "#7c3aed",
+  red: "#dc2626",
+  white: "#ffffff",
+  yellow: "#ca8a04",
+};
+
+const getSwatchColor = (color?: string | null) => {
+  if (!color) return "#e5e7eb";
+  const normalized = color.trim().toLowerCase();
+  return colorSwatches[normalized] || normalized;
+};
+
 export default function ProductDetailClient({ productId }: { productId: string }) {
   const router = useRouter();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -50,7 +81,13 @@ export default function ProductDetailClient({ productId }: { productId: string }
           router.push("/products");
           return;
         }
-        setProduct(productData as Product);
+        const fetchedProduct = productData as Product;
+        const defaultImage =
+          fetchedProduct.images?.find((image) => image.isPrimary) ||
+          fetchedProduct.images?.[0];
+
+        setProduct(fetchedProduct);
+        setSelectedImageId(defaultImage?.id || null);
       } catch {
         toast.error("Unable to load product information.");
         router.push("/products");
@@ -82,7 +119,12 @@ export default function ProductDetailClient({ productId }: { productId: string }
 
     try {
       setAddingToCart(true);
-      await api.addToCart(product.id, quantity);
+      const selectedImage =
+        product.images?.find((img) => img.id === selectedImageId) ||
+        product.images?.find((img) => img.isPrimary) ||
+        product.images?.[0];
+      const selectedColor = selectedImage?.color || undefined;
+      await api.addToCart(product.id, quantity, selectedColor, selectedImage?.id);
       toast.success(`${quantity} ${quantity > 1 ? "items" : "item"} added to cart!`);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
@@ -108,7 +150,12 @@ export default function ProductDetailClient({ productId }: { productId: string }
   }
 
   const isOutOfStock = product.stock <= 0;
-  const imageUrl = getAssetUrl(product.image);
+  const selectedImage =
+    product.images?.find((image) => image.id === selectedImageId) ||
+    product.images?.find((image) => image.isPrimary) ||
+    product.images?.[0];
+  const imageUrl = getAssetUrl(selectedImage?.url || product.image);
+  const galleryImages = product.images || [];
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
@@ -120,28 +167,71 @@ export default function ProductDetailClient({ productId }: { productId: string }
           className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-950 mb-8 transition"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to collection
+          Back to products
         </Link>
 
         {/* Details Grid */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 bg-white rounded-2xl border border-gray-200 p-6 md:p-10 shadow-xs">
           
           {/* Image Viewer */}
-          <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center relative">
-            {imageUrl ? (
-              <ProductImage
-                src={imageUrl}
-                alt={product.name}
-                className="h-full w-full object-cover transition duration-300"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-            ) : (
-              <span className="text-sm font-semibold text-gray-600">No product image</span>
-            )}
-            
-            {isOutOfStock && (
-              <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md shadow-sm">
-                Out of Stock
+          <div className="space-y-4">
+            <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center relative">
+              {imageUrl ? (
+                <ProductImage
+                  src={imageUrl}
+                  alt={selectedImage?.altText || product.name}
+                  className="h-full w-full object-cover transition duration-300"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              ) : (
+                <span className="text-sm font-semibold text-gray-600">No product image</span>
+              )}
+              
+              {isOutOfStock && (
+                <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md shadow-sm">
+                  Out of Stock
+                </div>
+              )}
+            </div>
+
+            {galleryImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+                {galleryImages.map((image) => {
+                  const thumbnailUrl = getAssetUrl(image.url);
+                  const isSelected = image.id === selectedImage?.id;
+
+                  return (
+                    <button
+                      key={image.id}
+                      type="button"
+                      onClick={() => setSelectedImageId(image.id)}
+                      className={`group overflow-hidden rounded-lg border bg-white text-left transition ${
+                        isSelected ? "border-gray-950 ring-2 ring-gray-950/10" : "border-gray-200 hover:border-gray-400"
+                      }`}
+                      aria-label={`View ${image.color || "default"} product image`}
+                    >
+                      <span className="block aspect-square bg-gray-50">
+                        {thumbnailUrl ? (
+                          <ProductImage
+                            src={thumbnailUrl}
+                            alt={image.altText || `${product.name} ${image.color || ""}`.trim()}
+                            className="h-full w-full object-cover"
+                            sizes="96px"
+                          />
+                        ) : null}
+                      </span>
+                      <span className="flex items-center gap-1.5 px-2 py-1.5">
+                        <span
+                          className="h-3 w-3 rounded-full border border-gray-300"
+                          style={{ backgroundColor: getSwatchColor(image.color) }}
+                        />
+                        <span className="truncate text-[10px] font-bold uppercase tracking-wide text-gray-700">
+                          {image.color || "Default"}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -167,7 +257,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
             <div className="border-t border-gray-100 pt-6 mb-8">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-3">Product details</h3>
               <p className="text-gray-600 leading-relaxed text-sm">
-                {product.description || "Crafted to exact engineering standards with focus on user experience and daily comfort. High durable finishes ensure this classic selection satisfies high design expectations."}
+                {product.description || "No description has been added for this product yet. Please check the price, stock, color options, and delivery details before adding it to your cart."}
               </p>
             </div>
 
@@ -178,6 +268,36 @@ export default function ProductDetailClient({ productId }: { productId: string }
                 {isOutOfStock ? "Sold Out" : `In stock (${product.stock} items available)`}
               </span>
             </div>
+
+            {galleryImages.some((image) => image.color) && (
+              <div className="mb-6 border-t border-gray-100 pt-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 mb-3">Color</h3>
+                <div className="flex flex-wrap gap-2">
+                  {galleryImages.map((image) => {
+                    const isSelected = image.id === selectedImage?.id;
+
+                    return (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => setSelectedImageId(image.id)}
+                        className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-bold transition ${
+                          isSelected
+                            ? "border-gray-950 bg-gray-950 text-white"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+                        }`}
+                      >
+                        <span
+                          className="h-3.5 w-3.5 rounded-full border border-gray-300"
+                          style={{ backgroundColor: getSwatchColor(image.color) }}
+                        />
+                        {image.color || "Default"}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Quantity Controller & Add Button */}
             {!isOutOfStock && (
@@ -228,7 +348,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                 <Truck className="h-5 w-5 text-gray-600 shrink-0" />
                 <div>
                   <p className="text-xs font-bold text-gray-900">Fast Delivery</p>
-                  <p className="text-[10px] text-gray-500">Supported delivery locations</p>
+                  <p className="text-[10px] text-gray-500">Available for supported areas</p>
                 </div>
               </div>
               <Link href="/secure-checkout" className="flex items-center gap-3 rounded-lg transition hover:bg-gray-50">

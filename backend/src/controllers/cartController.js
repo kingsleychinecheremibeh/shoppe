@@ -7,8 +7,8 @@ export const getCart = asyncHandler(async (req, res) => {
 });
 
 export const addItemToCart = asyncHandler(async (req, res) => {
-    const { productId, quantity } = req.body;
-    const cartItem = await cartService.addItem(req.user.id, productId, quantity);
+    const { productId, quantity, selectedColor, productImageId } = req.body;
+    const cartItem = await cartService.addItem(req.user.id, productId, quantity, selectedColor, productImageId);
     res.status(201).json(cartItem);
 });
 

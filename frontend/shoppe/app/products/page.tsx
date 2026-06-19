@@ -24,6 +24,14 @@ type Product = {
   image?: string | null;
   stock: number;
   category?: Category;
+  images?: ProductGalleryImage[];
+};
+
+type ProductGalleryImage = {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+  color?: string | null;
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -31,6 +39,14 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "NGN",
 });
 
+const getProductImageUrl = (product: Product) => {
+  const image =
+    product.images?.find((item) => item.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    product.image;
+
+  return getAssetUrl(image);
+};
 
 function ProductCatalogContent() {
   const searchParams = useSearchParams();
@@ -145,7 +161,8 @@ function ProductCatalogContent() {
 
     try {
       setAddingToCart(product.id);
-      await api.addToCart(product.id, 1);
+      const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+      await api.addToCart(product.id, 1, primaryImage?.color || undefined, primaryImage?.id || undefined);
       toast.success(`${product.name} added to cart!`);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("cart-updated"));
@@ -318,7 +335,7 @@ function ProductCatalogContent() {
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product, index) => {
                   const isOutOfStock = product.stock <= 0;
-                  const imageUrl = getAssetUrl(product.image);
+                  const imageUrl = getProductImageUrl(product);
                   return (
                     <div
                       key={product.id}

@@ -53,6 +53,7 @@ const buildAuthPayload = async (user, sessionId) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            managerPermissions: user.managerPermissions || [],
         },
         token,
         refreshToken,

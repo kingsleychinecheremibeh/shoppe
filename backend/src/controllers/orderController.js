@@ -1,5 +1,6 @@
 import { orderService } from "../services/orderService.js";
 import { orderRepository } from "../repositories/orderRepository.js";
+import { auditRepository } from "../repositories/auditRepository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 
@@ -9,7 +10,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   const { addressId, shippingMethodId, paymentGateway } = req.body;
 
   if (idempotencyKey) {
-    const existingOrder = await orderRepository.findOrderByIdempotencyKey(idempotencyKey);
+    const existingOrder = await orderRepository.findOrderByIdempotencyKey(idempotencyKey, req.user.id);
 
     if (existingOrder) {
       return res.status(200).json(existingOrder)
@@ -22,6 +23,13 @@ export const createOrder = asyncHandler(async (req, res) => {
     idempotencyKey,
     paymentGateway
   );
+  await auditRepository.log({
+    req,
+    action: "ORDER_CREATED",
+    entity: "ORDER",
+    entityId: order.id,
+    metadata: { total: order.total, paymentGateway },
+  });
   res.status(201).json(order);
 });
 
@@ -46,10 +54,23 @@ export const getAllOrders = asyncHandler(async (req, res) => {
 
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const order = await orderService.updateOrderStatus(req.params.id, req.body.status);
+  await auditRepository.log({
+    req,
+    action: "ORDER_STATUS_UPDATED",
+    entity: "ORDER",
+    entityId: order.id,
+    metadata: { status: order.status },
+  });
   res.json(order);
 });
 
 export const deleteOrder = asyncHandler(async (req, res) => {
   await orderService.deleteOrder(req.params.id);
+  await auditRepository.log({
+    req,
+    action: "ORDER_DELETED",
+    entity: "ORDER",
+    entityId: req.params.id,
+  });
   res.json({ message: "Order deleted successfully" });
 });

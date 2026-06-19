@@ -4,6 +4,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
   prisma: {
     cart: { findUnique: jest.fn(), create: jest.fn() },
     cartItem: {
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -63,13 +64,13 @@ describe('cartController', () => {
     const res = makeRes();
     prisma.product.findFirst.mockResolvedValue({ id: 'prod-1', stock: 5 });
     prisma.cart.findUnique.mockResolvedValue({ id: 'cart-1' });
-    prisma.cartItem.findUnique.mockResolvedValue(null);
+    prisma.cartItem.findFirst.mockResolvedValue(null);
     prisma.cartItem.create.mockResolvedValue({ id: 'item-1', quantity: 2 });
 
     await addItemToCart(req, res);
 
     expect(prisma.cartItem.create).toHaveBeenCalledWith({
-      data: { cartId: 'cart-1', productId: 'prod-1', quantity: 2 },
+      data: { cartId: 'cart-1', productId: 'prod-1', quantity: 2, selectedColor: null, productImageId: null },
       include: { product: true },
     });
     expect(res.status).toHaveBeenCalledWith(201);
@@ -80,7 +81,7 @@ describe('cartController', () => {
     const res = makeRes();
     prisma.product.findFirst.mockResolvedValue({ id: 'prod-1', stock: 5 });
     prisma.cart.findUnique.mockResolvedValue({ id: 'cart-1' });
-    prisma.cartItem.findUnique.mockResolvedValue({ id: 'item-1', quantity: 1 });
+    prisma.cartItem.findFirst.mockResolvedValue({ id: 'item-1', quantity: 1 });
     prisma.cartItem.update.mockResolvedValue({ id: 'item-1', quantity: 3 });
 
     await addItemToCart(req, res);
@@ -121,7 +122,7 @@ describe('cartController', () => {
     const next = jest.fn();
     prisma.product.findFirst.mockResolvedValue({ id: 'prod-1', stock: 3 });
     prisma.cart.findUnique.mockResolvedValue({ id: 'cart-1' });
-    prisma.cartItem.findUnique.mockResolvedValue(null);
+    prisma.cartItem.findFirst.mockResolvedValue(null);
 
     await addItemToCart(req, res, next);
 

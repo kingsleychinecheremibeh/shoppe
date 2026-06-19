@@ -7,6 +7,7 @@ import {
   Code2,
   Grid3X3,
   LayoutDashboard,
+  Bell,
   LogIn,
   LogOut,
   Menu,
@@ -23,7 +24,8 @@ type UserData = {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "MANAGER" | "ADMIN";
+  managerPermissions?: string[];
 };
 
 type Cart = {
@@ -44,6 +46,19 @@ type Category = {
   image?: string | null;
 };
 
+type Notification = {
+  id: string;
+  title: string;
+  message: string;
+  metadata?: {
+    orderId?: string;
+    productId?: string;
+    slug?: string;
+  } | null;
+  readAt?: string | null;
+  createdAt: string;
+};
+
 const primaryNavLinks = [
   { href: "/products", label: "Shop" },
   { href: "/products?sort=newest", label: "New Arrivals" },
@@ -52,11 +67,12 @@ const primaryNavLinks = [
 ];
 
 const adminNavLinks = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/categories", label: "Categories" },
-  { href: "/admin/shipping", label: "Shipping" },
+  { href: "/admin", label: "Dashboard", permission: "ANALYTICS" },
+  { href: "/admin/products", label: "Products", permission: "PRODUCT_MANAGEMENT" },
+  { href: "/admin/orders", label: "Orders", permission: "ORDER_MANAGEMENT" },
+  { href: "/admin/categories", label: "Categories", permission: "PRODUCT_MANAGEMENT" },
+  { href: "/admin/shipping", label: "Shipping", permission: "SHIPPING_MANAGEMENT" },
+  { href: "/admin/managers", label: "Managers", permission: "ADMIN_ONLY" },
 ];
 
 export function Header() {
@@ -68,13 +84,32 @@ export function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
 
-  const isAdmin = user?.role === "ADMIN";
+  const isStaff = user?.role === "ADMIN" || user?.role === "MANAGER";
   const isAdminRoute = pathname.startsWith("/admin");
-  const navLinks = isAdminRoute ? adminNavLinks : primaryNavLinks;
+  const canAccess = useCallback((permission: string) => {
+    if (permission === "ADMIN_ONLY") return user?.role === "ADMIN";
+    return user?.role === "ADMIN" || user?.managerPermissions?.includes(permission);
+  }, [user]);
+  const navLinks = isAdminRoute
+    ? adminNavLinks.filter((link) => canAccess(link.permission))
+    : primaryNavLinks;
   const showStorefrontTools = !isAdminRoute;
+  const unreadCount = notifications.filter((notification) => !notification.readAt).length;
+  const staffLandingPath = useMemo(() => {
+    if (user?.role === "ADMIN") return "/admin";
+
+    const permissions = user?.managerPermissions || [];
+    if (permissions.includes("ANALYTICS")) return "/admin";
+    if (permissions.includes("ORDER_MANAGEMENT")) return "/admin/orders";
+    if (permissions.includes("PRODUCT_MANAGEMENT")) return "/admin/products";
+    if (permissions.includes("SHIPPING_MANAGEMENT")) return "/admin/shipping";
+    return "/account";
+  }, [user]);
 
   const cartCount = useMemo(() => {
     return cart?.items?.reduce((total, item) => total + item.quantity, 0) ?? 0;
@@ -113,6 +148,10 @@ export function Header() {
         if (ignore) return;
 
         setUser((data as MeResponse).user);
+        const notificationData = await api.getNotifications({ limit: 8 }).catch(() => []);
+        if (!ignore) {
+          setNotifications((notificationData as Notification[]) || []);
+        }
         if (!showStorefrontTools) return;
 
         const cartData = await api.getCart();
@@ -163,6 +202,7 @@ export function Header() {
 
   const closeMenus = () => {
     setAccountOpen(false);
+    setNotificationsOpen(false);
     setMobileOpen(false);
     setCategoriesOpen(false);
   };
@@ -182,8 +222,49 @@ export function Header() {
     await api.logout().catch(() => undefined);
     setUser(null);
     setCart(null);
+    setNotifications([]);
     closeMenus();
     router.push("/");
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    await api.markAllNotificationsRead().catch(() => undefined);
+    setNotifications((current) =>
+      current.map((notification) => ({
+        ...notification,
+        readAt: notification.readAt || new Date().toISOString(),
+      }))
+    );
+  };
+
+  const getNotificationHref = (notification: Notification) => {
+    if (notification.metadata?.orderId) {
+      return isStaff
+        ? `/admin/orders?orderId=${notification.metadata.orderId}`
+        : `/account/orders`;
+    }
+
+    if (notification.metadata?.slug) {
+      return `/products/${notification.metadata.slug}`;
+    }
+
+    if (notification.metadata?.productId) {
+      return `/products/${notification.metadata.productId}`;
+    }
+
+    return null;
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
+    setNotificationsOpen(false);
+    if (!notification.readAt) {
+      await api.markNotificationRead(notification.id).catch(() => undefined);
+      setNotifications((current) =>
+        current.map((item) =>
+          item.id === notification.id ? { ...item, readAt: new Date().toISOString() } : item
+        )
+      );
+    }
   };
 
   return (
@@ -193,7 +274,7 @@ export function Header() {
           
           {/* Logo */}
           <Link
-            href={isAdminRoute ? "/admin" : "/"}
+            href={isAdminRoute ? staffLandingPath : "/"}
             className="flex shrink-0 items-center gap-2.5 text-xl font-serif font-black tracking-widest text-gray-950 uppercase transition hover:opacity-80"
             onClick={closeMenus}
           >
@@ -316,15 +397,100 @@ export function Header() {
           {/* Action Tools */}
           <div className="flex shrink-0 items-center gap-1.5">
             
-            {isAdmin && !isAdminRoute && (
+            {isStaff && !isAdminRoute && (
               <Link
-                href="/admin"
+                href={staffLandingPath}
                 className="hidden h-9 items-center gap-1.5 rounded-lg bg-gray-950 px-3.5 text-xs font-bold text-white shadow-xs transition hover:bg-gray-800 lg:inline-flex uppercase tracking-wider"
                 onClick={closeMenus}
               >
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 Dashboard
               </Link>
+            )}
+
+            {user && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNotificationsOpen((open) => !open);
+                    setAccountOpen(false);
+                    setMobileOpen(false);
+                  }}
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 ${
+                    notificationsOpen ? "bg-gray-50 text-gray-950" : ""
+                  }`}
+                  aria-label="Notifications"
+                  aria-expanded={notificationsOpen}
+                >
+                  <Bell className="h-4.5 w-4.5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white shadow-xs border border-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {notificationsOpen && (
+                  <div className="absolute right-0 mt-3.5 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-3 duration-200">
+                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-950">Notifications</p>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleMarkAllNotificationsRead}
+                          className="text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-gray-950"
+                        >
+                          Mark read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length ? (
+                        notifications.map((notification) => {
+                          const href = getNotificationHref(notification);
+                          const className = `block border-b border-gray-50 px-4 py-3 text-left last:border-b-0 ${
+                              notification.readAt ? "bg-white" : "bg-gray-50/70"
+                            } ${href ? "transition hover:bg-gray-100" : ""}`;
+
+                          const content = (
+                            <>
+                              <p className="text-xs font-bold text-gray-950">{notification.title}</p>
+                              <p className="mt-1 text-[11px] font-medium leading-relaxed text-gray-600">
+                                {notification.message}
+                              </p>
+                            </>
+                          );
+
+                          return href ? (
+                            <Link
+                              key={notification.id}
+                              href={href}
+                              className={className}
+                              onClick={() => void handleNotificationClick(notification)}
+                            >
+                              {content}
+                            </Link>
+                          ) : (
+                            <button
+                              key={notification.id}
+                              type="button"
+                              className={`w-full ${className}`}
+                              onClick={() => void handleNotificationClick(notification)}
+                            >
+                              {content}
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <p className="px-4 py-6 text-center text-xs font-semibold text-gray-500">
+                          No notifications yet.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {isAdminRoute && (
@@ -435,7 +601,8 @@ export function Header() {
               type="button"
               onClick={() => {
                 setMobileOpen((open) => !open)
-                setAccountOpen(false);
+                  setAccountOpen(false);
+                  setNotificationsOpen(false);
               }}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 lg:hidden"
               aria-label="Menu"
@@ -490,9 +657,9 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              {isAdmin && !isAdminRoute && (
+              {isStaff && !isAdminRoute && (
                 <Link
-                  href="/admin"
+                  href={staffLandingPath}
                   className="rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
                   onClick={closeMenus}
                 >

@@ -17,6 +17,18 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
   },
 }));
 
+const auditRepository = {
+  log: jest.fn(),
+};
+
+await jest.unstable_mockModule('../src/repositories/auditRepository.js', () => ({ auditRepository }));
+
+const notificationService = {
+  notifyNewProduct: jest.fn(),
+};
+
+await jest.unstable_mockModule('../src/services/notificationService.js', () => ({ notificationService }));
+
 const { prisma } = await import('../src/config/db.js');
 const {
   getProducts,
@@ -30,6 +42,13 @@ const makeRes = () => ({
   json: jest.fn(),
   status: jest.fn().mockReturnThis(),
 });
+
+const productInclude = {
+  category: true,
+  images: {
+    orderBy: { sortOrder: 'asc' },
+  },
+};
 
 describe('productController', () => {
   let req;
@@ -53,7 +72,7 @@ describe('productController', () => {
 
       expect(prisma.product.findMany).toHaveBeenCalledWith({
         where: { deletedAt: null },
-        include: { category: true },
+        include: productInclude,
         orderBy: { createdAt: 'desc' },
         skip: 0,
         take: 12,
@@ -93,7 +112,7 @@ describe('productController', () => {
 
       expect(prisma.product.findFirst).toHaveBeenCalledWith({
         where: { id: '1', deletedAt: null },
-        include: { category: true },
+        include: productInclude,
       });
       expect(res.json).toHaveBeenCalledWith(mockProduct);
     });
@@ -129,6 +148,7 @@ describe('productController', () => {
       const mockProduct = { id: '1', name: 'New Product' };
       prisma.category.findFirst.mockResolvedValue(mockCategory);
       prisma.product.create.mockResolvedValue(mockProduct);
+      notificationService.notifyNewProduct.mockResolvedValue(undefined);
 
       await createProduct(req, res, next);
 
@@ -142,10 +162,11 @@ describe('productController', () => {
           stock: 5,
           categoryId: 'cat1',
         },
-        include: { category: true },
+        include: productInclude,
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockProduct);
+      expect(notificationService.notifyNewProduct).toHaveBeenCalledWith(mockProduct);
     });
 
     test('should pass 400 error if missing fields', async () => {
@@ -201,7 +222,7 @@ describe('productController', () => {
       expect(prisma.product.update).toHaveBeenCalledWith({
         where: { id: '1' },
         data: { name: 'Updated Product', slug: expect.any(String), price: 20 },
-        include: { category: true },
+        include: productInclude,
       });
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ name: 'Updated Product' }));
     });

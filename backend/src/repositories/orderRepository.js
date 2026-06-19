@@ -42,6 +42,8 @@ export const orderRepository = {
                             productId: item.productId,
                             quantity: item.quantity,
                             price: item.product.price,
+                            selectedColor: item.selectedColor,
+                            productImageId: item.productImageId,
                         })),
                     },
                 },
@@ -154,10 +156,13 @@ export const orderRepository = {
         });
     },
 
-    findOrderByIdempotencyKey: (idempotencyKey) => {
+    findOrderByIdempotencyKey: (idempotencyKey, userId) => {
         if (!idempotencyKey) return null;
-        return prisma.order.findUnique({
-            where: { idempotencyKey },
+        return prisma.order.findFirst({
+            where: {
+                idempotencyKey,
+                userId,
+            },
             include: {
                 orderItems: {
                     include: { product: true }

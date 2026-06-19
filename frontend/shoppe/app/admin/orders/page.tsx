@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Eye, ImageIcon, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { api, getAssetUrl } from "@/lib/api";
@@ -9,7 +10,8 @@ type UserData = {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "MANAGER" | "ADMIN";
+  managerPermissions?: string[];
 };
 
 type MeResponse = {
@@ -22,12 +24,15 @@ type Product = {
   id: string;
   name: string;
   image?: string | null;
+  images?: { id: string; url: string; color?: string | null; isPrimary: boolean }[];
 };
 
 type OrderItem = {
   id: string;
   quantity: number;
   price: number | string;
+  selectedColor?: string | null;
+  productImageId?: string | null;
   product?: Product | null;
 };
 
@@ -42,6 +47,9 @@ type Address = {
 
 type Order = {
   id: string;
+  subtotal?: number | string;
+  shippingFee?: number | string;
+  shippingMethodName?: string | null;
   total: number | string;
   status: OrderStatus;
   createdAt: string;
@@ -114,35 +122,48 @@ const getStatusClassName = (status: OrderStatus) => {
 };
 
 export default function AdminOrdersPage() {
+  const searchParams = useSearchParams();
+  const orderIdFromQuery = searchParams.get("orderId");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const me = (await api.getMe()) as MeResponse;
 
-      if (me.user.role !== "ADMIN") {
-        toast.error("You need an admin account to manage orders.");
+      const canManageOrders =
+        me.user.role === "ADMIN" || me.user.managerPermissions?.includes("ORDER_MANAGEMENT");
+
+      if (!canManageOrders) {
+        toast.error("You need order management access to manage orders.");
         window.location.assign("/");
         return;
       }
 
       const data = await api.getOrders();
-      setOrders((data as Order[]) || []);
+      const fetchedOrders = (data as Order[]) || [];
+      setOrders(fetchedOrders);
+
+      if (orderIdFromQuery) {
+        const matchingOrder = fetchedOrders.find((order) => order.id === orderIdFromQuery);
+        if (matchingOrder) {
+          setSelectedOrder(matchingOrder);
+        }
+      }
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to fetch orders."));
       window.location.assign("/login");
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderIdFromQuery]);
 
   useEffect(() => {
     void Promise.resolve().then(fetchOrders);
-  }, []);
+  }, [fetchOrders]);
 
   const filteredOrders = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -361,9 +382,22 @@ function OrderDetailsModal({
   onStatusChange: (order: Order, status: OrderStatus) => void;
 }) {
   const subtotal =
-    order.orderItems?.reduce((sum, item) => {
-      return sum + item.quantity * getNumber(item.price);
-    }, 0) ?? getNumber(order.total);
+    order.subtotal !== undefined
+      ? getNumber(order.subtotal)
+      : order.orderItems?.reduce((sum, item) => {
+          return sum + item.quantity * getNumber(item.price);
+        }, 0) ?? getNumber(order.total);
+  const total = getNumber(order.total);
+  const recordedShippingFee = getNumber(order.shippingFee);
+  const inferredShippingFee = Math.max(total - subtotal, 0);
+  const shippingFee =
+    recordedShippingFee > 0
+      ? recordedShippingFee
+      : order.shippingMethodName
+        ? inferredShippingFee
+        : 0;
+  const taxes = Math.max(total - subtotal - shippingFee, 0);
+  const shippingLabel = order.shippingMethodName || "Shipping";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 p-4 backdrop-blur-xs">
@@ -396,7 +430,7 @@ function OrderDetailsModal({
               <span className="block text-[10px] text-gray-600 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
             </InfoBlock>
             <InfoBlock label="Total">
-              {currencyFormatter.format(getNumber(order.total))}
+              {currencyFormatter.format(total)}
             </InfoBlock>
           </div>
 
@@ -411,8 +445,13 @@ function OrderDetailsModal({
                   >
                     <ItemThumbnail item={item} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-gray-950">
+                      <p className="truncate font-semibold text-gray-950 flex items-center gap-2">
                         {item.product?.name || "Product"}
+                        {item.selectedColor && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
+                            {item.selectedColor}
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm text-gray-600">
                         {item.quantity} x {currencyFormatter.format(getNumber(item.price))}
@@ -451,11 +490,11 @@ function OrderDetailsModal({
           <section className="border-t border-gray-100 pt-4.5">
             <div className="space-y-2 max-w-xs ml-auto">
               <SummaryRow label="Items Subtotal" value={subtotal} />
-              <SummaryRow label="Global Standard Shipping" value={0} />
-              <SummaryRow label="Regional Taxes" value={0} />
+              <SummaryRow label={shippingLabel} value={shippingFee} />
+              <SummaryRow label="Regional Taxes" value={taxes} />
               <div className="flex justify-between border-t border-gray-100 pt-3 text-sm font-black text-gray-950">
                 <span>Total</span>
-                <span>{currencyFormatter.format(getNumber(order.total))}</span>
+                <span>{currencyFormatter.format(total)}</span>
               </div>
             </div>
           </section>
@@ -508,7 +547,12 @@ function SummaryRow({ label, value }: { label: string; value: number }) {
 }
 
 function ItemThumbnail({ item }: { item: OrderItem }) {
-  const image = getAssetUrl(item.product?.image);
+  let imgUrl = item.product?.image;
+  if (item.product?.images && item.productImageId) {
+     const matching = item.product.images.find(i => i.id === item.productImageId);
+     if (matching) imgUrl = matching.url;
+  }
+  const image = getAssetUrl(imgUrl);
 
   if (!image) {
     return (

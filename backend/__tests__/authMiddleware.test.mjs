@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 await jest.unstable_mockModule('../src/config/db.js', () => ({
   prisma: {
     user: { findUnique: jest.fn() },
+    session: { findFirst: jest.fn() },
   },
 }));
 
@@ -26,12 +27,24 @@ describe('protect middleware', () => {
     const token = jwt.sign({ userId: '123', sessionId: 'session-123' }, 'test-secret');
     req.cookies.access_token = token;
     prisma.user.findUnique.mockResolvedValue({ id: '123', name: 'Test User', email: 'test@example.com', role: 'USER', deletedAt: null });
+    prisma.session.findFirst.mockResolvedValue({ id: 'session-123' });
 
     await protect(req, res, next);
 
     expect(next).toHaveBeenCalledWith();
     expect(req.user).toMatchObject({ id: '123' });
     expect(res.status).not.toHaveBeenCalled();
+  });
+
+  test('should call next with 401 AppError if session is revoked', async () => {
+    const token = jwt.sign({ userId: '123', sessionId: 'session-123' }, 'test-secret');
+    req.cookies.access_token = token;
+    prisma.user.findUnique.mockResolvedValue({ id: '123', name: 'Test User', email: 'test@example.com', role: 'USER', deletedAt: null });
+    prisma.session.findFirst.mockResolvedValue(null);
+
+    await protect(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ statusCode: 401, message: 'Not authorized, session revoked' }));
   });
 
   test('should call next with 401 AppError if no token', async () => {

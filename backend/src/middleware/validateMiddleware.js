@@ -6,7 +6,11 @@ export const validate = (schema, target = 'body') => {
                 field: issue.path.join("."),
                 message: issue.message,
             }));
-            return res.status(400).json({ message: "Validation failed", errors });
+            return res.status(400).json({
+                status: "fail",
+                message: "Please check the highlighted fields and try again.",
+                errors,
+            });
         }
 
         req[target] = result.data; // Use the parsed and validated data

@@ -7,7 +7,12 @@ const categoryService = {
   deleteCategory: jest.fn(),
 };
 
+const auditRepository = {
+  log: jest.fn(),
+};
+
 await jest.unstable_mockModule('../src/services/categoryService.js', () => ({ categoryService }));
+await jest.unstable_mockModule('../src/repositories/auditRepository.js', () => ({ auditRepository }));
 
 const {
   getCategories,

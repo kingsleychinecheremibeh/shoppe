@@ -5,6 +5,7 @@ const publicUserSelect = {
   name: true,
   email: true,
   role: true,
+  managerPermissions: true,
   createdAt: true,
   deletedAt: true,
 }
@@ -14,6 +15,7 @@ const authUserSelect = {
   name: true,
   email: true,
   role: true,
+  managerPermissions: true,
   password: true,
   createdAt: true,
   deletedAt: true,
@@ -54,6 +56,40 @@ export const userRepository = {
     return prisma.user.findUnique({
       where: { id },
       select: publicUserSelect,
+    });
+  },
+
+  findStaffByPermission: (permission) => {
+    return prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { role: "ADMIN" },
+          {
+            role: "MANAGER",
+            managerPermissions: { has: permission },
+          },
+        ],
+      },
+      select: publicUserSelect,
+    });
+  },
+
+  findCustomersForProductAnnouncements: () => {
+    return prisma.user.findMany({
+      where: {
+        role: "USER",
+        deletedAt: null,
+      },
+      select: publicUserSelect,
+    });
+  },
+
+  findAllForAdmin: () => {
+    return prisma.user.findMany({
+      where: { deletedAt: null },
+      select: publicUserSelect,
+      orderBy: { createdAt: "desc" },
     });
   },
 

@@ -9,7 +9,12 @@ const orderService = {
   deleteOrder: jest.fn(),
 };
 
+const orderRepository = {
+  findOrderByIdempotencyKey: jest.fn(),
+};
+
 await jest.unstable_mockModule('../src/services/orderService.js', () => ({ orderService }));
+await jest.unstable_mockModule('../src/repositories/orderRepository.js', () => ({ orderRepository }));
 
 const {
   createOrder,
@@ -23,7 +28,10 @@ const {
 const makeRes = () => ({ status: jest.fn().mockReturnThis(), json: jest.fn() });
 
 describe('orderController', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    orderRepository.findOrderByIdempotencyKey.mockResolvedValue(null);
+  });
 
   test('creates an order', async () => {
     const req = { user: { id: 'user-1' }, body: { addressId: 'addr-1' } };
@@ -35,6 +43,23 @@ describe('orderController', () => {
     expect(orderService.createOrder).toHaveBeenCalledWith('user-1', 'addr-1', undefined, undefined, undefined);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ id: 'order-1' });
+  });
+
+  test('returns an existing order for the same user and idempotency key', async () => {
+    const req = {
+      user: { id: 'user-1' },
+      headers: { 'idempotency-key': 'idem-1' },
+      body: { addressId: 'addr-1', shippingMethodId: 'ship-1' },
+    };
+    const res = makeRes();
+    orderRepository.findOrderByIdempotencyKey.mockResolvedValue({ id: 'order-1', userId: 'user-1' });
+
+    await createOrder(req, res);
+
+    expect(orderRepository.findOrderByIdempotencyKey).toHaveBeenCalledWith('idem-1', 'user-1');
+    expect(orderService.createOrder).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ id: 'order-1', userId: 'user-1' });
   });
 
   test('forwards errors to next when order creation fails', async () => {

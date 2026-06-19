@@ -116,4 +116,52 @@ export const productService = {
 
     return productRepository.delete(id);
   },
+
+  async addImage(productId, data) {
+    const existingProduct = await productRepository.findById(productId);
+    if (!existingProduct) {
+      throw new AppError("Product not found", 404);
+    }
+
+    if (!data.url) {
+      throw new AppError("Image URL is required", 400);
+    }
+
+    return productRepository.addImage(productId, {
+      url: data.url,
+      publicId: data.publicId,
+      altText: data.altText,
+      color: data.color,
+      sortOrder: data.sortOrder,
+      isPrimary: data.isPrimary,
+    });
+  },
+
+  async deleteImage(productId, imageId) {
+    const existingProduct = await productRepository.findById(productId);
+    if (!existingProduct) {
+      throw new AppError("Product not found", 404);
+    }
+
+    const image = await productRepository.findImageById(imageId);
+    if (!image || image.productId !== productId) {
+      throw new AppError("Product image not found", 404);
+    }
+
+    return productRepository.deleteImage(imageId);
+  },
+
+  async setPrimaryImage(productId, imageId) {
+    const existingProduct = await productRepository.findById(productId);
+    if (!existingProduct) {
+      throw new AppError("Product not found", 404);
+    }
+
+    const image = await productRepository.findImageById(imageId);
+    if (!image || image.productId !== productId) {
+      throw new AppError("Product image not found", 404);
+    }
+
+    return productRepository.setPrimaryImage(productId, imageId);
+  },
 };

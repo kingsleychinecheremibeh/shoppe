@@ -69,7 +69,10 @@ async function request<T>(
       .json()
       .catch(() => ({ message: "" }));
 
-    if (error.message === "Invalid CSRF token") {
+    if (
+      error.message === "Invalid CSRF token" ||
+      error.message === "Your session expired. Please refresh the page and try again."
+    ) {
       csrfToken = null;
       return request<T>(endpoint, {
         ...options,
@@ -155,6 +158,36 @@ export const api = {
 
   getMe: () => request("/auth/me"),
 
+  getAdminAnalytics: (range = "30d") => request(`/admin/analytics?range=${encodeURIComponent(range)}`),
+
+  getAdminUsers: () => request("/admin/users"),
+
+  updateUserRole: (id: string, data: { role: "USER" | "MANAGER" | "ADMIN"; managerPermissions?: string[] }) =>
+    request(`/admin/users/${id}/role`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  getNotifications: (params?: { unreadOnly?: boolean; limit?: number }) => {
+    const query = params ? `?${new URLSearchParams(
+      Object.entries(params).reduce<Record<string, string>>((acc, [key, value]) => {
+        if (value !== undefined) acc[key] = String(value);
+        return acc;
+      }, {})
+    ).toString()}` : "";
+    return request(`/notifications${query}`);
+  },
+
+  markNotificationRead: (id: string) =>
+    request(`/notifications/${id}/read`, {
+      method: "PATCH",
+    }),
+
+  markAllNotificationsRead: () =>
+    request("/notifications/read-all", {
+      method: "PATCH",
+    }),
+
   // Products
   getProducts: async (params?: Record<string, string>): Promise<unknown> => {
     const query = params ? `?${new URLSearchParams(params).toString()}` : "";
@@ -185,6 +218,22 @@ export const api = {
   deleteProduct: (id: string) =>
     request(`/products/${id}`, {
       method: "DELETE",
+    }),
+
+  addProductImage: (productId: string, data: unknown) =>
+    request(`/products/${productId}/images`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  deleteProductImage: (productId: string, imageId: string) =>
+    request(`/products/${productId}/images/${imageId}`, {
+      method: "DELETE",
+    }),
+
+  setPrimaryProductImage: (productId: string, imageId: string) =>
+    request(`/products/${productId}/images/${imageId}/primary`, {
+      method: "PATCH",
     }),
 
 
@@ -234,10 +283,10 @@ export const api = {
   // Cart
   getCart: () => request("/cart"),
 
-  addToCart: (productId: string, quantity: number) =>
+  addToCart: (productId: string, quantity: number, selectedColor?: string, productImageId?: string) =>
     request("/cart/items", {
       method: "POST",
-      body: JSON.stringify({ productId, quantity }),
+      body: JSON.stringify({ productId, quantity, selectedColor, productImageId }),
     }),
 
   updateCartItem: (itemId: string, quantity: number) =>

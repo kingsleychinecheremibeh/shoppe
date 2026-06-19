@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
+import { PasswordField } from "@/app/components/password-field";
 import { api } from "@/lib/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,8 +20,21 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 type LoginResponse = {
   user?: {
-    role?: "USER" | "ADMIN";
+    role?: "USER" | "MANAGER" | "ADMIN";
+    managerPermissions?: string[];
   };
+};
+
+const getStaffLandingPath = (user?: LoginResponse["user"]) => {
+  if (user?.role === "ADMIN") return "/admin";
+  if (user?.role !== "MANAGER") return "/account";
+
+  const permissions = user.managerPermissions || [];
+  if (permissions.includes("ANALYTICS")) return "/admin";
+  if (permissions.includes("ORDER_MANAGEMENT")) return "/admin/orders";
+  if (permissions.includes("PRODUCT_MANAGEMENT")) return "/admin/products";
+  if (permissions.includes("SHIPPING_MANAGEMENT")) return "/admin/shipping";
+  return "/account";
 };
 
 const getErrorMessage = (error: unknown) => {
@@ -44,7 +58,7 @@ export default function LoginPage() {
     try {
       const result = (await api.login(data.email.trim(), data.password)) as LoginResponse;
       toast.success("Welcome back!");
-      window.location.assign(result.user?.role === "ADMIN" ? "/admin" : "/account");
+      window.location.assign(getStaffLandingPath(result.user));
     } catch (error) {
       setError("root", { message: getErrorMessage(error) });
     }
@@ -80,20 +94,14 @@ export default function LoginPage() {
               {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
             </div>
 
-            <div>
-              <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-900">
-                Password
-              </label>
-              <input
-                {...register("password")}
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
-                placeholder="Password"
-              />
-              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
-            </div>
+            <PasswordField
+              {...register("password")}
+              id="password"
+              label="Password"
+              autoComplete="current-password"
+              placeholder="Password"
+              error={errors.password?.message}
+            />
 
             <div className="flex items-center justify-between gap-4">
               <label htmlFor="rememberMe" className="flex items-center">

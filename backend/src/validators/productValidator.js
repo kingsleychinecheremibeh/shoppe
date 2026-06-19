@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { sanitizedString } from "../utils/sanitize.js";
 
 const nonEmptyUpdate = (data) => Object.keys(data).length > 0;
 
 export const createProductSchema = z.object({
-    name: z.string().trim().min(2).max(100),
-    description: z.string().trim().min(5),
+    name: sanitizedString(z.string().trim().min(2).max(100)),
+    description: sanitizedString(z.string().trim().min(5)),
     price: z.coerce.number().positive(),
     stock: z.coerce.number().int().nonnegative().optional(),
     categoryId: z.string().uuid(),

@@ -15,7 +15,7 @@ export const cartService = {
         return cartRepository.findWithItems(cart.id);
     },
 
-    async addItem(userId, productId, quantity) {
+    async addItem(userId, productId, quantity, selectedColor = null, productImageId = null) {
         if (!productId) {
             throw new AppError("Product ID is required", 400);
         }
@@ -32,7 +32,7 @@ export const cartService = {
 
         const cart = await getOrCreateCart(userId);
 
-        const existingItem = await cartRepository.findItemByCartAndProduct(cart.id, productId);
+        const existingItem = await cartRepository.findItemByCartAndProduct(cart.id, productId, selectedColor);
         const newQuantity = existingItem ? existingItem.quantity + parsedQuantity : parsedQuantity;
 
         if (newQuantity > product.stock) {
@@ -43,7 +43,13 @@ export const cartService = {
             return cartRepository.updateItem(existingItem.id, { quantity: newQuantity });
         }
 
-        return cartRepository.createItem({ cartId: cart.id, productId, quantity: parsedQuantity });
+        return cartRepository.createItem({ 
+            cartId: cart.id, 
+            productId, 
+            quantity: parsedQuantity,
+            selectedColor,
+            productImageId
+        });
     },
 
     async updateItem(userId, cartItemId, quantity) {

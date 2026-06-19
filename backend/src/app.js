@@ -14,25 +14,20 @@ import addressRoutes from './routes/addressRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import shippingRoutes from './routes/shippingRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json' with { type: 'json' };
 
 import { AppError } from './utils/AppError.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import { requireAllowedOrigin } from './middleware/originMiddleware.js';
+import { shouldUseSecureCookies } from './utils/authCookie.js';
 
 
 export const app = express();
 app.set('trust proxy', 1);
-app.use(
-  helmet({
-    crossOriginOpenerPolicy: { policy: "same-origin" },
-    crossOriginResourcePolicy: { policy: "same-origin" },
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  })
-);
-
 
 const normalizeOrigin = (origin) => {
   if (!origin) return null;
@@ -52,6 +47,31 @@ const allowedOrigins = [
   .map((origin) => normalizeOrigin(origin?.trim()))
   .filter(Boolean);
 
+const connectSources = ["'self'", ...allowedOrigins];
+const imageSources = ["'self'", "data:", "blob:", "https://res.cloudinary.com"];
+
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "same-origin" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        imgSrc: imageSources,
+        connectSrc: connectSources,
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        fontSrc: ["'self'", "data:"],
+        formAction: ["'self'"],
+      },
+    },
+  })
+);
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
@@ -69,7 +89,12 @@ const apilimiter = rateLimit({
   max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests, slow down please.',
+  handler: (req, res) => {
+    res.status(429).json({
+      status: "fail",
+      message: "Too many requests. Please wait a few minutes and try again.",
+    });
+  },
 });
 
 app.use('/api', apilimiter);
@@ -95,8 +120,8 @@ const jsonParser = express.json({
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: shouldUseSecureCookies() ? 'none' : 'lax',
+    secure: shouldUseSecureCookies(),
   },
 });
 
@@ -131,7 +156,9 @@ app.use('/api/v1/addresses', addressRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/shipping-methods', shippingRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Serve uploaded image files statically
 app.use('/uploads', express.static('uploads'));
@@ -150,7 +177,7 @@ app.get('/api/health', (req, res) => {
 
 
 app.use((req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  next(new AppError("We could not find what you are looking for.", 404));
 });
 
 app.use(errorHandler);

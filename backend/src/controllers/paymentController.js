@@ -1,6 +1,7 @@
 import { paymentService } from "../services/paymentService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
+import { auditRepository } from "../repositories/auditRepository.js";
 
 /**
  * Initialize payment session
@@ -40,6 +41,16 @@ export const handleStripeWebhook = asyncHandler(async (req, res) => {
   const rawBody = req.rawBody || req.body;
   const result = await paymentService.verifyStripeEvent(rawBody, signature);
 
+  if (result?.orderId) {
+    await auditRepository.log({
+      req,
+      action: "STRIPE_WEBHOOK_PROCESSED",
+      entity: "ORDER",
+      entityId: result.orderId,
+      metadata: { status: result.status, alreadyProcessed: result.alreadyProcessed || false },
+    });
+  }
+
   res.status(200).json({
     status: "success",
     received: true,
@@ -59,6 +70,15 @@ export const handlePaystackWebhook = asyncHandler(async (req, res) => {
 
   const rawBody = req.rawBody || req.body;
   const result = await paymentService.verifyPaystackEvent(rawBody, signature);
+  if (result?.orderId) {
+    await auditRepository.log({
+      req,
+      action: "PAYSTACK_WEBHOOK_PROCESSED",
+      entity: "ORDER",
+      entityId: result.orderId,
+      metadata: { status: result.status, alreadyProcessed: result.alreadyProcessed || false },
+    });
+  }
   res.status(200).json({ received: true, ...result });
 });
 
@@ -74,5 +94,14 @@ export const verifyPaystackPayment = asyncHandler(async (req, res) => {
   }
 
   const result = await paymentService.verifyPaystackTransaction(reference);
+  if (result?.orderId) {
+    await auditRepository.log({
+      req,
+      action: "PAYSTACK_TRANSACTION_VERIFIED",
+      entity: "ORDER",
+      entityId: result.orderId,
+      metadata: { status: result.status },
+    });
+  }
   res.status(200).json({ success: true, data: result });
 });

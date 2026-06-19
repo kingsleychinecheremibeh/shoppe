@@ -10,6 +10,10 @@ const adminOnly = (req, res, next) => {
   if (req.user?.role === 'ADMIN') return next();
   return res.status(403).json({ message: 'Access denied. Admin only.' });
 };
+const staffWithPermission = () => (req, res, next) => {
+  if (req.user?.role === 'ADMIN') return next();
+  return res.status(403).json({ message: 'You do not have permission to perform this action.' });
+};
 
 const addressHandlers = {
   getAddresses: jest.fn((req, res) => res.json({ handler: 'getAddresses' })),
@@ -47,7 +51,7 @@ const orderHandlers = {
   deleteOrder: jest.fn((req, res) => res.json({ handler: 'deleteOrder' })),
 };
 
-await jest.unstable_mockModule('../src/middleware/authMiddleware.js', () => ({ protect, adminOnly }));
+await jest.unstable_mockModule('../src/middleware/authMiddleware.js', () => ({ protect, adminOnly, staffWithPermission }));
 await jest.unstable_mockModule('../src/controllers/addressController.js', () => addressHandlers);
 await jest.unstable_mockModule('../src/controllers/authController.js', () => authHandlers);
 await jest.unstable_mockModule('../src/controllers/cartController.js', () => cartHandlers);
@@ -91,7 +95,7 @@ describe('remaining routes', () => {
     const response = await request(app).post('/addresses').send({ fullName: 'A' });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Validation failed');
+    expect(response.body.message).toBe('Please check the highlighted fields and try again.');
   });
 
   test('auth routes call their handlers', async () => {

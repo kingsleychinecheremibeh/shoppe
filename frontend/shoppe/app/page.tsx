@@ -129,7 +129,7 @@ function CategoryCard({ category, priority = false }: { category: Category, prio
         )}
       </div>
       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-6">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-1">Explore Range</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-1">Shop category</span>
         <h3 className="text-xl font-bold text-white tracking-wider uppercase font-serif md:text-2xl">{category.name}</h3>
       </div>
     </Link>  
@@ -151,7 +151,7 @@ export default async function Home() {
             
             {/* Left Content */}
             <div className="lg:col-span-7 max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-4 block">New Arrivals</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-4 block">New products</span>
               <h1 className="mb-6 text-5xl font-black md:text-7xl leading-tight font-serif text-gray-950">
                 Shop Quality <br className="hidden md:inline" /> Products Online
               </h1>
@@ -163,7 +163,7 @@ export default async function Home() {
                   href="/products"
                   className="inline-flex items-center gap-2 bg-gray-950 text-white px-8 py-3.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition shadow-sm"
                 >
-                  Explore Collection
+                  Shop Products
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
@@ -214,8 +214,8 @@ export default async function Home() {
           <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left border-x border-gray-100 px-2 sm:px-6">
             <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0" />
             <div>
-              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Warranty Guarantee</h3>
-              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">Physical quality audits before packaging</p>
+              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Checked Before Shipping</h3>
+              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">Products are checked before they are packed</p>
             </div>
           </div>
           <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left">
@@ -242,7 +242,7 @@ export default async function Home() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center">No categories registered.</p>
+          <p className="text-gray-500 text-center">No categories are available yet.</p>
         )}
       </section>
 
@@ -251,7 +251,7 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Just Released</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Recently added</span>
               <h2 className="text-3xl font-bold font-serif text-gray-950">New Arrivals</h2>
             </div>
             <Link href="/products" className="text-xs font-bold uppercase tracking-wider border-b border-gray-950 pb-0.5 hover:opacity-75 transition shrink-0 self-start sm:self-auto mt-4 sm:mt-0">
@@ -283,11 +283,11 @@ export default async function Home() {
 
         {/* Checkout Confidence Copy */}
         <div className="flex flex-col justify-center p-8 sm:p-16 md:p-24 max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-3 block">Shop With Confidence</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Shop With Confidence</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold font-serif leading-tight mb-5">
             Reliable Products, Easy Checkout
           </h2>
-          <p className="text-gray-600 text-sm leading-relaxed mb-8">
+          <p className="text-gray-300 text-sm leading-relaxed mb-8">
             Browse products, add items to cart, and complete checkout securely with clear delivery and return support.
           </p>
           <Link
@@ -321,7 +321,7 @@ export default async function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center">No curated classics available.</p>
+            <p className="text-gray-500 text-center">No featured products are available yet.</p>
           )}
         </div>
       </section>

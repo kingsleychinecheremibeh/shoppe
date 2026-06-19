@@ -30,7 +30,10 @@ describe('server app', () => {
       .send({ email: 'user@example.com', password: 'secret1' });
 
     expect(response.status).toBe(403);
-    expect(response.body).toEqual({ status: 'fail', message: 'Invalid CSRF token' });
+    expect(response.body).toEqual({
+      status: 'fail',
+      message: 'Your session expired. Please refresh the page and try again.',
+    });
   });
 
   test('issues a CSRF token that allows state-changing API requests to reach route validation', async () => {
@@ -45,7 +48,7 @@ describe('server app', () => {
     expect(tokenResponse.status).toBe(200);
     expect(typeof tokenResponse.body.csrfToken).toBe('string');
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Validation failed');
+    expect(response.body.message).toBe('Please check the highlighted fields and try again.');
   });
 
   test('handles undefined routes with json error', async () => {
@@ -54,7 +57,7 @@ describe('server app', () => {
     expect(response.status).toBe(404);
     expect(response.body).toEqual({
       status: 'fail',
-      message: "Can't find /missing-route on this server!",
+      message: 'We could not find what you are looking for.',
     });
   });
 });

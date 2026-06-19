@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { sanitizedString } from "../utils/sanitize.js";
+
 export const categorySchema = z.object({
-    name: z.string().trim().min(2).max(80),
+    name: sanitizedString(z.string().trim().min(2).max(80)),
     image: z.string()
         .trim()
         .refine(val => val.startsWith("/") || z.string().url().safeParse(val).success, {

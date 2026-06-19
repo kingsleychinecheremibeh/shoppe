@@ -15,6 +15,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
     order: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
@@ -172,5 +173,14 @@ describe('orderRepository', () => {
 
     expect(tx.orderItem.deleteMany).toHaveBeenCalledWith({ where: { orderId: 'order-1' } });
     expect(tx.order.delete).toHaveBeenCalledWith({ where: { id: 'order-1' } });
+  });
+
+  test('finds an idempotent order only for the same user', async () => {
+    await orderRepository.findOrderByIdempotencyKey('idem-1', 'user-1');
+
+    expect(prisma.order.findFirst).toHaveBeenCalledWith({
+      where: { idempotencyKey: 'idem-1', userId: 'user-1' },
+      include: { orderItems: { include: { product: true } }, address: true },
+    });
   });
 });

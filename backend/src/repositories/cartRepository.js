@@ -28,9 +28,9 @@ export const cartRepository = {
         });
     },
 
-    findItemByCartAndProduct: (cartId, productId) => {
-        return prisma.cartItem.findUnique({
-            where: { cartId_productId: { cartId, productId } },
+    findItemByCartAndProduct: (cartId, productId, selectedColor = null) => {
+        return prisma.cartItem.findFirst({
+            where: { cartId, productId, selectedColor },
         });
     },
 

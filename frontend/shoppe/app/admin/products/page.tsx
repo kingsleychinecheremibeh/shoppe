@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
-import { Edit, ImageIcon, Plus, Search, Trash2, X } from "lucide-react";
+import { CheckCircle2, Edit, ImageIcon, Plus, Search, Star, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { AlertBanner, ConfirmModal, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api, getAssetUrl } from "@/lib/api";
@@ -10,7 +10,8 @@ type UserData = {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "MANAGER" | "ADMIN";
+  managerPermissions?: string[];
 };
 
 type MeResponse = {
@@ -33,6 +34,17 @@ type Product = {
   image?: string | null;
   categoryId: string;
   category?: Category | null;
+  images?: ProductGalleryImage[];
+};
+
+type ProductGalleryImage = {
+  id: string;
+  url: string;
+  publicId?: string | null;
+  altText?: string | null;
+  color?: string | null;
+  sortOrder: number;
+  isPrimary: boolean;
 };
 
 type ProductFormData = {
@@ -46,6 +58,7 @@ type ProductFormData = {
 
 type UploadResponse = {
   url: string;
+  publicId?: string;
 };
 
 const initialFormData: ProductFormData = {
@@ -78,12 +91,31 @@ const getStockClassName = (stock: number) => {
   return "bg-green-100 text-green-800";
 };
 
+const getProductFormData = (product: Product): ProductFormData => ({
+  name: product.name,
+  description: product.description || "",
+  price: String(product.price),
+  stock: String(product.stock ?? 0),
+  categoryId: product.categoryId || product.category?.id || "",
+  image: product.image || "",
+});
+
+const normalizeColor = (color: string) => color.trim().toLowerCase();
+
+const getPrimaryGalleryImage = (product: Product) => {
+  return product.images?.find((image) => image.isPrimary) || product.images?.[0];
+};
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
+  const [primaryImageId, setPrimaryImageId] = useState<string | null>(null);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [galleryColor, setGalleryColor] = useState("");
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -97,8 +129,11 @@ export default function AdminProductsPage() {
       setFetchError("");
       const me = (await api.getMe()) as MeResponse;
 
-      if (me.user.role !== "ADMIN") {
-        toast.error("You need an admin account to manage products.");
+      const canManageProducts =
+        me.user.role === "ADMIN" || me.user.managerPermissions?.includes("PRODUCT_MANAGEMENT");
+
+      if (!canManageProducts) {
+        toast.error("You need product management access to manage products.");
         window.location.assign("/");
         return;
       }
@@ -140,14 +175,7 @@ export default function AdminProductsPage() {
   const handleOpenModal = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
-      setFormData({
-        name: product.name,
-        description: product.description || "",
-        price: String(product.price),
-        stock: String(product.stock ?? 0),
-        categoryId: product.categoryId || product.category?.id || "",
-        image: product.image || "",
-      });
+      setFormData(getProductFormData(product));
     } else {
       setEditingProduct(null);
       setFormData({
@@ -160,11 +188,18 @@ export default function AdminProductsPage() {
   };
 
   const handleCloseModal = () => {
-    if (saving) return;
+    if (saving || uploadingGalleryImage || primaryImageId || deletingImageId) return;
     setShowModal(false);
     setEditingProduct(null);
     setFormData(initialFormData);
+    setGalleryColor("");
     setFormErrors({});
+  };
+
+  const refreshProductImages = async (productId: string) => {
+    await fetchProducts();
+    const refreshed = (await api.getProduct(productId)) as Product;
+    setEditingProduct(refreshed);
   };
 
   const handleChange = (
@@ -202,6 +237,62 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleGalleryImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !editingProduct) return;
+
+    try {
+      setUploadingGalleryImage(true);
+      const result = (await api.uploadImage(file)) as UploadResponse;
+      await api.addProductImage(editingProduct.id, {
+        url: result.url,
+        publicId: result.publicId,
+        color: galleryColor.trim() || undefined,
+        altText: editingProduct.name,
+        sortOrder: editingProduct.images?.length ?? 0,
+        isPrimary: !editingProduct.images?.length && !editingProduct.image,
+      });
+      toast.success("Gallery image added successfully.");
+      setGalleryColor("");
+      await refreshProductImages(editingProduct.id);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to add gallery image."));
+    } finally {
+      setUploadingGalleryImage(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleSetPrimaryImage = async (image: ProductGalleryImage) => {
+    if (!editingProduct) return;
+
+    try {
+      setPrimaryImageId(image.id);
+      await api.setPrimaryProductImage(editingProduct.id, image.id);
+      toast.success("Primary image updated.");
+      await refreshProductImages(editingProduct.id);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update primary image."));
+    } finally {
+      setPrimaryImageId(null);
+    }
+  };
+
+  const handleDeleteGalleryImage = async (image: ProductGalleryImage) => {
+    if (!editingProduct) return;
+
+    try {
+      setDeletingImageId(image.id);
+      await api.deleteProductImage(editingProduct.id, image.id);
+      toast.success("Gallery image deleted.");
+      await refreshProductImages(editingProduct.id);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to delete gallery image."));
+    } finally {
+      setDeletingImageId(null);
+    }
+  };
+
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextErrors: Partial<Record<keyof ProductFormData, string>> = {};
@@ -219,6 +310,15 @@ export default function AdminProductsPage() {
 
     if (!Number.isInteger(stock) || stock < 0) {
       nextErrors.stock = "Stock must be a non-negative whole number.";
+    }
+
+    const pendingGalleryColor = galleryColor.trim();
+    const galleryColorImageUrl =
+      formData.image.trim() ||
+      (editingProduct ? getPrimaryGalleryImage(editingProduct)?.url : "");
+
+    if (editingProduct && pendingGalleryColor && !galleryColorImageUrl) {
+      nextErrors.image = "Add an image before saving a color.";
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -251,17 +351,38 @@ export default function AdminProductsPage() {
     try {
       if (editingProduct) {
         await api.updateProduct(editingProduct.id, payload);
-        toast.success("Product updated successfully.");
-      } else {
-        await api.createProduct(payload);
-        toast.success("Product created successfully.");
-      }
 
-      setShowModal(false);
-      setEditingProduct(null);
-      setFormData(initialFormData);
-      setFormErrors({});
-      await fetchProducts();
+        if (pendingGalleryColor) {
+          const colorAlreadyExists = editingProduct.images?.some((image) => {
+            return image.color ? normalizeColor(image.color) === normalizeColor(pendingGalleryColor) : false;
+          });
+
+          if (!colorAlreadyExists) {
+            await api.addProductImage(editingProduct.id, {
+              url: galleryColorImageUrl,
+              color: pendingGalleryColor,
+              altText: editingProduct.name,
+              sortOrder: editingProduct.images?.length ?? 0,
+              isPrimary: !editingProduct.images?.length && !editingProduct.image,
+            });
+          }
+        }
+
+        toast.success("Product updated successfully.");
+        setShowModal(false);
+        setEditingProduct(null);
+        setFormData(initialFormData);
+        setGalleryColor("");
+        setFormErrors({});
+        await fetchProducts();
+      } else {
+        const createdProduct = (await api.createProduct(payload)) as Product;
+        toast.success("Product created. Add color images below.");
+        setEditingProduct(createdProduct);
+        setFormData(getProductFormData(createdProduct));
+        setGalleryColor("");
+        await fetchProducts();
+      }
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to save product."));
     } finally {
@@ -385,12 +506,8 @@ export default function AdminProductsPage() {
                             {product.stock} in stock
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {product.image ? (
-                            <span className="text-green-700">Set</span>
-                          ) : (
-                            <span className="text-gray-600">None</span>
-                          )}
+                        <td className="px-6 py-4">
+                          <ProductImageSummary product={product} />
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-1.5">
@@ -582,7 +699,116 @@ export default function AdminProductsPage() {
                   className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
                   placeholder="/uploads/image.webp or https://images.unsplash.com/photo-..."
                 />
+                <FieldError message={formErrors.image} />
               </div>
+
+              {editingProduct && (
+                <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+                  <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <label htmlFor="galleryColor" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                        Gallery Color
+                      </label>
+                      <input
+                        id="galleryColor"
+                        name="galleryColor"
+                        type="text"
+                        value={galleryColor}
+                        onChange={(event) => setGalleryColor(event.target.value)}
+                        className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5 sm:w-52"
+                        placeholder="Black, Blue, Red..."
+                      />
+                    </div>
+                    <label
+                      className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-[10px] font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50 ${
+                        uploadingGalleryImage || saving ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                      }`}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {uploadingGalleryImage ? "Uploading..." : "Add Gallery Image"}
+                      <input
+                        id="productGalleryImageUpload"
+                        name="productGalleryImageUpload"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleGalleryImageUpload}
+                        disabled={uploadingGalleryImage || saving}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+
+                  {editingProduct.images?.length ? (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {editingProduct.images.map((image) => {
+                        const imageUrl = getAssetUrl(image.url);
+                        const isSettingPrimary = primaryImageId === image.id;
+                        const isDeleting = deletingImageId === image.id;
+                        const actionDisabled =
+                          uploadingGalleryImage ||
+                          Boolean(primaryImageId) ||
+                          Boolean(deletingImageId) ||
+                          saving;
+
+                        return (
+                          <div key={image.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                            <div className="relative aspect-square bg-gray-50">
+                              {imageUrl ? (
+                                <div
+                                  className="h-full w-full bg-cover bg-center"
+                                  style={{ backgroundImage: `url("${imageUrl}")` }}
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-gray-600">
+                                  <ImageIcon className="h-5 w-5" />
+                                </div>
+                              )}
+                              {image.isPrimary && (
+                                <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-green-700 shadow-sm">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  Primary
+                                </span>
+                              )}
+                            </div>
+                            <div className="space-y-2 p-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="truncate text-[10px] font-bold uppercase tracking-wide text-gray-600">
+                                  {image.color || "Default"}
+                                </span>
+                                {image.isPrimary && <CheckCircle2 className="h-3.5 w-3.5 text-green-700" />}
+                              </div>
+                              <div className="flex gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetPrimaryImage(image)}
+                                  disabled={image.isPrimary || actionDisabled}
+                                  className="inline-flex h-7 flex-1 items-center justify-center rounded-md border border-gray-200 text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 disabled:cursor-default disabled:opacity-40"
+                                  aria-label="Set primary image"
+                                >
+                                  <Star className={`h-3.5 w-3.5 ${isSettingPrimary ? "animate-pulse" : ""}`} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteGalleryImage(image)}
+                                  disabled={actionDisabled}
+                                  className="inline-flex h-7 flex-1 items-center justify-center rounded-md border border-red-100 text-red-600 transition hover:bg-red-50"
+                                  aria-label="Delete gallery image"
+                                >
+                                  <Trash2 className={`h-3.5 w-3.5 ${isDeleting ? "animate-pulse" : ""}`} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-gray-200 bg-white px-4 py-6 text-center text-xs font-medium text-gray-500">
+                      No gallery images
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex flex-col-reverse gap-3 pt-2.5 sm:flex-row sm:justify-end">
                 <button
@@ -643,8 +869,44 @@ function TableHead({
   );
 }
 
+function ProductImageSummary({ product }: { product: Product }) {
+  const galleryCount = product.images?.length ?? 0;
+  const primaryImage = product.images?.find((image) => image.isPrimary);
+
+  if (galleryCount > 0) {
+    return (
+      <div className="space-y-1">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          {galleryCount} {galleryCount === 1 ? "image" : "images"}
+        </span>
+        <p className="text-[10px] font-medium text-gray-500">
+          {primaryImage ? "Primary selected" : "First image shown"}
+        </p>
+      </div>
+    );
+  }
+
+  if (product.image) {
+    return (
+      <div className="space-y-1">
+        <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+          Cover set
+        </span>
+        <p className="text-[10px] font-medium text-gray-500">Legacy fallback</p>
+      </div>
+    );
+  }
+
+  return <span className="text-sm text-gray-600">None</span>;
+}
+
 function ProductThumbnail({ product }: { product: Product }) {
-  const imageUrl = getAssetUrl(product.image);
+  const primaryImage =
+    product.images?.find((image) => image.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    product.image;
+  const imageUrl = getAssetUrl(primaryImage);
 
   if (!imageUrl) {
     return (

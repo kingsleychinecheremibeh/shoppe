@@ -10,7 +10,8 @@ type UserData = {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "MANAGER" | "ADMIN";
+  managerPermissions?: string[];
 };
 
 type MeResponse = {
@@ -58,8 +59,11 @@ export default function AdminCategoriesPage() {
       setFetchError("");
       const me = (await api.getMe()) as MeResponse;
 
-      if (me.user.role !== "ADMIN") {
-        toast.error("You need an admin account to manage categories.");
+      const canManageProducts =
+        me.user.role === "ADMIN" || me.user.managerPermissions?.includes("PRODUCT_MANAGEMENT");
+
+      if (!canManageProducts) {
+        toast.error("You need product management access to manage categories.");
         window.location.assign("/");
         return;
       }
