@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shoppe — Frontend
+
+The Next.js 16 storefront and admin dashboard for the Shoppe e-commerce platform.
+
+## Tech Stack
+
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS 4**
+- **React Hook Form + Zod** — form handling and validation
+- **SWR** — data fetching and caching
+- **Recharts** — admin analytics
+- **Lucide React** — icons
+- **Sonner** — toast notifications
+- **Sentry** — error monitoring
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file in this directory:
 
-## Learn More
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm start        # Start production server
+npm run lint     # Run ESLint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Pages
 
-## Deploy on Vercel
+| Route | Description |
+|---|---|
+| `/` | Home — product listing |
+| `/products/:slug` | Product detail |
+| `/categories/:slug` | Products by category |
+| `/cart` | Shopping cart |
+| `/checkout` | Checkout flow |
+| `/secure-checkout` | Payment step |
+| `/orders` | Order history |
+| `/account` | User account |
+| `/login` | Login |
+| `/register` | Register |
+| `/forgot-password` | Password reset |
+| `/admin` | Admin dashboard |
+| `/faq` | FAQ page |
+| `/contact` | Contact page |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+├── (pages)/          # Storefront pages
+├── admin/            # Admin dashboard
+├── components/       # Shared UI components
+├── hooks/            # Custom React hooks
+lib/                  # API client, utilities
+```
+
+## Auth
+
+Authentication uses **HTTP-only cookies** set by the backend. The frontend does **not** store tokens. All API requests must include credentials:
+
+```ts
+fetch(url, { credentials: "include" });
+```
+
+Token refresh is handled automatically — when a 401 is received, the frontend silently calls `/auth/refresh-token` and retries the original request.
+
+---
+
+For full project documentation, see the [root README](../../README.md).
