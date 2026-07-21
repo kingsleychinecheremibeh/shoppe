@@ -28,6 +28,10 @@ const authHandlers = {
   refreshAccessToken: jest.fn((req, res) => res.json({ handler: 'refreshAccessToken' })),
   getCurrentUser: jest.fn((req, res) => res.json({ handler: 'getCurrentUser' })),
   logoutUser: jest.fn((req, res) => res.json({ handler: 'logoutUser' })),
+  verifyEmail: jest.fn((req, res) => res.json({ handler: 'verifyEmail' })),
+  resendVerification: jest.fn((req, res) => res.json({ handler: 'resendVerification' })),
+  forgotPassword: jest.fn((req, res) => res.json({ handler: 'forgotPassword' })),
+  resetPassword: jest.fn((req, res) => res.json({ handler: 'resetPassword' })),
 };
 const cartHandlers = {
   getCart: jest.fn((req, res) => res.json({ handler: 'getCart' })),

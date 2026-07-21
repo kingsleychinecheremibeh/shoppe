@@ -32,6 +32,7 @@ describe('repositories', () => {
     email: true,
     role: true,
     managerPermissions: true,
+    emailVerifiedAt: true,
     createdAt: true,
     deletedAt: true,
   };

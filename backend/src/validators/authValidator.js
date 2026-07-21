@@ -26,3 +26,12 @@ export const loginSchema = z.object({
 export const refreshSchema = z.object({
     refreshToken: z.string().optional(),
 });
+
+const emailSchema = z.string().email("Please provide a valid email");
+const otpSchema = z.string().regex(/^\d{6}$/, "Code must be six digits");
+const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+
+export const verifyEmailSchema = z.object({ email: emailSchema, code: otpSchema });
+export const resendVerificationSchema = z.object({ email: emailSchema });
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+export const resetPasswordSchema = z.object({ email: emailSchema, code: otpSchema, password: passwordSchema });

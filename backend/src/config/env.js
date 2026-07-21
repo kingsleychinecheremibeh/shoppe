@@ -9,6 +9,8 @@ const requiredBaseEnv = [
   "CLOUDINARY_API_SECRET",
 ];
 
+const requiredEmailEnv = ["RESEND_API_KEY", "EMAIL_FROM"];
+
 const requiredStripeEnv = [
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
@@ -19,6 +21,10 @@ export const validateEnv = () => {
 
   if (process.env.STRIPE_ENABLED === "true") {
     required.push(...requiredStripeEnv);
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    required.push(...requiredEmailEnv);
   }
 
   const missing = required.filter((name) => !process.env[name]?.trim());

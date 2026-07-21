@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { UserPlus } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { PasswordField } from "@/app/components/password-field";
 import { api } from "@/lib/api";
@@ -11,9 +11,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Full name is required"),
+const resetSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
+  code: z.string().regex(/^\d{6}$/, "Enter the 6 digit code."),
   password: z.string().min(6, "Password must be at least 6 characters."),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -21,39 +21,36 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+type ResetFormData = z.infer<typeof resetSchema>;
 
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
-  return "Registration failed. Please try again.";
+  return "Password reset failed. Please try again.";
 };
 
-export default function RegisterPage() {
-  const router = useRouter();
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+export default function ResetPasswordPage() {
+  const searchParams = useSearchParams();
+  const initialEmail = searchParams.get("email") || "";
+  const [statusMessage, setStatusMessage] = useState<string | null>(
+    initialEmail ? "Enter the reset code sent to your email." : null
+  );
 
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<ResetFormData>({
+    resolver: zodResolver(resetSchema),
+    defaultValues: { email: initialEmail, code: "", password: "", confirmPassword: "" },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: ResetFormData) => {
     try {
       setStatusMessage(null);
-      await api.register({
-        name: data.name.trim(),
-        email: data.email.trim(),
-        password: data.password,
-      });
-
-      setStatusMessage("Account created. Redirecting you to email verification...");
-      window.setTimeout(() => {
-        window.location.assign(`/verify-email?email=${encodeURIComponent(data.email.trim())}`);
-      }, 1200);
+      await api.resetPassword(data.email.trim(), data.code.trim(), data.password);
+      setStatusMessage("Password reset successful. Redirecting you to login...");
+      window.setTimeout(() => window.location.assign("/login"), 1200);
     } catch (error) {
       setError("root", { message: getErrorMessage(error) });
     }
@@ -65,30 +62,15 @@ export default function RegisterPage() {
         <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
           <div className="mb-8 text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-950">
-              <UserPlus className="h-8 w-8 text-white" />
+              <KeyRound className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-3xl font-serif font-black tracking-tight text-gray-950">Create Account</h1>
-            <p className="mt-2 text-gray-600">Join us today</p>
+            <h1 className="text-3xl font-serif font-black tracking-tight text-gray-950">Reset Password</h1>
+            <p className="mt-2 text-gray-600">Enter your code and choose a new password</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {statusMessage ? <AlertBanner variant="info" message={statusMessage} /> : null}
             {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
-
-            <div>
-              <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-900">
-                Full Name
-              </label>
-              <input
-                {...register("name")}
-                id="name"
-                type="text"
-                autoComplete="name"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
-                placeholder="John Doe"
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
-            </div>
 
             <div>
               <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-900">
@@ -102,15 +84,31 @@ export default function RegisterPage() {
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
                 placeholder="you@example.com"
               />
-              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+              {errors.email ? <p className="mt-1 text-sm text-red-500">{errors.email.message}</p> : null}
+            </div>
+
+            <div>
+              <label htmlFor="code" className="mb-2 block text-sm font-medium text-gray-900">
+                Reset Code
+              </label>
+              <input
+                {...register("code")}
+                id="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-lg tracking-[0.35em] text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
+                placeholder="000000"
+              />
+              {errors.code ? <p className="mt-1 text-sm text-red-500">{errors.code.message}</p> : null}
             </div>
 
             <PasswordField
               {...register("password")}
               id="password"
-              label="Password"
+              label="New Password"
               autoComplete="new-password"
-              placeholder="Password"
+              placeholder="New password"
               error={errors.password?.message}
             />
 
@@ -123,50 +121,21 @@ export default function RegisterPage() {
               error={errors.confirmPassword?.message}
             />
 
-            <div className="flex items-start">
-              <input
-                id="terms"
-                type="checkbox"
-                required
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-950"
-              />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I agree to the{" "}
-                <Link href="/terms" className="font-medium text-gray-950 hover:underline">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="font-medium text-gray-950 hover:underline">
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
-
             <LoadingButton
               type="submit"
               loading={isSubmitting}
               className="w-full rounded-lg bg-gray-950 py-3 font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Create Account
+              Reset Password
             </LoadingButton>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">
-            Already have an account?{" "}
+            Remember your password?{" "}
             <Link href="/login" className="font-medium text-gray-950 hover:underline">
               Login
             </Link>
           </p>
-        </div>
-
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="text-sm text-gray-600 hover:text-gray-950"
-          >
-            Back to home
-          </button>
         </div>
       </div>
     </main>

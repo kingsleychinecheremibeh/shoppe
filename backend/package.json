@@ -37,6 +37,7 @@
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "redis": "^5.12.1",
+    "resend": "^6.17.2",
     "slugify": "^1.6.9",
     "stripe": "^22.1.1",
     "swagger-autogen": "^2.23.7",

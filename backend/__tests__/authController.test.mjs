@@ -5,11 +5,15 @@ const authService = {
   login: jest.fn(),
   refreshAccessToken: jest.fn(),
   logout: jest.fn(),
+  verifyEmail: jest.fn(),
+  resendVerification: jest.fn(),
+  forgotPassword: jest.fn(),
+  resetPassword: jest.fn(),
 };
 
 await jest.unstable_mockModule('../src/services/authService.js', () => ({ authService }));
 
-const { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken } = await import('../src/controllers/authController.js');
+const { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken, verifyEmail, resendVerification, forgotPassword, resetPassword } = await import('../src/controllers/authController.js');
 
 const makeRes = () => ({
   status: jest.fn().mockReturnThis(),
@@ -26,15 +30,14 @@ describe('authController', () => {
       const req = { body: { name: 'Test User', email: 'test@example.com', password: 'pass123' } };
       const res = makeRes();
       const next = jest.fn();
-      authService.register.mockResolvedValue({ user: { id: '1' }, token: 'tok', refreshToken: 'refresh-tok' });
+      authService.register.mockResolvedValue({ message: 'Registration successful. Check your email for a verification code.' });
 
       await registerUser(req, res, next);
 
       expect(authService.register).toHaveBeenCalledWith(req.body);
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.cookie).toHaveBeenCalledWith('access_token', 'tok', expect.objectContaining({ httpOnly: true, sameSite: 'lax' }));
-      expect(res.cookie).toHaveBeenCalledWith('refresh_token', 'refresh-tok', expect.objectContaining({ httpOnly: true, sameSite: 'lax' }));
-      expect(res.json).toHaveBeenCalledWith({ user: { id: '1' } });
+      expect(res.cookie).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({ message: 'Registration successful. Check your email for a verification code.' });
     });
 
     test('should forward errors to next when registration fails', async () => {
@@ -123,5 +126,23 @@ describe('authController', () => {
       expect(res.clearCookie).toHaveBeenCalledWith('refresh_token', expect.objectContaining({ httpOnly: true, sameSite: 'lax' }));
       expect(res.json).toHaveBeenCalledWith({ message: 'Logged out successfully' });
     });
+  });
+
+  test.each([
+    ['verifyEmail', verifyEmail, 'verifyEmail', { email: 'test@example.com', code: '123456' }],
+    ['resendVerification', resendVerification, 'resendVerification', { email: 'test@example.com' }],
+    ['forgotPassword', forgotPassword, 'forgotPassword', { email: 'test@example.com' }],
+    ['resetPassword', resetPassword, 'resetPassword', { email: 'test@example.com', code: '123456', password: 'newpass123' }],
+  ])('%s returns its service response', async (_name, handler, serviceMethod, body) => {
+    const req = { body };
+    const res = makeRes();
+    const next = jest.fn();
+    authService[serviceMethod].mockResolvedValue({ message: 'ok' });
+
+    await handler(req, res, next);
+
+    expect(authService[serviceMethod]).toHaveBeenCalledWith(body);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ message: 'ok' });
   });
 });

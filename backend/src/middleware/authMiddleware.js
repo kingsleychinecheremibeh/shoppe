@@ -56,6 +56,7 @@ export const protect = asyncHandler(async (req, res, next) => {
         email: user.email,
         role: user.role,
         managerPermissions: user.managerPermissions || [],
+        emailVerifiedAt: user.emailVerifiedAt,
         createdAt: user.createdAt,
     };
     next();

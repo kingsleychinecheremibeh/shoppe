@@ -144,6 +144,34 @@ export const api = {
       skipRefresh: true,
     }),
 
+  verifyEmail: (email: string, code: string) =>
+    request("/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+      skipRefresh: true,
+    }),
+
+  resendVerification: (email: string) =>
+    request("/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+      skipRefresh: true,
+    }),
+
+  forgotPassword: (email: string) =>
+    request("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+      skipRefresh: true,
+    }),
+
+  resetPassword: (email: string, code: string, password: string) =>
+    request("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ email, code, password }),
+      skipRefresh: true,
+    }),
+
   logout: () =>
     request("/auth/logout", {
       method: "POST",

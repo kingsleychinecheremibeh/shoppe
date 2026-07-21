@@ -6,6 +6,7 @@ const publicUserSelect = {
   email: true,
   role: true,
   managerPermissions: true,
+  emailVerifiedAt: true,
   createdAt: true,
   deletedAt: true,
 }
@@ -16,6 +17,7 @@ const authUserSelect = {
   email: true,
   role: true,
   managerPermissions: true,
+  emailVerifiedAt: true,
   password: true,
   createdAt: true,
   deletedAt: true,
@@ -106,6 +108,14 @@ export const userRepository = {
     return prisma.user.update({
       where: { id },
       data,
+      select: publicUserSelect,
+    });
+  },
+
+  markEmailVerified: (id) => {
+    return prisma.user.update({
+      where: { id },
+      data: { emailVerifiedAt: new Date() },
       select: publicUserSelect,
     });
   },

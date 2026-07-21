@@ -17,12 +17,29 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   deletedAt     DateTime?
+  emailVerifiedAt DateTime?
   addresses     Address[]
   cart          Cart?
   orders        Order[]
   sessions      Session[]
   notifications Notification[]
+  emailOtps     EmailOtp[]
   @@index([deletedAt])
+}
+
+model EmailOtp {
+  id        String         @id @default(uuid())
+  userId    String
+  purpose   EmailOtpPurpose
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int            @default(0)
+  consumedAt DateTime?
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
 }
 
 model Session {
@@ -272,6 +289,11 @@ enum NotificationType {
   ORDER_SHIPPED
   ORDER_DELIVERED
   NEW_PRODUCT
+}
+
+enum EmailOtpPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
 }
 
 enum AuditEntity {

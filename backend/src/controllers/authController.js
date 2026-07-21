@@ -38,7 +38,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
 export const registerUser = asyncHandler(async (req, res) => {
     const result = await authService.register(req.body);
-    sendAuthResponse(res, 201, result);
+    res.status(201).json(result);
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
@@ -59,4 +59,24 @@ export const logoutUser = asyncHandler(async (req, res) => {
         .clearCookie(authCookieName, getClearAuthCookieOptions())
         .clearCookie(refreshCookieName, getClearRefreshTokenCookieOptions())
         .json({ message: "Logged out successfully" });
+});
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+    const result = await authService.verifyEmail(req.body);
+    res.status(200).json(result);
+});
+
+export const resendVerification = asyncHandler(async (req, res) => {
+    const result = await authService.resendVerification(req.body);
+    res.status(200).json(result);
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+    const result = await authService.forgotPassword(req.body);
+    res.status(200).json(result);
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+    const result = await authService.resetPassword(req.body);
+    res.status(200).json(result);
 });
