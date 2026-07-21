@@ -29,7 +29,6 @@ export const refreshSchema = z.object({
     refreshToken: z.string().optional(),
 });
 
-const emailSchema = z.string().email("Please provide a valid email");
 const otpSchema = z.string().regex(/^\d{6}$/, "Code must be six digits");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
