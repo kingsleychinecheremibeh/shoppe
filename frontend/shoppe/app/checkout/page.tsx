@@ -62,7 +62,7 @@ type PaymentInitializeResponse = {
 
 const addressSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
-  phone: z.string().min(5, "Valid phone number is required"),
+  phone: z.string().trim().min(7, "Enter a valid phone number").max(20, "Enter a valid phone number"),
   street: z.string().min(5, "Street address is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),

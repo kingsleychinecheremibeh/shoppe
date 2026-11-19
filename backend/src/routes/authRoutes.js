@@ -1,9 +1,9 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
-import { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken, getCsrfToken } from "../controllers/authController.js";
+import { registerUser, loginUser, getCurrentUser, logoutUser, refreshAccessToken, getCsrfToken, forgotPassword, resetPassword } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validateMiddleware.js";
-import { registerSchema, loginSchema } from "../validators/authValidator.js";
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../validators/authValidator.js";
 
 const router = express.Router();
 
@@ -32,7 +32,17 @@ const refreshLimiter = rateLimit({
     legacyHeaders: false,
     message: "Too many token refresh attempts, please try again in an 15 minutes.",
 });
+const passwordResetLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: "fail", message: "Too many password reset attempts. Please try again in an hour." },
+});
+
 router.get("/csrf-token", getCsrfToken);
+router.post("/forgot-password", passwordResetLimiter, validate(forgotPasswordSchema), forgotPassword);
+router.post("/reset-password", passwordResetLimiter, validate(resetPasswordSchema), resetPassword);
 router.post("/register", registerLimiter, validate(registerSchema), registerUser);
 router.post("/login", loginLimiter, validate(loginSchema), loginUser);
 router.post("/refresh-token", refreshLimiter, refreshAccessToken);
