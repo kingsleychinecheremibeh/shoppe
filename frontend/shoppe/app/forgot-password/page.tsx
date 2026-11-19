@@ -1,31 +1,55 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { storeConfig } from "@/lib/store-config";
+import { ForgotPasswordForm } from "./forgot-password-form";
+
+export const metadata = { title: "Reset password", robots: { index: false } };
 
 export default function ForgotPasswordPage() {
+  const whatsappDigits = storeConfig.whatsappNumber.replace(/[^\d]/g, "");
+
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-950">
-            <Mail className="h-8 w-8 text-white" />
-          </div>
-
-          <h1 className="text-3xl font-serif font-black tracking-tight text-gray-950">
-            Password Reset
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-gray-600">
-            Password reset is not enabled yet. Please contact the store admin to reset your account
-            password.
+    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white px-4 py-16">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-950">Reset your password</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Enter the email on your account and we&apos;ll send you a link to choose a new password.
           </p>
+        </div>
 
+        <ForgotPasswordForm />
+
+        <p className="mt-8 text-center text-sm text-gray-500">
+          No email?{" "}
+          <a
+            href={`mailto:${storeConfig.supportEmail}?subject=${encodeURIComponent("Password reset")}`}
+            className="font-medium text-gray-950 underline-offset-4 hover:underline"
+          >
+            Email support
+          </a>
+          {whatsappDigits && (
+            <>
+              {" "}or{" "}
+              <a
+                href={`https://wa.me/${whatsappDigits}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-gray-950 underline-offset-4 hover:underline"
+              >
+                WhatsApp us
+              </a>
+            </>
+          )}
+        </p>
+
+        <div className="mt-4 text-center">
           <Link
             href="/login"
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-950 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-950"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Login
+            Back to log in
           </Link>
         </div>
       </div>

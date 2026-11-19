@@ -9,6 +9,8 @@ const orderRepository = {
   findAllOrders: jest.fn(),
   updateOrderStatus: jest.fn(),
   deleteOrder: jest.fn(),
+  cancelOrderAndRestock: jest.fn(),
+  findExpiredPendingOrderIds: jest.fn(),
 };
 
 await jest.unstable_mockModule('../src/repositories/orderRepository.js', () => ({ orderRepository }));
@@ -127,13 +129,77 @@ describe('orderService', () => {
     await expect(orderService.updateOrderStatus('order-1', 'PAID')).rejects.toThrow('Cannot change status from DELIVERED to PAID');
   });
 
-  test('deletes an existing order', async () => {
-    orderRepository.findOrderById.mockResolvedValue({ id: 'order-1' });
+  test('deletes a finished order without touching stock', async () => {
+    orderRepository.findOrderById.mockResolvedValue({ id: 'order-1', status: 'DELIVERED' });
     orderRepository.deleteOrder.mockResolvedValue({ id: 'order-1' });
 
     await orderService.deleteOrder('order-1');
 
-    expect(orderRepository.deleteOrder).toHaveBeenCalledWith('order-1');
+    expect(orderRepository.deleteOrder).toHaveBeenCalledWith('order-1', { restock: false });
+  });
+
+  test.each(['PENDING', 'PAID'])('returns stock when deleting a %s order', async (status) => {
+    orderRepository.findOrderById.mockResolvedValue({ id: 'order-1', status });
+    orderRepository.deleteOrder.mockResolvedValue({ id: 'order-1' });
+
+    await orderService.deleteOrder('order-1');
+
+    expect(orderRepository.deleteOrder).toHaveBeenCalledWith('order-1', { restock: true });
+  });
+
+  test('cancelling an order restocks through the repository', async () => {
+    orderRepository.findOrderById.mockResolvedValue({ id: 'order-1', status: 'PAID' });
+    orderRepository.cancelOrderAndRestock.mockResolvedValue({ id: 'order-1', status: 'CANCELLED' });
+
+    const result = await orderService.updateOrderStatus('order-1', 'CANCELLED');
+
+    expect(orderRepository.cancelOrderAndRestock).toHaveBeenCalledWith('order-1');
+    expect(orderRepository.updateOrderStatus).not.toHaveBeenCalled();
+    expect(result).toEqual({ id: 'order-1', status: 'CANCELLED' });
+  });
+
+  test('reports a conflict when the order changed before it could be cancelled', async () => {
+    orderRepository.findOrderById.mockResolvedValue({ id: 'order-1', status: 'PENDING' });
+    orderRepository.cancelOrderAndRestock.mockResolvedValue(null);
+
+    await expect(orderService.updateOrderStatus('order-1', 'CANCELLED')).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  test('rejects products that were deleted after being added to the cart', async () => {
+    orderRepository.findAddressById.mockResolvedValue({ id: 'addr-1', userId: 'user-1' });
+    orderRepository.findCartByUserId.mockResolvedValue({
+      id: 'cart-1',
+      items: [{ quantity: 1, product: { name: 'Old Bag', stock: 5, deletedAt: new Date() } }],
+    });
+
+    await expect(orderService.createOrder('user-1', 'addr-1')).rejects.toThrow('Old Bag is no longer available');
+    expect(orderRepository.createOrderTransaction).not.toHaveBeenCalled();
+  });
+
+  test('lets an order manager view any order but not other managers', async () => {
+    orderRepository.findOrderById.mockResolvedValue({ id: 'order-1', userId: 'customer-1' });
+
+    await expect(
+      orderService.getOrderById('order-1', { id: 'mgr-1', role: 'MANAGER', managerPermissions: ['ORDER_MANAGEMENT'] })
+    ).resolves.toEqual({ id: 'order-1', userId: 'customer-1' });
+    await expect(
+      orderService.getOrderById('order-1', { id: 'mgr-2', role: 'MANAGER', managerPermissions: ['PRODUCT_MANAGEMENT'] })
+    ).rejects.toThrow('Access denied');
+  });
+
+  test('cancels unpaid orders older than the time limit', async () => {
+    orderRepository.findExpiredPendingOrderIds.mockResolvedValue(['order-1', 'order-2']);
+    orderRepository.cancelOrderAndRestock
+      .mockResolvedValueOnce({ id: 'order-1', status: 'CANCELLED' })
+      .mockResolvedValueOnce(null);
+
+    const before = Date.now();
+    const cancelled = await orderService.cancelExpiredPendingOrders(60);
+
+    const cutoff = orderRepository.findExpiredPendingOrderIds.mock.calls[0][0];
+    expect(cutoff.getTime()).toBeLessThanOrEqual(before - 60 * 60 * 1000 + 1000);
+    expect(orderRepository.cancelOrderAndRestock).toHaveBeenCalledTimes(2);
+    expect(cancelled).toBe(1);
   });
 
   test('throws 404 when deleting a non-existent order', async () => {

@@ -24,7 +24,7 @@ export function AlertBanner({
     const Icon = variant === "error" ? AlertTriangle : variant === "success" ? CheckCircle2 : Info;
 
     return (
-        <div className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm ${alertStyles[variant]}`}>
+        <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${alertStyles[variant]}`}>
             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
             <p>{message}</p>
         </div>
@@ -51,9 +51,9 @@ export function EmptyState({
     action?: ReactNode;
 }) {
     return (
-        <div className="flex min-h-64 flex-col items-center justify-center rounded-md border border-dashed border-gray-300 px-6 py-12 text-center">
-            <h2 className="text-xl font-semibold text-gray-950">{title}</h2>
-            <p className="mt-2 max-w-md text-sm text-gray-600">{message}</p>
+        <div className="flex min-h-64 flex-col items-center justify-center rounded-3xl bg-canvas px-6 py-16 text-center">
+            <h2 className="text-lg font-semibold text-gray-950">{title}</h2>
+            <p className="mt-1 max-w-md text-sm text-gray-500">{message}</p>
             {action ? <div className="mt-6">{action}</div> : null}
         </div>
     );
@@ -101,15 +101,15 @@ export function ConfirmModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-md rounded-md bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 px-4 backdrop-blur-[2px]">
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-950">{title}</h2>
             <p className="mt-2 text-sm text-gray-600">{message}</p>
           </div>
 
-          <button onClick={onClose} className="rounded-md p-1 text-gray-500 hover:bg-gray-100">
+          <button onClick={onClose} className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-950">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -118,7 +118,7 @@ export function ConfirmModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-full px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
           >
             {cancelLabel}
           </button>
@@ -126,7 +126,7 @@ export function ConfirmModal({
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {confirmLabel}

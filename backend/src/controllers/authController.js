@@ -46,6 +46,22 @@ export const loginUser = asyncHandler(async (req, res) => {
     sendAuthResponse(res, 200, result);
 });
 
+export const forgotPassword = asyncHandler(async (req, res) => {
+    await authService.requestPasswordReset(req.body.email);
+    res.status(200).json({
+        message: "If an account exists for that email, we've sent a link to reset the password.",
+    });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+    await authService.resetPassword(req.body);
+    res
+        .clearCookie(authCookieName, getClearAuthCookieOptions())
+        .clearCookie(refreshCookieName, getClearRefreshTokenCookieOptions())
+        .status(200)
+        .json({ message: "Your password has been reset. Please log in with your new password." });
+});
+
 export const getCurrentUser = asyncHandler(async (req, res) => {
     res.json({ user: req.user });
 });

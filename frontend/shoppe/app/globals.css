@@ -1,17 +1,45 @@
 @import "tailwindcss";
 
+/*
+ * Shoppe design tokens.
+ * - Neutrals: Tailwind's cool "gray" scale is remapped to warm stone tones,
+ *   so every existing gray-* class picks up the warmer palette.
+ * - Brand: a single terracotta accent, reserved for primary actions,
+ *   prices that need emphasis, and active states.
+ * - Type: one sans family (loaded in layout.tsx via next/font) for a clean,
+ *   consistent look. font-serif intentionally resolves to the same family.
+ */
+
 :root {
   --background: #ffffff;
-  --foreground: #121212;
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-serif: Georgia, "Times New Roman", serif;
+  --foreground: #1c1917;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), sans-serif;
-  --font-serif: var(--font-serif), serif;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme {
+  --color-brand: #c2410c;
+  --color-brand-hover: #9a3412;
+  --color-brand-soft: #fff4ed;
+  --color-canvas: #faf8f5;
+
+  --color-gray-50: oklch(98.5% 0.001 106.423);
+  --color-gray-100: oklch(97% 0.001 106.424);
+  --color-gray-200: oklch(92.3% 0.003 48.717);
+  --color-gray-300: oklch(86.9% 0.005 56.366);
+  --color-gray-400: oklch(70.9% 0.01 56.259);
+  --color-gray-500: oklch(55.3% 0.013 58.071);
+  --color-gray-600: oklch(44.4% 0.011 73.639);
+  --color-gray-700: oklch(37.4% 0.01 67.558);
+  --color-gray-800: oklch(26.8% 0.007 34.298);
+  --color-gray-900: oklch(21.6% 0.006 56.043);
+  --color-gray-950: oklch(14.7% 0.004 49.25);
 }
 
 body {
@@ -20,4 +48,9 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-hover);
 }

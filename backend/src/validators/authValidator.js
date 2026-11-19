@@ -16,6 +16,7 @@ export const registerSchema = z.object({
     password: z
         .string()
         .min(6, "Password must be at least 6 characters")
+        .max(72, "Password must be at most 72 characters"),
 });
 
 export const loginSchema = z.object({
@@ -23,6 +24,21 @@ export const loginSchema = z.object({
     password: z
         .string()
         .min(6, "Password must be at least 6 characters")
+});
+
+const passwordSchema = z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    // bcrypt only uses the first 72 bytes; longer inputs also cost CPU for nothing.
+    .max(72, "Password must be at most 72 characters");
+
+export const forgotPasswordSchema = z.object({
+    email: emailSchema,
+});
+
+export const resetPasswordSchema = z.object({
+    token: z.string().regex(/^[a-f0-9]{64}$/, "This reset link is invalid or has expired."),
+    password: passwordSchema,
 });
 
 export const refreshSchema = z.object({

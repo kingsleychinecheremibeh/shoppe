@@ -160,10 +160,11 @@ export default async function ProductPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(productSchema),
+          // Escape "<" so product text can never close the script tag early.
+          __html: JSON.stringify(productSchema).replace(/</g, "\\u003c"),
         }}
       />
-      <ProductDetailClient productId={id} />
+      <ProductDetailClient productId={id} initialProduct={product} />
     </>
   );
 }

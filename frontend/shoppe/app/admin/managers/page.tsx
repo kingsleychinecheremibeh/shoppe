@@ -113,8 +113,8 @@ export default function AdminManagersPage() {
     <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 border-b border-gray-100 pb-6">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Staff Access</span>
-          <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Managers</h1>
+          <span className="text-xs font-medium text-gray-600">Staff Access</span>
+          <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Managers</h1>
           <p className="mt-2 max-w-xl text-xs font-medium leading-relaxed text-gray-500">
             Promote users to managers and choose exactly which areas they can operate.
           </p>
@@ -123,7 +123,7 @@ export default function AdminManagersPage() {
         <section className="mb-8 rounded-lg border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
             <ShieldCheck className="h-4 w-4 text-gray-600" />
-            <h2 className="text-sm font-black text-gray-950">Current Staff</h2>
+            <h2 className="text-sm font-semibold text-gray-950">Current Staff</h2>
           </div>
           <div className="divide-y divide-gray-100">
             {managers.length ? (
@@ -145,7 +145,7 @@ export default function AdminManagersPage() {
         <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
             <Users className="h-4 w-4 text-gray-600" />
-            <h2 className="text-sm font-black text-gray-950">Customers</h2>
+            <h2 className="text-sm font-semibold text-gray-950">Customers</h2>
           </div>
           <div className="divide-y divide-gray-100">
             {customers.map((user) => (

@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, CheckCircle, CreditCard, ShoppingCart, ArrowLeft, Truck, ShieldCheck } from "lucide-react";
+import { MapPin, Plus, ArrowLeft, Lock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
+import { formatPrice } from "@/lib/format";
 import { useHydrated } from "@/app/hooks/use-hydrated";
 import useSWR, { mutate } from "swr";
 import { useForm } from "react-hook-form";
@@ -61,7 +62,7 @@ type PaymentInitializeResponse = {
 
 const addressSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
-  phone: z.string().min(5, "Valid phone number is required"),
+  phone: z.string().trim().min(7, "Enter a valid phone number").max(20, "Enter a valid phone number"),
   street: z.string().min(5, "Street address is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
@@ -70,17 +71,43 @@ const addressSchema = z.object({
 
 type AddressFormValues = z.infer<typeof addressSchema>;
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "NGN",
-});
+const inputClass =
+  "h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10";
+const labelClass = "mb-1.5 block text-sm font-medium text-gray-700";
+const errorClass = "mt-1 block text-xs text-red-600";
+const optionClass = (selected: boolean) =>
+  `relative w-full rounded-2xl border p-4 text-left text-sm transition ${
+    selected ? "border-gray-950 ring-1 ring-gray-950" : "border-gray-200 hover:border-gray-400"
+  }`;
+const Radio = ({ checked }: { checked: boolean }) => (
+  <span
+    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+      checked ? "border-brand bg-brand" : "border-gray-300"
+    }`}
+    aria-hidden="true"
+  >
+    {checked && <span className="h-2 w-2 rounded-full bg-white" />}
+  </span>
+);
+const StepTitle = ({ step, title, action }: { step: number; title: string; action?: ReactNode }) => (
+  <div className="mb-5 flex items-center justify-between gap-4">
+    <h2 className="flex items-center gap-3 text-base font-semibold text-gray-950">
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-950 text-xs font-medium text-white">
+        {step}
+      </span>
+      {title}
+    </h2>
+    {action}
+  </div>
+);
+
 
 export default function CheckoutPage() {
   const router = useRouter();
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [submittingOrder, setSubmittingOrder] = useState(false);
-  const [paymentGateway, setPaymentGateway] = useState<"STRIPE" | "PAYSTACK">("PAYSTACK");
+  const [paymentGateway] = useState<"STRIPE" | "PAYSTACK">("PAYSTACK");
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
   const [checkoutError, setCheckoutError] = useState("");
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -211,387 +238,304 @@ export default function CheckoutPage() {
 
   if (!mounted || loading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-black" />
+      <main className="min-h-screen bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="h-9 w-40 animate-pulse rounded bg-gray-100" />
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
+            <div className="space-y-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-40 animate-pulse rounded-2xl bg-gray-100" />
+              ))}
+            </div>
+            <div className="h-80 animate-pulse rounded-2xl bg-gray-100" />
+          </div>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-        {/* Navigation Back */}
+    <main className="min-h-screen bg-white pb-28 lg:pb-0">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/cart"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-950 mb-8 transition"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-950"
         >
           <ArrowLeft className="h-4 w-4" />
-          Return to cart
+          Back to cart
         </Link>
-
-        {/* Title Block */}
-        <div className="mb-8 border-b border-gray-200 pb-5">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">Checkout</h1>
-          <p className="mt-2 text-sm text-gray-600">Choose your delivery address, shipping option, and payment method.</p>
-        </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">Checkout</h1>
 
         {checkoutError ? (
-          <div className="mb-6">
+          <div className="mt-6">
             <AlertBanner variant="error" message={checkoutError} />
           </div>
         ) : null}
 
-        {/* Checkout Columns */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px] lg:items-start">
+          <div className="space-y-10">
+            {/* 1. Address */}
+            <section>
+              <StepTitle
+                step={1}
+                title="Delivery address"
+                action={
+                  !showAddressForm && addresses.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddressForm(true)}
+                      className="inline-flex items-center gap-1 text-sm font-medium text-brand transition hover:text-brand-hover"
+                    >
+                      <Plus className="h-4 w-4" />
+                      New address
+                    </button>
+                  ) : null
+                }
+              />
 
-          {/* Main Delivery Info Form */}
-          <div className="space-y-6">
+              {!showAddressForm &&
+                (addresses.length > 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {addresses.map((address) => {
+                      const selected = activeAddressId === address.id;
+                      return (
+                        <button
+                          type="button"
+                          key={address.id}
+                          onClick={() => setSelectedAddressId(address.id)}
+                          aria-pressed={selected}
+                          className={optionClass(selected)}
+                        >
+                          <div className="flex gap-3">
+                            <Radio checked={selected} />
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-950">{address.fullName}</p>
+                              <p className="mt-1 text-gray-600">{address.street}</p>
+                              <p className="text-gray-600">
+                                {address.city}, {address.state}
+                              </p>
+                              <p className="mt-1 text-gray-500">{address.phone}</p>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl bg-canvas p-8 text-center">
+                    <MapPin className="mx-auto h-6 w-6 text-gray-400" aria-hidden="true" />
+                    <p className="mt-2 text-sm text-gray-600">Add where you want your order delivered.</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddressForm(true)}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add address
+                    </button>
+                  </div>
+                ))}
 
-            {/* Shipping Address Section */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-gray-900" />
-                  Delivery Address
-                </h3>
-                {!showAddressForm && (
-                  <button
-                    onClick={() => setShowAddressForm(true)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-900 hover:underline"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add Address
-                  </button>
-                )}
-              </div>
-
-              {/* Address selector cards */}
-              {!showAddressForm && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {addresses.length > 0 ? (
-                    addresses.map((address) => (
-                      <button
-                        key={address.id}
-                        onClick={() => setSelectedAddressId(address.id)}
-                        className={`text-left p-4 rounded-xl border text-sm transition relative ${activeAddressId === address.id
-                          ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
-                          : "border-gray-200 hover:border-gray-300"
-                          }`}
-                      >
-                        <div className="pr-6">
-                          <p className="font-bold text-gray-950 mb-1">{address.fullName}</p>
-                          <p className="text-gray-600 leading-normal mb-1">{address.street}</p>
-                          <p className="text-gray-600 mb-1">
-                            {address.city}, {address.state}
-                          </p>
-                          <p className="text-gray-500 font-semibold text-[11px] mb-1">{address.phone}</p>
-                        </div>
-                        {activeAddressId === address.id && (
-                          <CheckCircle className="absolute top-4 right-4 h-5 w-5 text-gray-950 fill-white" />
-                        )}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="sm:col-span-2 rounded-lg border border-dashed border-gray-200 p-8 text-center bg-gray-50">
-                      <p className="text-sm text-gray-500 mb-3">You do not have a saved delivery address yet.</p>
-                      <button
-                        onClick={() => setShowAddressForm(true)}
-                        className="inline-flex items-center justify-center rounded-md bg-gray-950 px-4 py-2 text-xs font-semibold text-white transition hover:bg-gray-800"
-                      >
-                        Add Address
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Inline Form for creating a new address */}
               {showAddressForm && (
-                <form onSubmit={handleSubmit(onSubmitAddress)} className="space-y-4 border-t border-gray-100 pt-4">
+                <form onSubmit={handleSubmit(onSubmitAddress)} className="space-y-4 rounded-2xl border border-gray-200 p-5">
                   {errors.root && <AlertBanner variant="error" message={errors.root.message} />}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="fullName" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Full Name</label>
-                      <input
-                        id="fullName"
-                        {...register("fullName")}
-                        type="text"
-                        autoComplete="name"
-                        placeholder="John Doe"
-                        className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                      />
-                      {errors.fullName && <span className="text-red-500 text-xs mt-1 block">{errors.fullName.message}</span>}
+                      <label htmlFor="fullName" className={labelClass}>Full name</label>
+                      <input id="fullName" {...register("fullName")} type="text" autoComplete="name" className={inputClass} />
+                      {errors.fullName && <span className={errorClass}>{errors.fullName.message}</span>}
                     </div>
                     <div>
-                      <label htmlFor="phone" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Phone Number</label>
-                      <input
-                        id="phone"
-                        {...register("phone")}
-                        type="tel"
-                        autoComplete="tel"
-                        placeholder="+234 812 345 6789"
-                        className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                      />
-                      {errors.phone && <span className="text-red-500 text-xs mt-1 block">{errors.phone.message}</span>}
+                      <label htmlFor="phone" className={labelClass}>Phone number</label>
+                      <input id="phone" {...register("phone")} type="tel" autoComplete="tel" placeholder="0812 345 6789" className={inputClass} />
+                      {errors.phone && <span className={errorClass}>{errors.phone.message}</span>}
                     </div>
                   </div>
-
                   <div>
-                      <label htmlFor="street" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Street Address</label>
-                    <input
-                      id="street"
-                      {...register("street")}
-                      type="text"
-                      autoComplete="street-address"
-                      placeholder="15 Akinwunmi Street"
-                      className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                    />
-                    {errors.street && <span className="text-red-500 text-xs mt-1 block">{errors.street.message}</span>}
+                    <label htmlFor="street" className={labelClass}>Street address</label>
+                    <input id="street" {...register("street")} type="text" autoComplete="street-address" className={inputClass} />
+                    {errors.street && <span className={errorClass}>{errors.street.message}</span>}
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-3">
                     <div>
-                      <label htmlFor="city" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">City</label>
-                      <input
-                        id="city"
-                        {...register("city")}
-                        type="text"
-                        autoComplete="address-level2"
-                        placeholder="Ikeja"
-                        className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                      />
-                      {errors.city && <span className="text-red-500 text-xs mt-1 block">{errors.city.message}</span>}
+                      <label htmlFor="city" className={labelClass}>City</label>
+                      <input id="city" {...register("city")} type="text" autoComplete="address-level2" className={inputClass} />
+                      {errors.city && <span className={errorClass}>{errors.city.message}</span>}
                     </div>
                     <div>
-                      <label htmlFor="state" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">State</label>
-                      <input
-                        id="state"
-                        {...register("state")}
-                        type="text"
-                        autoComplete="address-level1"
-                        placeholder="Lagos"
-                        className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                      />
-                      {errors.state && <span className="text-red-500 text-xs mt-1 block">{errors.state.message}</span>}
+                      <label htmlFor="state" className={labelClass}>State</label>
+                      <input id="state" {...register("state")} type="text" autoComplete="address-level1" className={inputClass} />
+                      {errors.state && <span className={errorClass}>{errors.state.message}</span>}
                     </div>
                     <div>
-                      <label htmlFor="country" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Country</label>
-                      <select
-                        id="country"
-                        {...register("country")}
-                        autoComplete="country-name"
-                        className="w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-900 focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950"
-                      >
+                      <label htmlFor="country" className={labelClass}>Country</label>
+                      <select id="country" {...register("country")} autoComplete="country-name" className={inputClass}>
                         <option value="Nigeria">Nigeria</option>
-                        <option value="United States">United States</option>
-                        <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
                       </select>
                     </div>
                   </div>
-
-                  <div className="flex justify-end gap-3 pt-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddressForm(false)}
-                      className="rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
-                    >
-                      Cancel
-                    </button>
+                  <div className="flex justify-end gap-2 pt-2">
+                    {addresses.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAddressForm(false)}
+                        className="rounded-full px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                    )}
                     <LoadingButton
                       type="submit"
                       loading={isSubmitting}
-                      className="rounded-md bg-gray-950 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition disabled:opacity-50"
+                      className="rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-60"
                     >
-                      Save Address
+                      Save address
                     </LoadingButton>
                   </div>
                 </form>
               )}
-            </div>
+            </section>
 
-            {/* Shipping Method Selector */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-              <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2 mb-4">
-                <Truck className="h-5 w-5 text-gray-900" />
-                Shipping Method
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {shippingMethods.length > 0 ? (
-                  shippingMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setSelectedShippingMethod(method.id)}
-                      className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all hover:bg-gray-50 ${selectedShippingMethod === method.id
-                        ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
-                        : "border-gray-200 bg-white"
-                        }`}
-                    >
-                      <div className="flex items-center gap-2 w-full justify-between mb-2">
-                        <span className="text-sm font-bold text-gray-950">{method.name}</span>
-                        <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${selectedShippingMethod === method.id ? "border-gray-950 bg-gray-950" : "border-gray-300"}`}>
-                          {selectedShippingMethod === method.id && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+            {/* 2. Shipping */}
+            <section>
+              <StepTitle step={2} title="Delivery speed" />
+              {shippingMethods.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {shippingMethods.map((method) => {
+                    const selected = selectedShippingMethod === method.id;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setSelectedShippingMethod(method.id)}
+                        aria-pressed={selected}
+                        className={optionClass(selected)}
+                      >
+                        <div className="flex gap-3">
+                          <Radio checked={selected} />
+                          <div className="flex min-w-0 flex-1 justify-between gap-3">
+                            <div>
+                              <p className="font-medium text-gray-950">{method.name}</p>
+                              {method.estimatedDays && <p className="mt-0.5 text-gray-500">{method.estimatedDays}</p>}
+                            </div>
+                            <p className="shrink-0 font-medium text-gray-950">
+                              {Number(method.price) === 0 ? "Free" : formatPrice(method.price)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <p className="text-xs font-semibold text-gray-900 mb-1">{currencyFormatter.format(Number(method.price))}</p>
-                      {method.estimatedDays && <p className="text-[11px] text-gray-500 leading-relaxed">Delivery time: {method.estimatedDays}</p>}
-                    </button>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">No shipping methods available.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Payment Method Selector */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-              <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-gray-900" />
-                Payment Method
-              </h3>
-              <div className="mb-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" />
-                <p className="text-[11px] leading-5 text-gray-600">
-                  Secure payment handled by Paystack. We do not store full card details.{" "}
-                  <Link href="/secure-checkout" className="font-semibold text-gray-950 underline">
-                    Learn more
-                  </Link>
-                  .
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="rounded-2xl bg-canvas p-5 text-sm text-gray-600">
+                  Delivery options are not available right now. Please contact us to complete your order.
                 </p>
-              </div>
+              )}
+            </section>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Paystack Card Option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentGateway("PAYSTACK")}
-                  className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all hover:bg-gray-50 ${paymentGateway === "PAYSTACK"
-                    ? "border-gray-950 bg-gray-50/50 ring-1 ring-gray-950"
-                    : "border-gray-200 bg-white"
-                    }`}
-                >
-                  <div className="flex items-center gap-2 w-full justify-between mb-2">
-                    <span className="text-sm font-bold text-gray-950">Paystack</span>
-                    <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${paymentGateway === "PAYSTACK" ? "border-gray-950 bg-gray-950" : "border-gray-300"
-                      }`}>
-                      {paymentGateway === "PAYSTACK" && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                    </div>
+            {/* 3. Payment */}
+            <section>
+              <StepTitle step={3} title="Payment" />
+              <div className={optionClass(paymentGateway === "PAYSTACK")}>
+                <div className="flex gap-3">
+                  <Radio checked={paymentGateway === "PAYSTACK"} />
+                  <div>
+                    <p className="font-medium text-gray-950">Pay with Paystack</p>
+                    <p className="mt-0.5 text-gray-500">Card, bank transfer or USSD. You&apos;ll finish payment on Paystack.</p>
                   </div>
-                  <p className="text-[11px] text-gray-500 leading-relaxed">
-                    Pay securely with card, bank transfer, USSD, or mobile money.
-                  </p>
-                </button>
-
-                {/* Stripe Card Option */}
-                <button
-                  type="button"
-                  disabled
-                  className="relative flex flex-col items-start p-4 rounded-xl border text-left border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
-                >
-                  <div className="flex items-center gap-2 w-full justify-between mb-2">
-                    <span className="text-sm font-bold text-gray-950">Stripe (Coming soon)</span>
-                    <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${paymentGateway === "STRIPE" ? "border-gray-950 bg-gray-950" : "border-gray-300"
-                      }`}>
-                      {paymentGateway === "STRIPE" && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-relaxed">
-                    This payment option is not available yet.
-                  </p>
-                </button>
+                </div>
               </div>
-            </div>
-
-
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
+                <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+                We never see or store your card details.{" "}
+                <Link href="/secure-checkout" className="underline underline-offset-2 hover:text-gray-950">
+                  Learn more
+                </Link>
+              </p>
+            </section>
           </div>
 
-          {/* Right Column: Cart items review & final Checkout summary */}
-          <aside className="space-y-6">
+          {/* Summary */}
+          <aside className="rounded-2xl bg-canvas p-6 lg:sticky lg:top-24">
+            <h2 className="text-base font-semibold text-gray-950">Order summary</h2>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-              <h3 className="text-lg font-bold text-gray-950 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-gray-600" />
-                Order Review
-              </h3>
-
-              {/* Items listing */}
-              <div className="divide-y divide-gray-100 max-h-60 overflow-y-auto mb-6">
-                {cart?.items.map((item) => (
-                  <div key={item.id} className="py-3.5 flex gap-4 text-sm">
-                    <div className="aspect-square h-12 shrink-0 overflow-hidden rounded bg-gray-50 border border-gray-100">
-                      {item.product.image ? (
-                        <ProductImage
-                          src={getAssetUrl(item.product.image) || item.product.image}
-                          alt={item.product.name}
-                          className="h-full w-full object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-gray-100" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-950 truncate">{item.product.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity}</p>
-                    </div>
-                    <span className="font-semibold text-gray-950 shrink-0">
-                      {currencyFormatter.format(Number(item.product.price) * item.quantity)}
+            <ul className="mt-5 max-h-72 space-y-4 overflow-y-auto">
+              {cart?.items.map((item) => (
+                <li key={item.id} className="flex gap-3 text-sm">
+                  <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-white">
+                    {item.product.image ? (
+                      <ProductImage
+                        src={getAssetUrl(item.product.image) || item.product.image}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover"
+                        sizes="56px"
+                      />
+                    ) : null}
+                    <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-950 px-1 text-[10px] font-medium text-white">
+                      {item.quantity}
                     </span>
                   </div>
-                ))}
-              </div>
-
-              {/* Calculation List */}
-              <div className="space-y-3.5 border-t border-gray-100 pt-4">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-gray-950">{currencyFormatter.format(subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Shipping</span>
-                  <span className="font-semibold text-gray-950">
-                    {shipping === 0 ? "Free" : currencyFormatter.format(shipping)}
+                  <p className="min-w-0 flex-1 truncate pt-0.5 text-gray-900">{item.product.name}</p>
+                  <span className="shrink-0 pt-0.5 font-medium text-gray-950">
+                    {formatPrice(Number(item.product.price) * item.quantity)}
                   </span>
-                </div>
+                </li>
+              ))}
+            </ul>
 
-                <div className="border-t border-gray-100 pt-3.5 flex justify-between items-end">
-                  <span className="text-base font-bold text-gray-900">Total</span>
-                  <span className="text-2xl font-black text-gray-950">{currencyFormatter.format(total)}</span>
-                </div>
+            <dl className="mt-6 space-y-3 border-t border-gray-200 pt-5 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-gray-600">Subtotal</dt>
+                <dd className="font-medium text-gray-950">{formatPrice(subtotal)}</dd>
               </div>
-
-              {/* Action Order Button */}
-              <LoadingButton
-                onClick={handlePlaceOrder}
-                loading={submittingOrder}
-                disabled={!activeAddressId}
-                className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gray-950 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm disabled:opacity-50"
-              >
-                Place Order
-              </LoadingButton>
-              <p className="mt-3 text-center text-[11px] leading-5 text-gray-500">
-                By placing your order, you agree to our{" "}
-                <Link href="/terms" className="font-semibold text-gray-950 underline">
-                  Terms
-                </Link>
-                ,{" "}
-                <Link href="/privacy-policy" className="font-semibold text-gray-950 underline">
-                  Privacy Policy
-                </Link>
-                , and{" "}
-                <Link href="/refund-policy" className="font-semibold text-gray-950 underline">
-                  Refund Policy
-                </Link>
-                .
-              </p>
+              <div className="flex justify-between">
+                <dt className="text-gray-600">Shipping</dt>
+                <dd className="font-medium text-gray-950">
+                  {selectedMethod ? (shipping === 0 ? "Free" : formatPrice(shipping)) : "—"}
+                </dd>
+              </div>
+            </dl>
+            <div className="mt-5 flex items-baseline justify-between border-t border-gray-200 pt-5">
+              <span className="text-sm font-medium text-gray-950">Total</span>
+              <span className="text-xl font-semibold text-gray-950">{formatPrice(total)}</span>
             </div>
 
+            <LoadingButton
+              onClick={handlePlaceOrder}
+              loading={submittingOrder}
+              disabled={!activeAddressId || !selectedShippingMethod}
+              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
+            >
+              Pay {formatPrice(total)}
+            </LoadingButton>
+            <p className="mt-3 text-center text-xs leading-5 text-gray-500">
+              By paying you agree to our{" "}
+              <Link href="/terms" className="underline underline-offset-2 hover:text-gray-950">Terms</Link>,{" "}
+              <Link href="/privacy-policy" className="underline underline-offset-2 hover:text-gray-950">Privacy</Link> and{" "}
+              <Link href="/refund-policy" className="underline underline-offset-2 hover:text-gray-950">Refund</Link> policies.
+            </p>
           </aside>
-
         </div>
+      </div>
 
+      {/* Mobile: keep the total and Pay button in reach while filling in the steps */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center gap-4">
+          <div className="min-w-0">
+            <p className="text-xs text-gray-500">{selectedMethod ? "Total" : "Subtotal"}</p>
+            <p className="text-lg font-semibold text-gray-950">{formatPrice(selectedMethod ? total : subtotal)}</p>
+          </div>
+          <LoadingButton
+            onClick={handlePlaceOrder}
+            loading={submittingOrder}
+            disabled={!activeAddressId || !selectedShippingMethod}
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
+          >
+            {!activeAddressId ? "Add an address to pay" : "Pay now"}
+          </LoadingButton>
+        </div>
       </div>
     </main>
   );

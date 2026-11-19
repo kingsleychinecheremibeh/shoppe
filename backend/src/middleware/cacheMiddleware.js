@@ -56,8 +56,9 @@ export const invalidateCache = async (urlPattern) => {
     const keysToDelete = [];
 
     try {
-        for await (const key of redisClient.scanIterator({ MATCH: matchPattern, COUNT: 100 })) {
-            keysToDelete.push(key);
+        // node-redis v5 yields a batch (array) of keys per iteration; v4 yielded single keys.
+        for await (const batch of redisClient.scanIterator({ MATCH: matchPattern, COUNT: 100 })) {
+            keysToDelete.push(...(Array.isArray(batch) ? batch : [batch]));
         }
 
         if (keysToDelete.length > 0) {

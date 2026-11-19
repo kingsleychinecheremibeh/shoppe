@@ -1,6 +1,6 @@
 import express from "express";
 import { upload, verifyImageFileSignature } from "../middleware/uploadMiddleware.js";
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { protect, staffWithPermission } from "../middleware/authMiddleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
 import cloudinary, { isCloudinaryConfigured } from "../config/cloudinary.js";
@@ -31,7 +31,7 @@ const uploadToCloudinary = (file) => {
 router.post(
   "/",
   protect,
-  adminOnly,
+  staffWithPermission("PRODUCT_MANAGEMENT"),
   upload.single("image"),
   verifyImageFileSignature,
   asyncHandler(async (req, res) => {

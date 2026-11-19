@@ -89,6 +89,16 @@ describe('productController', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
+    test('caps the page size so one request cannot pull the whole catalogue', async () => {
+      prisma.product.findMany.mockResolvedValue([]);
+      prisma.product.count.mockResolvedValue(0);
+      req = { query: { limit: '1000000' } };
+
+      await getProducts(req, res, next);
+
+      expect(prisma.product.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
+    });
+
     test('should pass errors to next', async () => {
       const error = new Error('DB error');
       prisma.product.findMany.mockRejectedValue(error);

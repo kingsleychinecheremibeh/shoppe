@@ -2,9 +2,9 @@ import { jest } from "@jest/globals";
 
 // tx no longer fetches address inside the transaction — it's passed in from the service
 const tx = {
-  order: { create: jest.fn(), delete: jest.fn() },
-  orderItem: { deleteMany: jest.fn() },
-  product: { updateMany: jest.fn() },
+  order: { create: jest.fn(), delete: jest.fn(), updateMany: jest.fn(), findUnique: jest.fn() },
+  orderItem: { deleteMany: jest.fn(), findMany: jest.fn() },
+  product: { updateMany: jest.fn(), update: jest.fn() },
   cartItem: { deleteMany: jest.fn() },
 };
 
@@ -17,6 +17,7 @@ await jest.unstable_mockModule('../src/config/db.js', () => ({
       findUnique: jest.fn(),
       findFirst: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
       delete: jest.fn(),
     },
     $transaction: jest.fn((callback) => callback(tx)),
@@ -168,11 +169,77 @@ describe('orderRepository', () => {
     });
   });
 
-  test('deletes order by id', async () => {
+  test('deletes order by id without restocking by default', async () => {
+    tx.orderItem.findMany.mockResolvedValue([{ productId: 'prod-1', quantity: 2 }]);
+
     await orderRepository.deleteOrder('order-1');
 
+    expect(tx.product.update).not.toHaveBeenCalled();
     expect(tx.orderItem.deleteMany).toHaveBeenCalledWith({ where: { orderId: 'order-1' } });
     expect(tx.order.delete).toHaveBeenCalledWith({ where: { id: 'order-1' } });
+  });
+
+  test('returns stock when deleting an order that still held it', async () => {
+    tx.orderItem.findMany.mockResolvedValue([
+      { productId: 'prod-1', quantity: 2 },
+      { productId: 'prod-2', quantity: 1 },
+    ]);
+
+    await orderRepository.deleteOrder('order-1', { restock: true });
+
+    expect(tx.product.update).toHaveBeenCalledWith({ where: { id: 'prod-1' }, data: { stock: { increment: 2 } } });
+    expect(tx.product.update).toHaveBeenCalledWith({ where: { id: 'prod-2' }, data: { stock: { increment: 1 } } });
+    expect(tx.order.delete).toHaveBeenCalledWith({ where: { id: 'order-1' } });
+  });
+
+  test('cancels a stock-holding order and returns its items to stock', async () => {
+    tx.order.updateMany.mockResolvedValue({ count: 1 });
+    tx.orderItem.findMany.mockResolvedValue([{ productId: 'prod-1', quantity: 3 }]);
+    tx.order.findUnique.mockResolvedValue({ id: 'order-1', status: 'CANCELLED' });
+
+    const result = await orderRepository.cancelOrderAndRestock('order-1');
+
+    expect(tx.order.updateMany).toHaveBeenCalledWith({
+      where: { id: 'order-1', status: { in: ['PENDING', 'PAID'] } },
+      data: { status: 'CANCELLED' },
+    });
+    expect(tx.product.update).toHaveBeenCalledWith({ where: { id: 'prod-1' }, data: { stock: { increment: 3 } } });
+    expect(result).toEqual({ id: 'order-1', status: 'CANCELLED' });
+  });
+
+  test('does not restock twice when the order was already cancelled', async () => {
+    tx.order.updateMany.mockResolvedValue({ count: 0 });
+
+    const result = await orderRepository.cancelOrderAndRestock('order-1');
+
+    expect(result).toBeNull();
+    expect(tx.orderItem.findMany).not.toHaveBeenCalled();
+    expect(tx.product.update).not.toHaveBeenCalled();
+  });
+
+  test('marks an order paid only while it is still pending', async () => {
+    prisma.order.updateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 });
+
+    await expect(orderRepository.markPaidIfPending('order-1')).resolves.toBe(true);
+    await expect(orderRepository.markPaidIfPending('order-1')).resolves.toBe(false);
+    expect(prisma.order.updateMany).toHaveBeenCalledWith({
+      where: { id: 'order-1', status: 'PENDING' },
+      data: { status: 'PAID' },
+    });
+  });
+
+  test('finds unpaid orders created before a cutoff', async () => {
+    const cutoff = new Date('2026-01-01T00:00:00Z');
+    prisma.order.findMany.mockResolvedValue([{ id: 'order-1' }, { id: 'order-2' }]);
+
+    const ids = await orderRepository.findExpiredPendingOrderIds(cutoff);
+
+    expect(prisma.order.findMany).toHaveBeenCalledWith({
+      where: { status: 'PENDING', createdAt: { lt: cutoff } },
+      select: { id: true },
+      take: 200,
+    });
+    expect(ids).toEqual(['order-1', 'order-2']);
   });
 
   test('finds an idempotent order only for the same user', async () => {

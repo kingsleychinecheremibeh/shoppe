@@ -144,7 +144,8 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
 
-if (process.env.NODE_ENV === 'production') {
+// API docs are for local development only; don't publish the full API map in production.
+if (process.env.NODE_ENV !== 'production') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 

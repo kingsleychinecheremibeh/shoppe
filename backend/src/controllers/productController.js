@@ -7,7 +7,8 @@ import { notificationService } from "../services/notificationService.js";
 export const getProducts = asyncHandler(async (req, res) => {
     const query = req.query || {};
     const page = Math.max(1, parseInt(query.page) || 1);
-    const limit = Math.max(1, parseInt(query.limit) || 12);
+    const MAX_PAGE_SIZE = 100;
+    const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(query.limit) || 12));
     const skip = (page - 1) * limit;
     const { category, search, sort } = query;
     const { products, totalCount } = await productService.getAll({

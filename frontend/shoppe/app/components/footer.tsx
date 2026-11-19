@@ -45,24 +45,24 @@ export function Footer() {
   ].filter((link) => link.href);
 
   return (
-    <footer className="bg-white border-t border-gray-200 py-16 mt-auto">
+    <footer className="bg-canvas border-t border-gray-200 py-14 mt-auto">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Footprint Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12 border-b border-gray-100 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12 border-b border-gray-200 pb-12">
           
           {/* Column 1: Brand Narrative */}
           <div className="md:col-span-4 space-y-4">
             <Link
               href="/"
-              className="flex items-center gap-2 text-base font-black tracking-tight text-gray-950"
+              className="flex items-center gap-2 text-lg font-semibold tracking-tight text-gray-950"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded bg-gray-950 text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
                 <ShoppingBag className="h-4.5 w-4.5" />
               </span>
-              SHOPPE
+              Shoppe
             </Link>
-            <p className="text-xs text-gray-500 leading-relaxed max-w-xs font-sans">
+            <p className="text-sm text-gray-500 leading-relaxed max-w-xs font-sans">
               Sourced globally, curated locally. Premium clothing, objects, and functional utilities designed to elevate the quiet details of everyday life.
             </p>
             {socialLinks.length > 0 && (
@@ -85,18 +85,18 @@ export function Footer() {
 
           {/* Column 2: Shop */}
           <div className="md:col-span-2 space-y-3">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Shop</h3>
+            <h3 className="text-sm font-semibold text-gray-950">Shop</h3>
             <nav className="flex flex-col gap-2">
-              <Link href="/products" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/products" className="text-sm text-gray-600 hover:text-brand transition">
                 All Products
               </Link>
-              <Link href="/cart" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/cart" className="text-sm text-gray-600 hover:text-brand transition">
                 Cart
               </Link>
-              <Link href="/login" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/login" className="text-sm text-gray-600 hover:text-brand transition">
                 Login
               </Link>
-              <Link href="/register" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/register" className="text-sm text-gray-600 hover:text-brand transition">
                 Create Account
               </Link>
             </nav>
@@ -104,21 +104,21 @@ export function Footer() {
 
           {/* Column 3: Customer Care */}
           <div className="md:col-span-2 space-y-3">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Customer Care</h3>
+            <h3 className="text-sm font-semibold text-gray-950">Customer Care</h3>
             <nav className="flex flex-col gap-2">
-              <Link href="/shipping-policy" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition inline-flex items-center gap-1">
+              <Link href="/shipping-policy" className="text-sm text-gray-600 hover:text-brand transition inline-flex items-center gap-1">
                 Shipping & Returns <ArrowUpRight className="h-3 w-3 text-gray-600" />
               </Link>
-              <Link href="/faq" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/faq" className="text-sm text-gray-600 hover:text-brand transition">
                 FAQ
               </Link>
-              <Link href="/secure-checkout" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/secure-checkout" className="text-sm text-gray-600 hover:text-brand transition">
                 Secure Checkout
               </Link>
-              <Link href="/privacy-policy" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/privacy-policy" className="text-sm text-gray-600 hover:text-brand transition">
                 Privacy Policy
               </Link>
-              <Link href="/contact" className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition">
+              <Link href="/contact" className="text-sm text-gray-600 hover:text-brand transition">
                 Contact Us
               </Link>
             </nav>
@@ -126,20 +126,20 @@ export function Footer() {
 
           {/* Column 4: Support */}
           <div className="md:col-span-4 space-y-3">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Support</h3>
-            <p className="text-xs text-gray-500 leading-relaxed font-sans">
+            <h3 className="text-sm font-semibold text-gray-950">Support</h3>
+            <p className="text-sm text-gray-500 leading-relaxed font-sans">
               Need help with an order, delivery, or return? Contact our support team.
             </p>
             <div className="flex flex-col gap-2">
               <a
                 href={`mailto:${storeConfig.supportEmail}`}
-                className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition"
+                className="text-sm text-gray-600 hover:text-brand transition"
               >
                 {storeConfig.supportEmail}
               </a>
               <a
                 href={`tel:${storeConfig.supportPhone}`}
-                className="text-xs text-gray-600 hover:text-gray-950 font-medium hover:underline transition"
+                className="text-sm text-gray-600 hover:text-brand transition"
               >
                 {storeConfig.supportPhone}
               </a>
@@ -150,17 +150,17 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-gray-600 font-medium">
-            &copy; {currentYear} SHOPPE. All rights reserved. Sourced globally, curated locally.
+          <p className="text-xs text-gray-500">
+            &copy; {currentYear} Shoppe. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/terms" className="text-[11px] text-gray-600 hover:text-gray-950 transition font-medium">
+            <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-950 transition">
               Terms of Service
             </Link>
-            <Link href="/refund-policy" className="text-[11px] text-gray-600 hover:text-gray-950 transition font-medium">
+            <Link href="/refund-policy" className="text-xs text-gray-500 hover:text-gray-950 transition">
               Refund Policy
             </Link>
-            <Link href="/privacy-policy" className="text-[11px] text-gray-600 hover:text-gray-950 transition font-medium">
+            <Link href="/privacy-policy" className="text-xs text-gray-500 hover:text-gray-950 transition">
               Privacy Settings
             </Link>
           </div>
