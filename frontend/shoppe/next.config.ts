@@ -15,15 +15,6 @@ const apiImagesHost = new URL(apiOrigin);
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: {},
-  async rewrites() {
-    return [
-      {
-        source: "/backend/:path*",
-        destination: "https://shoppe-backend-yko6.onrender.com/:path*",
-      },
-    ];
-  },
-
   async headers() {
     return [
       {
