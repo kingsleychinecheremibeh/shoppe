@@ -164,7 +164,7 @@ export default async function ProductPage({ params }: PageProps) {
           __html: JSON.stringify(productSchema).replace(/</g, "\\u003c"),
         }}
       />
-      <ProductDetailClient productId={id} />
+      <ProductDetailClient productId={id} initialProduct={product} />
     </>
   );
 }

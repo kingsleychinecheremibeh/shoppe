@@ -57,34 +57,47 @@ const getSwatchColor = (color?: string | null) => {
   return colorSwatches[normalized] || normalized;
 };
 
-export default function ProductDetailClient({ productId }: { productId: string }) {
+export type ProductDetail = Product;
+
+const getDefaultImageId = (product: Product | null) =>
+  (product?.images?.find((image) => image.isPrimary) || product?.images?.[0])?.id || null;
+
+export default function ProductDetailClient({
+  productId,
+  initialProduct = null,
+}: {
+  productId: string;
+  /** Product loaded on the server, so the page (and search engines) see it without waiting for JS. */
+  initialProduct?: Product | null;
+}) {
   const router = useRouter();
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<Product | null>(initialProduct);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(getDefaultImageId(initialProduct));
+  const [loading, setLoading] = useState(!initialProduct);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     if (!productId) return;
+    const hasInitialProduct = Boolean(initialProduct);
 
     const fetchProduct = async () => {
       try {
         const productData = await api.getProduct(productId);
         if (!productData) {
+          if (hasInitialProduct) return;
           toast.error("Product not found.");
           router.push("/products");
           return;
         }
         const fetchedProduct = productData as Product;
-        const defaultImage =
-          fetchedProduct.images?.find((image) => image.isPrimary) ||
-          fetchedProduct.images?.[0];
-
         setProduct(fetchedProduct);
-        setSelectedImageId(defaultImage?.id || null);
+        // Keep the shopper's colour choice when refreshing; only pick a default the first time.
+        setSelectedImageId((current) => current ?? getDefaultImageId(fetchedProduct));
       } catch {
+        // With server-rendered data already on screen, a failed background refresh is not fatal.
+        if (hasInitialProduct) return;
         toast.error("Unable to load product information.");
         router.push("/products");
       } finally {
@@ -92,8 +105,9 @@ export default function ProductDetailClient({ productId }: { productId: string }
       }
     };
 
-    fetchProduct();
-  }, [productId, router]);
+    // Always refresh in the browser: the server copy can be up to a minute old, and stock changes.
+    void fetchProduct();
+  }, [productId, router, initialProduct]);
 
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(quantity - 1);
