@@ -150,7 +150,7 @@ export function Header() {
         setUser((data as MeResponse).user);
         const notificationData = await api.getNotifications({ limit: 8 }).catch(() => []);
         if (!ignore) {
-          setNotifications((notificationData as Notification[]) || []);
+          setNotifications(Array.isArray(notificationData) ? (notificationData as Notification[]) : []);
         }
         if (!showStorefrontTools) return;
 
