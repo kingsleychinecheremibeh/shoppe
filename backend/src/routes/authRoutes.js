@@ -36,7 +36,9 @@ router.get("/csrf-token", getCsrfToken);
 router.post("/register", registerLimiter, validate(registerSchema), registerUser);
 router.post("/login", loginLimiter, validate(loginSchema), loginUser);
 router.post("/refresh-token", refreshLimiter, refreshAccessToken);
-router.post("/logout", protect, logoutUser);
+// No `protect`: logging out must still work after the 15-minute access token has expired.
+// The controller only revokes the refresh token from the cookie; CSRF and origin checks still apply.
+router.post("/logout", logoutUser);
 router.get("/me", protect, getCurrentUser);
 
 export default router;

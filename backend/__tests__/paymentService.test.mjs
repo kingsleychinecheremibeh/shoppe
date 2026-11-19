@@ -4,6 +4,7 @@ import crypto from "crypto";
 const orderRepository = {
   findOrderById: jest.fn(),
   updateOrderStatus: jest.fn(),
+  markPaidIfPending: jest.fn(),
 };
 
 const axios = {
@@ -150,11 +151,11 @@ describe("paymentService", () => {
       total: 75,
       paymentGateway: "PAYSTACK",
     });
-    orderRepository.updateOrderStatus.mockResolvedValue({ id: "order-1", status: "PAID" });
+    orderRepository.markPaidIfPending.mockResolvedValue(true);
 
     const result = await paymentService.verifyPaystackEvent(body, signPaystackBody(body));
 
-    expect(orderRepository.updateOrderStatus).toHaveBeenCalledWith("order-1", "PAID");
+    expect(orderRepository.markPaidIfPending).toHaveBeenCalledWith("order-1");
     expect(result).toEqual({ orderId: "order-1", status: "PAID" });
   });
 
@@ -177,7 +178,7 @@ describe("paymentService", () => {
     await expect(paymentService.verifyPaystackEvent(body, signPaystackBody(body))).rejects.toThrow(
       "Payment amount does not match order total"
     );
-    expect(orderRepository.updateOrderStatus).not.toHaveBeenCalled();
+    expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
   });
 
   test("treats already paid webhook retries as idempotent", async () => {
@@ -198,7 +199,7 @@ describe("paymentService", () => {
 
     const result = await paymentService.verifyPaystackEvent(body, signPaystackBody(body));
 
-    expect(orderRepository.updateOrderStatus).not.toHaveBeenCalled();
+    expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
     expect(result).toEqual({ orderId: "order-1", status: "PAID", alreadyProcessed: true });
   });
 
@@ -220,7 +221,9 @@ describe("paymentService", () => {
       paymentGateway: "PAYSTACK",
     });
 
-    const result = await paymentService.verifyPaystackTransaction("ref_123-ABC.45");
+    orderRepository.markPaidIfPending.mockResolvedValue(true);
+
+    const result = await paymentService.verifyPaystackTransaction("ref_123-ABC.45", "user-1");
 
     expect(axios.get).toHaveBeenCalledWith(
       "https://api.paystack.co/transaction/verify/ref_123-ABC.45",
@@ -230,8 +233,63 @@ describe("paymentService", () => {
         }),
       })
     );
-    expect(orderRepository.updateOrderStatus).toHaveBeenCalledWith("order-1", "PAID");
+    expect(orderRepository.markPaidIfPending).toHaveBeenCalledWith("order-1");
     expect(result).toEqual({ orderId: "order-1", status: "PAID" });
+  });
+
+  test("does not confirm another customer's order from a verify request", async () => {
+    axios.get.mockResolvedValue({
+      data: { data: { status: "success", amount: 7500, metadata: { orderId: "order-1" } } },
+    });
+    orderRepository.findOrderById.mockResolvedValue({
+      id: "order-1",
+      userId: "user-1",
+      status: "PENDING",
+      total: 75,
+      paymentGateway: "PAYSTACK",
+    });
+
+    const result = await paymentService.verifyPaystackTransaction("ref_123", "someone-else");
+
+    expect(result).toBeNull();
+    expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
+  });
+
+  test("acknowledges payment for a cancelled order and flags it for refund", async () => {
+    const body = { event: "charge.success", data: { amount: 7500, metadata: { orderId: "order-1" } } };
+    orderRepository.findOrderById.mockResolvedValue({
+      id: "order-1",
+      userId: "user-1",
+      status: "CANCELLED",
+      total: 75,
+      paymentGateway: "PAYSTACK",
+    });
+
+    const result = await paymentService.verifyPaystackEvent(body, signPaystackBody(body));
+
+    expect(result).toEqual({ orderId: "order-1", status: "CANCELLED", requiresRefund: true });
+    expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
+  });
+
+  test("flags a refund when the order is cancelled between reading and paying", async () => {
+    const body = { event: "charge.success", data: { amount: 7500, metadata: { orderId: "order-1" } } };
+    orderRepository.findOrderById
+      .mockResolvedValueOnce({ id: "order-1", userId: "user-1", status: "PENDING", total: 75, paymentGateway: "PAYSTACK" })
+      .mockResolvedValueOnce({ id: "order-1", userId: "user-1", status: "CANCELLED", total: 75, paymentGateway: "PAYSTACK" });
+    orderRepository.markPaidIfPending.mockResolvedValue(false);
+
+    const result = await paymentService.verifyPaystackEvent(body, signPaystackBody(body));
+
+    expect(result).toEqual({ orderId: "order-1", status: "CANCELLED", requiresRefund: true });
+  });
+
+  test("rejects Paystack webhooks with a forged signature", async () => {
+    const body = { event: "charge.success", data: { amount: 7500, metadata: { orderId: "order-1" } } };
+
+    await expect(paymentService.verifyPaystackEvent(body, "not-a-real-signature")).rejects.toThrow(
+      "Paystack Webhook Signature Verification Failed"
+    );
+    expect(orderRepository.findOrderById).not.toHaveBeenCalled();
   });
 
   test("rejects malformed Paystack references before making an outbound request", async () => {
@@ -241,6 +299,6 @@ describe("paymentService", () => {
 
     expect(axios.get).not.toHaveBeenCalled();
     expect(orderRepository.findOrderById).not.toHaveBeenCalled();
-    expect(orderRepository.updateOrderStatus).not.toHaveBeenCalled();
+    expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
   });
 });

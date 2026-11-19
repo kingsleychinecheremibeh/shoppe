@@ -144,8 +144,87 @@ export const orderRepository = {
         });
     },
 
-    deleteOrder: (id) => {
+    /**
+     * Moves an order from PENDING to PAID only if it is still PENDING.
+     * Returns true when this call made the change, false if the order had already moved on
+     * (for example it was cancelled by the unpaid-order expiry job).
+     */
+    markPaidIfPending: async (id) => {
+        const result = await prisma.order.updateMany({
+            where: { id, status: "PENDING" },
+            data: { status: "PAID" },
+        });
+        return result.count === 1;
+    },
+
+    /**
+     * Cancels an order and returns its items to stock, in one transaction.
+     * Only PENDING or PAID orders hold stock, so only those are restocked; the conditional
+     * update also guarantees stock is returned at most once, even under concurrent calls.
+     * Returns the updated order, or null if the order was not in a restockable state.
+     */
+    cancelOrderAndRestock: (id) => {
         return prisma.$transaction(async (tx) => {
+            const result = await tx.order.updateMany({
+                where: { id, status: { in: ["PENDING", "PAID"] } },
+                data: { status: "CANCELLED" },
+            });
+
+            if (result.count === 0) {
+                return null;
+            }
+
+            const items = await tx.orderItem.findMany({
+                where: { orderId: id },
+                select: { productId: true, quantity: true },
+            });
+
+            for (const item of items) {
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { stock: { increment: item.quantity } },
+                });
+            }
+
+            return tx.order.findUnique({
+                where: { id },
+                include: {
+                    orderItems: { include: { product: true } },
+                    address: true,
+                },
+            });
+        });
+    },
+
+    /** IDs of unpaid orders created before `cutoff`. */
+    findExpiredPendingOrderIds: async (cutoff) => {
+        const orders = await prisma.order.findMany({
+            where: { status: "PENDING", createdAt: { lt: cutoff } },
+            select: { id: true },
+            take: 200,
+        });
+        return orders.map((order) => order.id);
+    },
+
+    /**
+     * Deletes an order. If it still held stock (PENDING or PAID), the stock is returned first.
+     */
+    deleteOrder: (id, { restock = false } = {}) => {
+        return prisma.$transaction(async (tx) => {
+            const items = await tx.orderItem.findMany({
+                where: { orderId: id },
+                select: { productId: true, quantity: true },
+            });
+
+            if (restock) {
+                for (const item of items) {
+                    await tx.product.update({
+                        where: { id: item.productId },
+                        data: { stock: { increment: item.quantity } },
+                    });
+                }
+            }
+
             await tx.orderItem.deleteMany({
                 where: { orderId: id },
             });
