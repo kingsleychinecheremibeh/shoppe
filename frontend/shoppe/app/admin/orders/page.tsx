@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Eye, ImageIcon, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { api, getAssetUrl } from "@/lib/api";
+import { formatPrice } from "@/lib/format";
 
 type UserData = {
   id: string;
@@ -71,10 +72,6 @@ const statusTransitions: Record<OrderStatus, OrderStatus[]> = {
   CANCELLED: [],
 };
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "NGN",
-});
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -212,8 +209,8 @@ export default function AdminOrdersPage() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Order Flow Desk</span>
-            <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Store Purchases</h1>
+            <span className="text-xs font-medium text-gray-600">Order Flow Desk</span>
+            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Store Purchases</h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
               Monitor active checkout orders, trace full client shipping structures, and transition logistics delivery stages.
             </p>
@@ -265,7 +262,7 @@ export default function AdminOrdersPage() {
                             <p className="text-xs font-bold text-gray-900">
                               {order.user?.name || "N/A"}
                             </p>
-                            <p className="text-[10px] text-gray-600 font-medium mt-0.5">
+                            <p className="text-xs text-gray-600 font-medium mt-0.5">
                               {order.user?.email || "N/A"}
                             </p>
                           </div>
@@ -273,8 +270,8 @@ export default function AdminOrdersPage() {
                         <td className="px-6 py-4 text-xs font-medium text-gray-500">
                           {dateFormatter.format(new Date(order.createdAt))}
                         </td>
-                        <td className="px-6 py-4 text-xs font-black text-gray-950">
-                          {currencyFormatter.format(getNumber(order.total))}
+                        <td className="px-6 py-4 text-xs font-semibold text-gray-950">
+                          {formatPrice(getNumber(order.total))}
                         </td>
                         <td className="px-6 py-4">
                           <OrderStatusControl
@@ -404,8 +401,8 @@ function OrderDetailsModal({
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
         <div className="flex items-center justify-between border-b border-gray-100 p-6">
           <div>
-            <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">Fulfillment Details</h2>
-            <p className="mt-1.5 text-[10px] text-gray-600 font-mono">ORDER ID: #{order.id.toUpperCase()}</p>
+            <h2 className="text-xl font-semibold tracking-tight text-gray-950">Fulfillment Details</h2>
+            <p className="mt-1.5 text-xs text-gray-600 font-mono">ORDER ID: #{order.id.toUpperCase()}</p>
           </div>
           <button
             type="button"
@@ -427,10 +424,10 @@ function OrderDetailsModal({
             </InfoBlock>
             <InfoBlock label="Registered Account">
               <span className="block text-xs font-bold text-gray-950">{order.user?.name || "N/A"}</span>
-              <span className="block text-[10px] text-gray-600 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
+              <span className="block text-xs text-gray-600 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
             </InfoBlock>
             <InfoBlock label="Total">
-              {currencyFormatter.format(total)}
+              {formatPrice(total)}
             </InfoBlock>
           </div>
 
@@ -448,17 +445,17 @@ function OrderDetailsModal({
                       <p className="truncate font-semibold text-gray-950 flex items-center gap-2">
                         {item.product?.name || "Product"}
                         {item.selectedColor && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                             {item.selectedColor}
                           </span>
                         )}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {item.quantity} x {currencyFormatter.format(getNumber(item.price))}
+                        {item.quantity} x {formatPrice(getNumber(item.price))}
                       </p>
                     </div>
                     <p className="text-xs font-bold text-gray-950">
-                      {currencyFormatter.format(item.quantity * getNumber(item.price))}
+                      {formatPrice(item.quantity * getNumber(item.price))}
                     </p>
                   </div>
                 ))
@@ -472,7 +469,7 @@ function OrderDetailsModal({
 
           {order.address && (
             <section>
-              <h3 className="mb-3 text-xs font-bold text-gray-700 uppercase tracking-wide">Shipping Address</h3>
+              <h3 className="mb-3 text-xs font-medium text-gray-700 tracking-wide">Shipping Address</h3>
               <div className="rounded-xl border border-gray-200 bg-gray-50/20 p-4">
                 <p className="text-xs font-bold text-gray-900">{order.address.fullName}</p>
                 <p className="mt-1.5 text-xs text-gray-600 leading-relaxed font-medium">
@@ -492,9 +489,9 @@ function OrderDetailsModal({
               <SummaryRow label="Items Subtotal" value={subtotal} />
               <SummaryRow label={shippingLabel} value={shippingFee} />
               <SummaryRow label="Regional Taxes" value={taxes} />
-              <div className="flex justify-between border-t border-gray-100 pt-3 text-sm font-black text-gray-950">
+              <div className="flex justify-between border-t border-gray-100 pt-3 text-sm font-semibold text-gray-950">
                 <span>Total</span>
-                <span>{currencyFormatter.format(total)}</span>
+                <span>{formatPrice(total)}</span>
               </div>
             </div>
           </section>
@@ -541,7 +538,7 @@ function SummaryRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex justify-between text-xs font-medium">
       <span className="text-gray-600">{label}</span>
-      <span className="text-gray-950">{currencyFormatter.format(value)}</span>
+      <span className="text-gray-950">{formatPrice(value)}</span>
     </div>
   );
 }

@@ -191,8 +191,8 @@ export default function AdminCategoriesPage() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Inventory Taxonomy</span>
-            <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Store Categories</h1>
+            <span className="text-xs font-medium text-gray-600">Inventory Taxonomy</span>
+            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Store Categories</h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
               Organize your catalog into distinct shopping ranges, map fallback imagery, and monitor product volume counts.
             </p>
@@ -216,7 +216,7 @@ export default function AdminCategoriesPage() {
             <button
               type="button"
               onClick={() => handleOpenModal()}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 uppercase tracking-wider shadow-xs"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 shadow-xs"
             >
               <Plus className="h-4 w-4" />
               Add Category
@@ -257,12 +257,12 @@ export default function AdminCategoriesPage() {
                             <CategoryThumbnail category={category} />
                             <div>
                               <p className="text-xs font-bold text-gray-900">{category.name}</p>
-                              <p className="text-[10px] text-gray-600 font-mono mt-0.5">ID {category.id.slice(0, 8).toUpperCase()}</p>
+                              <p className="text-xs text-gray-600 font-mono mt-0.5">ID {category.id.slice(0, 8).toUpperCase()}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <code className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-[10px] font-mono font-bold text-gray-700">
+                          <code className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs font-mono font-bold text-gray-700">
                             {category.slug}
                           </code>
                         </td>
@@ -271,9 +271,9 @@ export default function AdminCategoriesPage() {
                         </td>
                         <td className="px-6 py-4 text-xs">
                           {category.image ? (
-                            <span className="text-emerald-700 font-bold uppercase text-[9px] bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">Bound</span>
+                            <span className="text-emerald-700 font-medium text-xs bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">Bound</span>
                           ) : (
-                            <span className="text-gray-600 font-bold uppercase text-[9px] bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">Empty</span>
+                            <span className="text-gray-600 font-medium text-xs bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">Empty</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -324,10 +324,10 @@ export default function AdminCategoriesPage() {
           <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
             <div className="flex items-center justify-between border-b border-gray-100 p-6">
               <div>
-                <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">
+                <h2 className="text-xl font-semibold tracking-tight text-gray-950">
                   {editingCategory ? "Modify Category Details" : "Create New Category"}
                 </h2>
-                <p className="mt-1.5 text-[10px] text-gray-600 font-medium">
+                <p className="mt-1.5 text-xs text-gray-600 font-medium">
                   Categories must match storefront slugs exactly for route mapping redirects.
                 </p>
               </div>
@@ -343,7 +343,7 @@ export default function AdminCategoriesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5 p-6">
               <div>
-                <label htmlFor="name" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                <label htmlFor="name" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                   Category Name
                 </label>
                 <input
@@ -362,7 +362,7 @@ export default function AdminCategoriesPage() {
               </div>
 
               <div>
-                <label htmlFor="image" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                <label htmlFor="image" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                   Cover Image URL
                 </label>
                 <input
@@ -381,14 +381,14 @@ export default function AdminCategoriesPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <LoadingButton
                   type="submit"
                   loading={saving}
-                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {editingCategory ? "Update Category" : "Create Category"}
                 </LoadingButton>

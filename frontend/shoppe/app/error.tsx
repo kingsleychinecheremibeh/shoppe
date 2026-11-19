@@ -1,6 +1,7 @@
 "use client"; // Error boundaries must be client components
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function Error({
   error,
@@ -15,17 +16,23 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong!</h2>
-      <p className="text-gray-600 mb-8 max-w-md">
-        We encountered an unexpected error while trying to load this page.
+    <main className="flex min-h-[60vh] flex-col items-center justify-center bg-white px-4 text-center">
+      <h1 className="text-2xl font-semibold tracking-tight text-gray-950">Something went wrong</h1>
+      <p className="mt-2 max-w-md text-sm text-gray-500">
+        This page didn&apos;t load properly. Please try again.
       </p>
-      <button
-        onClick={() => reset()}
-        className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
-      >
-        Try again
-      </button>
-    </div>
+      <div className="mt-8 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => reset()}
+          className="rounded-full bg-brand px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-hover"
+        >
+          Try again
+        </button>
+        <Link href="/" className="rounded-full px-5 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-100">
+          Go home
+        </Link>
+      </div>
+    </main>
   );
 }

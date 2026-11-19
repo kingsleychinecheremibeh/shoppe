@@ -164,10 +164,10 @@ export default function AdminShippingPage() {
         {/* Header */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
+            <span className="text-xs font-medium text-gray-600">
               Fulfillment Settings
             </span>
-            <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">
+            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">
               Shipping Methods
             </h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
@@ -179,7 +179,7 @@ export default function AdminShippingPage() {
           <button
             type="button"
             onClick={() => handleOpenModal()}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 uppercase tracking-wider shadow-xs"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 shadow-xs"
           >
             <Plus className="h-4 w-4" />
             Add Method
@@ -210,22 +210,22 @@ export default function AdminShippingPage() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
                       Method
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
                       Price
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
                       Delivery
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
                       Order
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500">
                       Actions
                     </th>
                   </tr>
@@ -244,7 +244,7 @@ export default function AdminShippingPage() {
                                 {method.name}
                               </p>
                               {method.description && (
-                                <p className="text-[10px] text-gray-600 mt-0.5 max-w-xs truncate">
+                                <p className="text-xs text-gray-600 mt-0.5 max-w-xs truncate">
                                   {method.description}
                                 </p>
                               )}
@@ -259,17 +259,17 @@ export default function AdminShippingPage() {
                         </td>
                         <td className="px-6 py-4">
                           {method.isActive ? (
-                            <span className="text-emerald-700 font-bold uppercase text-[9px] bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">
+                            <span className="text-emerald-700 font-medium text-xs bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">
                               Active
                             </span>
                           ) : (
-                            <span className="text-gray-600 font-bold uppercase text-[9px] bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">
+                            <span className="text-gray-600 font-medium text-xs bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">
                               Inactive
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <code className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-[10px] font-mono font-bold text-gray-700">
+                          <code className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs font-mono font-bold text-gray-700">
                             {method.sortOrder}
                           </code>
                         </td>
@@ -319,7 +319,7 @@ export default function AdminShippingPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenModal()}
-                              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 uppercase tracking-wider"
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800"
                             >
                               <Plus className="h-4 w-4" />
                               Add Method
@@ -342,12 +342,12 @@ export default function AdminShippingPage() {
           <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
             <div className="flex items-center justify-between border-b border-gray-100 p-6">
               <div>
-                <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">
+                <h2 className="text-xl font-semibold tracking-tight text-gray-950">
                   {editingMethod
                     ? "Edit Shipping Method"
                     : "New Shipping Method"}
                 </h2>
-                <p className="mt-1.5 text-[10px] text-gray-600 font-medium">
+                <p className="mt-1.5 text-xs text-gray-600 font-medium">
                   {editingMethod
                     ? "Update method details. Changes apply to future orders only."
                     : "Define a new delivery option for your storefront checkout."}
@@ -367,7 +367,7 @@ export default function AdminShippingPage() {
               <div>
                 <label
                   htmlFor="shippingName"
-                  className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                  className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                 >
                   Method Name
                 </label>
@@ -389,10 +389,10 @@ export default function AdminShippingPage() {
               <div>
                 <label
                   htmlFor="shippingDesc"
-                  className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                  className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                 >
                   Description
-                  <span className="ml-1 text-[9px] text-gray-600 normal-case tracking-normal font-normal">
+                  <span className="ml-1 text-xs text-gray-600 normal-case tracking-normal font-normal">
                     (optional)
                   </span>
                 </label>
@@ -412,7 +412,7 @@ export default function AdminShippingPage() {
                 <div>
                   <label
                     htmlFor="shippingPrice"
-                    className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                   >
                     Price (₦)
                   </label>
@@ -436,10 +436,10 @@ export default function AdminShippingPage() {
                 <div>
                   <label
                     htmlFor="shippingDays"
-                    className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                   >
                     Est. Delivery
-                    <span className="ml-1 text-[9px] text-gray-600 normal-case tracking-normal font-normal">
+                    <span className="ml-1 text-xs text-gray-600 normal-case tracking-normal font-normal">
                       (optional)
                     </span>
                   </label>
@@ -460,7 +460,7 @@ export default function AdminShippingPage() {
                 <div>
                   <label
                     htmlFor="shippingSortOrder"
-                    className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                   >
                     Sort Order
                   </label>
@@ -477,7 +477,7 @@ export default function AdminShippingPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  <label className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                     Status
                   </label>
                   <button
@@ -501,14 +501,14 @@ export default function AdminShippingPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <LoadingButton
                   type="submit"
                   loading={saving}
-                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {editingMethod ? "Update Method" : "Create Method"}
                 </LoadingButton>
