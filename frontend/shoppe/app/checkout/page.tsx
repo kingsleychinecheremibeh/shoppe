@@ -255,7 +255,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white pb-28 lg:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/cart"
@@ -517,6 +517,24 @@ export default function CheckoutPage() {
               <Link href="/refund-policy" className="underline underline-offset-2 hover:text-gray-950">Refund</Link> policies.
             </p>
           </aside>
+        </div>
+      </div>
+
+      {/* Mobile: keep the total and Pay button in reach while filling in the steps */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center gap-4">
+          <div className="min-w-0">
+            <p className="text-xs text-gray-500">{selectedMethod ? "Total" : "Subtotal"}</p>
+            <p className="text-lg font-semibold text-gray-950">{formatPrice(selectedMethod ? total : subtotal)}</p>
+          </div>
+          <LoadingButton
+            onClick={handlePlaceOrder}
+            loading={submittingOrder}
+            disabled={!activeAddressId || !selectedShippingMethod}
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
+          >
+            {!activeAddressId ? "Add an address to pay" : "Pay now"}
+          </LoadingButton>
         </div>
       </div>
     </main>
