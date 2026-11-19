@@ -270,18 +270,18 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between gap-4">
+        <div className="flex h-16 items-center justify-between gap-4">
           
           {/* Logo */}
           <Link
             href={isAdminRoute ? staffLandingPath : "/"}
-            className="flex shrink-0 items-center gap-2.5 text-xl font-serif font-black tracking-widest text-gray-950 uppercase transition hover:opacity-80"
+            className="flex shrink-0 items-center gap-2 text-lg font-semibold tracking-tight text-gray-950 transition hover:opacity-80"
             onClick={closeMenus}
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-gray-950 text-white shadow-sm">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
               <ShoppingBag className="h-4.5 w-4.5" />
             </span>
-            SHOPPE
+            Shoppe
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -296,7 +296,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => setCategoriesOpen((o) => !o)}
-                  className={`relative flex items-center gap-1 py-1 text-[11px] font-bold uppercase tracking-widest transition duration-300 after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-950 after:transition-all hover:after:w-full ${
+                  className={`relative flex items-center gap-1 py-1 text-sm font-medium transition duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-brand after:transition-all hover:after:w-full ${
                     categoriesOpen || pathname.startsWith("/category")
                       ? "text-gray-950 after:w-full"
                       : "text-gray-600 hover:text-gray-950"
@@ -362,7 +362,7 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative py-1 text-[11px] font-bold uppercase tracking-widest transition duration-300 after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-950 after:transition-all hover:after:w-full ${
+                  className={`relative py-1 text-sm font-medium transition duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-brand after:transition-all hover:after:w-full ${
                     active ? "text-gray-950 after:w-full" : "text-gray-600 hover:text-gray-950"
                   }`}
                   onClick={closeMenus}
@@ -386,7 +386,7 @@ export function Header() {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search products..."
-                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50/50 pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-950 focus:bg-white focus:ring-2 focus:ring-gray-950/5"
+                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50/50 pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-brand/10"
                 />
               </label>
             </form>
@@ -513,7 +513,7 @@ export function Header() {
               >
                 <ShoppingCart className="h-4.5 w-4.5" />
                 {cartCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-gray-950 px-1 text-[9px] font-black text-white shadow-xs border border-white">
+                  <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[9px] font-bold text-white shadow-xs border border-white">
                     {cartCount}
                   </span>
                 )}

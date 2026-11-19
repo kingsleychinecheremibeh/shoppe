@@ -1,7 +1,8 @@
-import { ArrowRight, ArrowUpRight, ShieldCheck, Truck, RefreshCw } from "lucide-react";
+import { ArrowRight, ShieldCheck, Truck, RefreshCw, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { ProductImage } from "@/app/components/product-image";
+import { ProductCard } from "@/app/components/product-card";
 import { getAssetUrl } from "@/lib/api";
 import { storeConfig } from "@/lib/store-config";
 
@@ -22,11 +23,6 @@ type Product = {
   stock: number;
   category?: Category;
 };
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "NGN",
-});
 
 const LOCAL_API_BASE = "http://localhost:5000/api/v1";
 const API_BASE =
@@ -62,79 +58,65 @@ async function getHomeData() {
   }
 }
 
-function ProductCard({ product, priority = false }: { product: Product, priority?: boolean }) {
-  const imageUrl = getAssetUrl(product.image);
+function SectionHeader({ title, href, linkLabel }: { title: string; href: string; linkLabel: string }) {
   return (
-    <Link 
-      href={`/products/${product.id}`}
-      className="group block overflow-hidden transition"
-    >
-      <div className="aspect-square overflow-hidden bg-gray-50 border border-gray-100 rounded-lg relative">
-        {imageUrl ? (
-          <ProductImage
-            src={imageUrl}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            priority={priority}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
-            No image
-          </div>  
-        )}
-        <div className="absolute inset-0 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-end p-4">
-          <span className="bg-white text-gray-950 text-xs font-bold uppercase tracking-wider py-2 px-3 rounded shadow-sm inline-flex items-center gap-1.5 translate-y-2 opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100">
-            Quick View
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-4 flex justify-between items-start">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
-            {product.category?.name || "Premium Collection"}
-          </span>
-          <h3 className="mt-0.5 text-sm font-bold text-gray-950 group-hover:underline line-clamp-1">{product.name}</h3>
-        </div>
-        <p className="text-sm font-black text-gray-900 shrink-0 ml-4">
-          {currencyFormatter.format(Number(product.price))}
-        </p>
-      </div>
-    </Link> 
+    <div className="mb-8 flex items-end justify-between gap-4">
+      <h2 className="text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">{title}</h2>
+      <Link
+        href={href}
+        className="group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-gray-600 transition hover:text-brand"
+      >
+        {linkLabel}
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+      </Link>
+    </div>
   );
 }
 
-function CategoryCard({ category, priority = false }: { category: Category, priority?: boolean }) {
+function CategoryCard({ category, priority = false }: { category: Category; priority?: boolean }) {
   const imageUrl = getAssetUrl(category.image);
   return (
-    <Link
-      href={`/category/${category.slug}`}
-      className="group relative aspect-3/4 overflow-hidden rounded-xl bg-gray-100 block shadow-xs transition hover:shadow-md"
-    >
-      <div className="h-full w-full">
+    <Link href={`/category/${category.slug}`} className="group block">
+      <div className="relative aspect-4/5 overflow-hidden rounded-2xl bg-canvas">
         {imageUrl ? (
           <ProductImage
             src={imageUrl}
             alt={category.name}
-            className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            fill
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            sizes="(max-width: 640px) 50vw, 25vw"
             priority={priority}
           />
-        ) : (
-          <div className="flex h-full w-full">
-            No image available
-          </div>
-        )}
+        ) : null}
       </div>
-      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-6">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 mb-1">Shop category</span>
-        <h3 className="text-xl font-bold text-white tracking-wider uppercase font-serif md:text-2xl">{category.name}</h3>
+      <div className="mt-3 flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-900">{category.name}</h3>
+        <ArrowRight
+          className="h-4 w-4 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-brand"
+          aria-hidden="true"
+        />
       </div>
-    </Link>  
+    </Link>
   );
 }
+
+const promises = [
+  {
+    icon: Truck,
+    title: "Nationwide delivery",
+    body: `Delivered in ${storeConfig.deliveryTime}`,
+  },
+  {
+    icon: ShieldCheck,
+    title: "Secure payment",
+    body: "Pay safely with Paystack",
+  },
+  {
+    icon: RefreshCw,
+    title: "Easy returns",
+    body: `${storeConfig.returnWindowDays}-day return window`,
+  },
+];
 
 export default async function Home() {
   const { categories, products } = await getHomeData();
@@ -143,214 +125,121 @@ export default async function Home() {
 
   return (
     <main className="bg-white">
-      
-      {/* Hero Section */}
-      <section className="relative bg-gray-50 border-b border-gray-200 py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
-            
-            {/* Left Content */}
-            <div className="lg:col-span-7 max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-4 block">New products</span>
-              <h1 className="mb-6 text-5xl font-black md:text-7xl leading-tight font-serif text-gray-950">
-                Shop Quality <br className="hidden md:inline" /> Products Online
-              </h1>
-              <p className="mb-8 text-base md:text-lg text-gray-600 leading-relaxed font-sans">
-                Discover products for everyday use, compare options, add items to your cart, and check out securely with delivery support across selected locations.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-2 bg-gray-950 text-white px-8 py-3.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition shadow-sm"
-                >
-                  Shop Products
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-8 py-3.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                >
-                  Browse Products
-                </Link>
-              </div>
+      {/* Hero */}
+      <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <div className="grid overflow-hidden rounded-3xl bg-canvas lg:grid-cols-2">
+          <div className="flex flex-col justify-center px-6 py-14 sm:px-12 lg:py-24">
+            <p className="mb-4 text-sm font-medium text-brand">New in store</p>
+            <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-gray-950 sm:text-5xl lg:text-6xl">
+              Everyday essentials, thoughtfully chosen.
+            </h1>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-gray-600">
+              Clothing, shoes, bags and accessories, checked before they ship and delivered across{" "}
+              {storeConfig.country}.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-hover"
+              >
+                Shop now
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/categories"
+                className="inline-flex items-center rounded-full px-5 py-3 text-sm font-medium text-gray-700 transition hover:bg-white hover:text-gray-950"
+              >
+                Browse categories
+              </Link>
             </div>
+          </div>
 
-            {/* Right Side Image Composition */}
-            <div className="lg:col-span-5 w-full mt-10 lg:mt-0">
-              <div className="relative aspect-4/5 w-full rounded-2xl bg-gray-100 border border-gray-200 shadow-sm p-4">
-                <Image
-                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"
-                  alt="Featured product showcase"
-                  className="h-full w-full object-cover rounded-xl"
-                  width={600}
-                  height={800}
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 42vw"
-                />
-                <div className="absolute bottom-8 left-6 lg:-left-8 bg-white p-5 rounded-xl border border-gray-100 shadow-lg max-w-50">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Featured Picks</p>
-                  <p className="font-serif font-bold text-gray-950 mt-1 leading-snug">Popular Products</p>
-                  <Link href="/products" className="text-xs font-bold text-gray-900 hover:underline mt-2 inline-flex items-center gap-1">
-                    Shop products <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-
+          <div className="relative min-h-80 lg:min-h-136">
+            <Image
+              src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=80"
+              alt="Model wearing a cream top from the latest collection"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           </div>
         </div>
       </section>
 
-      {/* Value Props Banner */}
-      <section className="border-b border-gray-100 py-8 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-3 gap-3 sm:gap-6 text-center">
-          <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left">
-            <Truck className="h-5 w-5 text-gray-600 shrink-0" />
-            <div>
-              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Fast Delivery</h3>
-              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">Delivery available across supported locations</p>
-            </div>
-          </div>
-          <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left border-x border-gray-100 px-2 sm:px-6">
-            <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0" />
-            <div>
-              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Checked Before Shipping</h3>
-              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">Products are checked before they are packed</p>
-            </div>
-          </div>
-          <div className="flex flex-col items-center gap-2 sm:gap-3.5 sm:flex-row sm:text-left">
-            <RefreshCw className="h-5 w-5 text-gray-600 shrink-0" />
-            <div>
-              <h3 className="text-[10px] sm:text-xs font-bold text-gray-900 uppercase tracking-wider">Easy Returns</h3>
-              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 hidden sm:block">{storeConfig.returnWindowDays}-day return window</p>
-            </div>
-          </div>
-        </div>
+      {/* Promises */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <ul className="grid gap-6 border-b border-gray-100 py-10 sm:grid-cols-3">
+          {promises.map(({ icon: Icon, title, body }) => (
+            <li key={title} className="flex items-center gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-gray-900">{title}</p>
+                <p className="text-sm text-gray-500">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Category Section */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 bg-white">
-        <div className="text-center max-w-md mx-auto mb-12">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Categories</span>
-          <h2 className="text-3xl font-bold font-serif text-gray-950">Shop by Category</h2>
-        </div>
-        
-        {categories.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-3 max-w-5xl mx-auto">
-            {categories.slice(0, 3).map((category, index) => (
-              <CategoryCard key={category.id} category={category} priority={index < 3} />
+      {/* Categories */}
+      {categories.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <SectionHeader title="Shop by category" href="/categories" linkLabel="All categories" />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
+            {categories.slice(0, 4).map((category, index) => (
+              <CategoryCard key={category.id} category={category} priority={index < 2} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* New arrivals */}
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <SectionHeader title="New arrivals" href="/products" linkLabel="View all" />
+        {newArrivals.length ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+            {newArrivals.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center">No categories are available yet.</p>
+          <p className="text-sm text-gray-500">New products are on the way. Check back soon.</p>
         )}
       </section>
 
-      {/* New Arrivals Section */}
-      <section className="bg-gray-50/50 border-y border-gray-100 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Recently added</span>
-              <h2 className="text-3xl font-bold font-serif text-gray-950">New Arrivals</h2>
-            </div>
-            <Link href="/products" className="text-xs font-bold uppercase tracking-wider border-b border-gray-950 pb-0.5 hover:opacity-75 transition shrink-0 self-start sm:self-auto mt-4 sm:mt-0">
-              View All Products
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {newArrivals.slice(0, 4).map((product, index) => (
-              <ProductCard key={product.id} product={product} priority={index < 4} />
+      {/* Featured */}
+      {featuredProducts.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+          <SectionHeader title="Popular right now" href="/products" linkLabel="Shop all" />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Checkout Confidence Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 overflow-hidden bg-gray-950 text-white">
-        
-        {/* Product Image Container */}
-        <div className="aspect-video lg:aspect-auto min-h-87.5 relative">
-          <Image
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80"
-            alt="Product collection showcase"
-            className="h-full w-full object-cover"
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        </div>
-
-        {/* Checkout Confidence Copy */}
-        <div className="flex flex-col justify-center p-8 sm:p-16 md:p-24 max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Shop With Confidence</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold font-serif leading-tight mb-5">
-            Reliable Products, Easy Checkout
-          </h2>
-          <p className="text-gray-300 text-sm leading-relaxed mb-8">
-            Browse products, add items to cart, and complete checkout securely with clear delivery and return support.
-          </p>
+      {/* Support */}
+      <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl bg-canvas px-6 py-10 sm:flex-row sm:items-center sm:px-12">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-gray-950">Questions about an order?</h2>
+            <p className="mt-1 text-sm text-gray-600">
+              We can help with delivery, returns and payments.
+            </p>
+          </div>
           <Link
-            href="/products"
-            className="self-start inline-flex items-center gap-2 border border-white/30 rounded-lg px-6 py-3 text-xs font-bold uppercase tracking-wider hover:bg-white hover:text-gray-950 transition"
+            href="/contact"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 transition hover:border-gray-950"
           >
-            Browse Products
-            <ArrowRight className="w-3.5 h-3.5" />
+            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            Contact us
           </Link>
         </div>
-
       </section>
-
-      {/* Featured Products Section */}
-      <section className="py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-600 block mb-2">Featured</span>
-              <h2 className="text-3xl font-bold font-serif text-gray-950">Featured Products</h2>
-            </div>
-            <Link href="/products" className="text-xs font-bold uppercase tracking-wider border-b border-gray-950 pb-0.5 hover:opacity-75 transition shrink-0 self-start sm:self-auto mt-4 sm:mt-0">
-              View Collection
-            </Link>
-          </div>
-
-          {featuredProducts.length ? (
-            <div className="grid grid-cols-2 gap-4 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center">No featured products are available yet.</p>
-          )}
-        </div>
-      </section>
-
-      {/* Support Section */}
-      <section className="bg-gray-50 border-t border-gray-200 py-24 text-center">
-        <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-3 block">Customer Support</span>
-          <h2 className="mb-4 text-3xl font-bold font-serif text-gray-950">Need Help With An Order?</h2>
-          <p className="mb-8 text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
-            Contact us for delivery questions, returns, payment confirmation, or product support.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto justify-center">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-lg bg-gray-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
-            >
-              Contact Support
-            </Link>
-            <a
-              href={`mailto:${storeConfig.supportEmail}`}
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-            >
-              Email Us
-            </a>
-          </div>
-        </div>
-      </section>
-
     </main>
   );
 }

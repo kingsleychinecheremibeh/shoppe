@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Geist } from "next/font/google";
 import { Toaster } from "sonner";
 import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
@@ -8,6 +9,12 @@ import { PwaInstallPrompt } from "@/app/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
 import {storeConfig } from "@/lib/store-config";
 import "./globals.css";
+
+const geist = Geist({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -57,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={`${geist.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <DevServiceWorkerCleanup />
         <ServiceWorkerRegistration />
