@@ -17,8 +17,8 @@ export default function CategoryRedirectPage() {
   }, [slug, router]);
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-black" />
+    <main className="min-h-screen bg-white flex items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-brand" />
     </main>
   );
 }
