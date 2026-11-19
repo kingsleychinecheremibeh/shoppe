@@ -272,6 +272,7 @@ enum NotificationType {
   ORDER_SHIPPED
   ORDER_DELIVERED
   NEW_PRODUCT
+  REFUND_REQUIRED
 }
 
 enum AuditEntity {

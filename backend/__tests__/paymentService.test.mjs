@@ -19,6 +19,15 @@ await jest.unstable_mockModule("../src/repositories/orderRepository.js", () => (
   orderRepository,
 }));
 
+const notificationService = {
+  notifyPaymentReceived: jest.fn(),
+  notifyRefundRequired: jest.fn(),
+};
+
+await jest.unstable_mockModule("../src/services/notificationService.js", () => ({
+  notificationService,
+}));
+
 await jest.unstable_mockModule("axios", () => ({
   default: axios,
 }));
@@ -159,7 +168,7 @@ describe("paymentService", () => {
     expect(result).toEqual({ orderId: "order-1", status: "PAID" });
   });
 
-  test("rejects Paystack webhooks with mismatched amounts", async () => {
+  test("does not mark an underpaid order paid, and alerts staff to refund", async () => {
     const body = {
       event: "charge.success",
       data: {
@@ -175,9 +184,16 @@ describe("paymentService", () => {
       paymentGateway: "PAYSTACK",
     });
 
-    await expect(paymentService.verifyPaystackEvent(body, signPaystackBody(body))).rejects.toThrow(
-      "Payment amount does not match order total"
-    );
+    const result = await paymentService.verifyPaystackEvent(body, signPaystackBody(body));
+
+    expect(result).toEqual({ orderId: "order-1", status: "PENDING", requiresRefund: true });
+    expect(notificationService.notifyRefundRequired).toHaveBeenCalledWith({
+      orderId: "order-1",
+      gateway: "PAYSTACK",
+      amountMinor: 7400,
+      reason: "AMOUNT_MISMATCH",
+      status: "PENDING",
+    });
     expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
   });
 
@@ -269,6 +285,27 @@ describe("paymentService", () => {
 
     expect(result).toEqual({ orderId: "order-1", status: "CANCELLED", requiresRefund: true });
     expect(orderRepository.markPaidIfPending).not.toHaveBeenCalled();
+    expect(notificationService.notifyRefundRequired).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: "order-1", reason: "NOT_PAYABLE", status: "CANCELLED" })
+    );
+  });
+
+  test("still acknowledges the webhook if the staff alert fails", async () => {
+    const body = { event: "charge.success", data: { amount: 7500, metadata: { orderId: "order-1" } } };
+    orderRepository.findOrderById.mockResolvedValue({
+      id: "order-1",
+      userId: "user-1",
+      status: "CANCELLED",
+      total: 75,
+      paymentGateway: "PAYSTACK",
+    });
+    notificationService.notifyRefundRequired.mockRejectedValueOnce(new Error("db down"));
+
+    await expect(paymentService.verifyPaystackEvent(body, signPaystackBody(body))).resolves.toEqual({
+      orderId: "order-1",
+      status: "CANCELLED",
+      requiresRefund: true,
+    });
   });
 
   test("flags a refund when the order is cancelled between reading and paying", async () => {

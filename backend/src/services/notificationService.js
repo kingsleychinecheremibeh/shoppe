@@ -41,6 +41,30 @@ export const notificationService = {
     });
   },
 
+  /**
+   * Alerts admins and order managers that money was taken for an order that could not be
+   * fulfilled (cancelled/expired, or the amount didn't match), so it needs a manual refund.
+   */
+  async notifyRefundRequired({ orderId, gateway, amountMinor, reason, status }) {
+    if (!UUID_PATTERN.test(orderId)) return;
+
+    const staff = await userRepository.findStaffByPermission("ORDER_MANAGEMENT");
+    const amount = (Number(amountMinor) / 100).toLocaleString("en-US", { style: "currency", currency: "NGN" });
+    const why =
+      reason === "AMOUNT_MISMATCH"
+        ? "the amount paid did not match the order total"
+        : `the order was already ${String(status || "closed").toLowerCase()}`;
+
+    await createForUsers(staff, {
+      audience: "STAFF",
+      type: "REFUND_REQUIRED",
+      title: "Refund needed",
+      message: `A ${gateway} payment of ${amount} for order ${buildOrderNumber(orderId)} was not applied because ${why}. Please review and refund it.`,
+      metadata: { orderId, gateway, amountMinor: String(amountMinor), reason, status },
+      dedupeKey: `REFUND_REQUIRED:${orderId}:${amountMinor}`,
+    });
+  },
+
   async notifyOrderShipped(order) {
     if (!UUID_PATTERN.test(order.id)) return;
 

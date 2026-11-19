@@ -53,21 +53,35 @@ const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount, expected
 
   const actualAmount = Number(paidAmount);
   const expectedAmount = toMinorUnit(order.total);
-  if (!Number.isFinite(actualAmount) || actualAmount !== expectedAmount) {
-    throw new AppError("Payment amount does not match order total", 400);
-  }
 
-  // Money was taken for an order we can no longer fulfil (e.g. it expired and was cancelled).
-  // Acknowledge the event so the provider stops retrying, and flag it loudly for a refund.
-  const flagForRefund = (status) => {
-    logger.error("Payment received for an order that is not payable; refund required", {
+  // Money was taken but can't be applied to the order (it expired/was cancelled, or the amount
+  // is wrong). Acknowledge the event so the provider stops retrying, and alert staff to refund.
+  const flagForRefund = async (status, reason = "NOT_PAYABLE") => {
+    logger.error("Payment could not be applied to order; refund required", {
       orderId,
       gateway,
       status,
+      reason,
       amount: actualAmount,
+      expectedAmount,
     });
+    try {
+      await notificationService.notifyRefundRequired({
+        orderId,
+        gateway,
+        amountMinor: actualAmount,
+        reason,
+        status,
+      });
+    } catch (err) {
+      logger.error("Failed to notify staff about required refund", { orderId, error: err.message });
+    }
     return { orderId, status, requiresRefund: true };
   };
+
+  if (!Number.isFinite(actualAmount) || actualAmount !== expectedAmount) {
+    return flagForRefund(order.status, "AMOUNT_MISMATCH");
+  }
 
   if (order.status !== "PENDING") {
     return flagForRefund(order.status);
