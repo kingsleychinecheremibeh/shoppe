@@ -1,33 +1,49 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail, MessageCircle } from "lucide-react";
+import { storeConfig } from "@/lib/store-config";
+
+export const metadata = { title: "Reset password" };
 
 export default function ForgotPasswordPage() {
+  const whatsappDigits = storeConfig.whatsappNumber.replace(/[^\d]/g, "");
+
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-950">
-            <Mail className="h-8 w-8 text-white" />
-          </div>
+    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white px-4 py-16">
+      <div className="w-full max-w-sm text-center">
+        <h1 className="text-3xl font-semibold tracking-tight text-gray-950">Reset your password</h1>
+        <p className="mt-2 text-sm leading-relaxed text-gray-500">
+          Online password reset isn&apos;t available yet. Message us from the email on your account and
+          we&apos;ll help you get back in.
+        </p>
 
-          <h1 className="text-3xl font-serif font-black tracking-tight text-gray-950">
-            Password Reset
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-gray-600">
-            Password reset is not enabled yet. Please contact the store admin to reset your account
-            password.
-          </p>
-
-          <Link
-            href="/login"
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-950 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+        <div className="mt-8 space-y-3">
+          <a
+            href={`mailto:${storeConfig.supportEmail}?subject=${encodeURIComponent("Password reset")}`}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Login
-          </Link>
+            <Mail className="h-4 w-4" />
+            Email support
+          </a>
+          {whatsappDigits && (
+            <a
+              href={`https://wa.me/${whatsappDigits}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-900 transition hover:border-gray-400"
+            >
+              <MessageCircle className="h-4 w-4" />
+              WhatsApp us
+            </a>
+          )}
         </div>
+
+        <Link
+          href="/login"
+          className="mt-8 inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-950"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to log in
+        </Link>
       </div>
     </main>
   );
