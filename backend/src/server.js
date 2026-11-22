@@ -23,6 +23,10 @@ export const server = process.env.NODE_ENV === 'test'
 
 // Unpaid orders reserve stock. Release it if payment never arrives.
 const pendingOrderTtlMinutes = Number(process.env.PENDING_ORDER_TTL_MINUTES) || 60;
+// How often to look for expired orders. Keep this well above the database's idle-suspend
+// window (Neon suspends after ~5 idle minutes): sweeping every 5 minutes would keep a
+// serverless database awake 24/7 and burn through free compute allowances.
+const pendingOrderSweepMinutes = Math.max(5, Number(process.env.PENDING_ORDER_SWEEP_MINUTES) || 30);
 const expiryTimer = process.env.NODE_ENV === 'test'
   ? null
   : setInterval(async () => {
@@ -34,7 +38,7 @@ const expiryTimer = process.env.NODE_ENV === 'test'
       } catch (err) {
         console.error('[Orders] Unpaid order expiry failed:', err.message);
       }
-    }, 5 * 60 * 1000);
+    }, pendingOrderSweepMinutes * 60 * 1000);
 expiryTimer?.unref();
 
 process.on('SIGTERM', () => {
