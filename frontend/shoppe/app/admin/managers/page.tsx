@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ShieldCheck, Users } from "lucide-react";
+import { ShieldCheck, Users } from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
@@ -101,7 +101,7 @@ export default function AdminManagersPage() {
 
   if (loading) {
     return (
-      <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
+      <main className="min-h-[calc(100vh-5rem)] py-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-950" />
         </div>
@@ -110,20 +110,20 @@ export default function AdminManagersPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
+    <main className="min-h-[calc(100vh-5rem)] py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 border-b border-gray-100 pb-6">
-          <span className="text-xs font-medium text-gray-600">Staff Access</span>
-          <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Managers</h1>
-          <p className="mt-2 max-w-xl text-xs font-medium leading-relaxed text-gray-500">
+          <span className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold tracking-wide uppercase">Staff Access</span>
+          <h1 className="mt-1.5 text-5xl leading-none font-extrabold tracking-[-0.04em] text-ink sm:text-6xl">Managers</h1>
+          <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-gray-500">
             Promote users to managers and choose exactly which areas they can operate.
           </p>
         </div>
 
-        <section className="mb-8 rounded-lg border border-gray-200 bg-white shadow-sm">
+        <section className="mb-8 rounded-lg border-[1.5px] border-ink bg-white">
           <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
-            <ShieldCheck className="h-4 w-4 text-gray-600" />
-            <h2 className="text-sm font-semibold text-gray-950">Current Staff</h2>
+            <ShieldCheck className="h-5 w-5 text-gray-600" />
+            <h2 className="font-display text-xl font-extrabold text-ink">Current Staff</h2>
           </div>
           <div className="divide-y divide-gray-100">
             {managers.length ? (
@@ -137,15 +137,15 @@ export default function AdminManagersPage() {
                 />
               ))
             ) : (
-              <p className="px-5 py-8 text-center text-xs font-semibold text-gray-500">No managers yet.</p>
+              <p className="px-5 py-8 text-center text-sm font-semibold text-gray-500">No managers yet.</p>
             )}
           </div>
         </section>
 
-        <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
+        <section className="rounded-lg border-[1.5px] border-ink bg-white">
           <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
-            <Users className="h-4 w-4 text-gray-600" />
-            <h2 className="text-sm font-semibold text-gray-950">Customers</h2>
+            <Users className="h-5 w-5 text-gray-600" />
+            <h2 className="font-display text-xl font-extrabold text-ink">Customers</h2>
           </div>
           <div className="divide-y divide-gray-100">
             {customers.map((user) => (
@@ -180,8 +180,8 @@ function UserAccessRow({
   return (
     <div className="grid gap-4 px-5 py-4 lg:grid-cols-[1fr_auto] lg:items-center">
       <div>
-        <p className="text-sm font-bold text-gray-950">{user.name}</p>
-        <p className="mt-0.5 text-xs font-medium text-gray-500">{user.email}</p>
+        <p className="text-sm font-bold text-ink">{user.name}</p>
+        <p className="mt-0.5 text-sm font-medium text-gray-500">{user.email}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -189,7 +189,7 @@ function UserAccessRow({
           value={user.role}
           disabled={saving}
           onChange={(event) => onRoleChange(user, event.target.value as Role)}
-          className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-bold text-gray-800 outline-none transition focus:border-gray-950 disabled:opacity-60"
+          className="h-9 rounded-lg border-[1.5px] border-ink bg-white px-3 text-sm font-bold text-gray-800 outline-none transition focus:border-gray-950 disabled:opacity-60"
         >
           <option value="USER">User</option>
           <option value="MANAGER">Manager</option>
@@ -201,7 +201,7 @@ function UserAccessRow({
           return (
             <label
               key={permission.id}
-              className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-bold transition ${
+              className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-bold transition ${
                 isManager
                   ? "cursor-pointer border-gray-200 text-gray-700 hover:border-gray-950"
                   : "cursor-not-allowed border-gray-100 text-gray-300"

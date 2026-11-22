@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
-import { Edit, ImageIcon, Plus, Search, Trash2, X } from "lucide-react";
+import { Edit, ImageIcon, Plus, Search, Trash2, X } from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { AlertBanner, ConfirmModal, EmptyState, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api, getAssetUrl } from "@/lib/api";
@@ -185,23 +185,23 @@ export default function AdminCategoriesPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
+    <main className="min-h-[calc(100vh-5rem)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-xs font-medium text-gray-600">Inventory Taxonomy</span>
-            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Store Categories</h1>
-            <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
-              Organize your catalog into distinct shopping ranges, map fallback imagery, and monitor product volume counts.
+            <span className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold tracking-wide uppercase">Catalog</span>
+            <h1 className="mt-1.5 text-5xl leading-none font-extrabold tracking-[-0.04em] text-ink sm:text-6xl">Categories</h1>
+            <p className="mt-2 text-sm font-medium text-gray-500 max-w-lg leading-relaxed">
+              Group products into categories, set each cover image and see how many products each has.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="relative block sm:w-72">
               <span className="sr-only">Search categories</span>
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
               <input
                 id="adminCategorySearch"
                 name="adminCategorySearch"
@@ -209,16 +209,16 @@ export default function AdminCategoriesPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search categories..."
-                className="h-10 w-full rounded-full border border-gray-200 bg-white pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
+                className="h-10 w-full rounded-lg border-[1.5px] border-ink bg-white pl-10 pr-4 text-sm font-medium text-ink outline-none transition duration-300 focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
               />
             </label>
 
             <button
               type="button"
               onClick={() => handleOpenModal()}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 shadow-xs"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
               Add Category
             </button>
           </div>
@@ -231,7 +231,7 @@ export default function AdminCategoriesPage() {
         )}
 
         {/* Table List Layout */}
-        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
+        <section className="overflow-hidden rounded-xl border-[1.5px] border-ink bg-white">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-950" />
@@ -256,24 +256,24 @@ export default function AdminCategoriesPage() {
                           <div className="flex items-center gap-3">
                             <CategoryThumbnail category={category} />
                             <div>
-                              <p className="text-xs font-bold text-gray-900">{category.name}</p>
-                              <p className="text-xs text-gray-600 font-mono mt-0.5">ID {category.id.slice(0, 8).toUpperCase()}</p>
+                              <p className="text-sm font-bold text-gray-900">{category.name}</p>
+                              <p className="text-sm text-gray-600 font-mono mt-0.5">ID {category.id.slice(0, 8).toUpperCase()}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <code className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs font-mono font-bold text-gray-700">
+                          <code className="rounded bg-gray-50 border-[1.5px] border-ink px-2 py-0.5 text-sm font-mono font-bold text-gray-700">
                             {category.slug}
                           </code>
                         </td>
-                        <td className="px-6 py-4 text-xs font-semibold text-gray-600">
+                        <td className="px-6 py-4 text-sm font-semibold text-gray-600">
                           {category.activeProductCount ?? 0} active items
                         </td>
-                        <td className="px-6 py-4 text-xs">
+                        <td className="px-6 py-4 text-sm">
                           {category.image ? (
-                            <span className="text-emerald-700 font-medium text-xs bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">Bound</span>
+                            <span className="text-ink font-medium text-sm bg-leaf-soft border border-ink px-2 py-0.5 rounded-lg">Has image</span>
                           ) : (
-                            <span className="text-gray-600 font-medium text-xs bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">Empty</span>
+                            <span className="text-gray-600 font-medium text-sm bg-gray-50 border-[1.5px] border-ink/50 px-2 py-0.5 rounded-lg">No image</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -284,15 +284,15 @@ export default function AdminCategoriesPage() {
                               className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 border border-gray-100"
                               aria-label={`Edit ${category.name}`}
                             >
-                              <Edit className="h-3.5 w-3.5" />
+                              <Edit className="h-5 w-5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => setCategoryToDelete(category)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-red-600 transition hover:bg-red-50"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-danger transition hover:bg-red-50"
                               aria-label={`Delete ${category.name}`}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-5 w-5" />
                             </button>
                           </div>
                         </td>
@@ -320,30 +320,30 @@ export default function AdminCategoriesPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 p-4">
+          <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-sticker border-[1.5px] border-ink py-1">
             <div className="flex items-center justify-between border-b border-gray-100 p-6">
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-gray-950">
+                <h2 className="text-xl font-semibold tracking-tight text-ink">
                   {editingCategory ? "Modify Category Details" : "Create New Category"}
                 </h2>
-                <p className="mt-1.5 text-xs text-gray-600 font-medium">
+                <p className="mt-1.5 text-sm text-gray-600 font-medium">
                   Categories must match storefront slugs exactly for route mapping redirects.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
+                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
                 aria-label="Close modal"
               >
-                <X className="h-4.5 w-4.5" />
+                <X className="h-6 w-6" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 p-6">
               <div>
-                <label htmlFor="name" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                   Category Name
                 </label>
                 <input
@@ -355,14 +355,14 @@ export default function AdminCategoriesPage() {
                   maxLength={80}
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                  className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                   placeholder="e.g. Modern Accessories"
                 />
                 <FieldError message={formErrors.name} />
               </div>
 
               <div>
-                <label htmlFor="image" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                <label htmlFor="image" className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                   Cover Image URL
                 </label>
                 <input
@@ -371,7 +371,7 @@ export default function AdminCategoriesPage() {
                   type="url"
                   value={formData.image}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                  className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                   placeholder="https://images.unsplash.com/photo-..."
                 />
               </div>
@@ -381,14 +381,14 @@ export default function AdminCategoriesPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg border-[1.5px] border-ink bg-white px-6 text-sm font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <LoadingButton
                   type="submit"
                   loading={saving}
-                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg bg-gray-950 px-6 text-sm font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {editingCategory ? "Update Category" : "Create Category"}
                 </LoadingButton>
@@ -427,7 +427,7 @@ function TableHead({
 }) {
   return (
     <th
-      className={`px-6 py-3 text-xs font-semibold uppercase text-gray-500 ${
+      className={`px-6 py-3 text-sm font-semibold uppercase text-gray-500 ${
         align === "right" ? "text-right" : "text-left"
       }`}
     >
@@ -441,15 +441,15 @@ function CategoryThumbnail({ category }: { category: Category }) {
 
   if (!imageUrl) {
     return (
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
-        <ImageIcon className="h-4.5 w-4.5" />
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border-[1.5px] border-ink text-gray-600">
+        <ImageIcon className="h-6 w-6" />
       </div>
     );
   }
 
   return (
     <div
-      className="h-11 w-11 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border border-gray-200"
+      className="h-11 w-11 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border-[1.5px] border-ink"
       style={{ backgroundImage: `url("${imageUrl}")` }}
       aria-label={category.name}
     />

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { PasswordField } from "@/app/components/password-field";
+import { AuthShell } from "@/app/components/auth-shell";
+import { ui } from "@/lib/ui";
 import { api } from "@/lib/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,90 +54,91 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white px-4 py-16">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-gray-950">Create your account</h1>
-          <p className="mt-2 text-sm text-gray-500">Save addresses, check out faster and track every order.</p>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
-
-          <div>
-            <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Full name
-            </label>
-            <input {...register("name")} id="name" type="text" autoComplete="name" className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-950 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10" />
-            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              {...register("email")}
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-950 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10"
-            />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-          </div>
-
-          <PasswordField
-            {...register("password")}
-            id="password"
-            label="Password"
-            autoComplete="new-password"
-            error={errors.password?.message}
-          />
-
-          <PasswordField
-            {...register("confirmPassword")}
-            id="confirmPassword"
-            label="Confirm password"
-            autoComplete="new-password"
-            error={errors.confirmPassword?.message}
-          />
-
-          <label htmlFor="terms" className="flex items-start gap-2.5 text-sm text-gray-600">
-            <input
-              id="terms"
-              type="checkbox"
-              required
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-brand"
-            />
-            <span>
-              I agree to the{" "}
-              <Link href="/terms" className="text-gray-950 underline underline-offset-2">
-                Terms
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy-policy" className="text-gray-950 underline underline-offset-2">
-                Privacy Policy
-              </Link>
-            </span>
-          </label>
-
-          <LoadingButton
-            type="submit"
-            loading={isSubmitting}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Create account
-          </LoadingButton>
-        </form>
-
-        <p className="mt-8 text-center text-sm text-gray-500">
+    <AuthShell
+      title="Create your account"
+      subtitle="Save addresses, check out faster and track every order."
+      accent="pink"
+      footer={
+        <>
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-gray-950 underline-offset-4 hover:underline">
+          <Link href="/login" className={ui.link}>
             Log in
           </Link>
-        </p>
-      </div>
-    </main>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
+
+        <div>
+          <label htmlFor="name" className={ui.label}>
+            Full name
+          </label>
+          <input
+            {...register("name")}
+            id="name"
+            type="text"
+            autoComplete="name"
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={errors.name ? "name-error" : undefined}
+            className={ui.input}
+          />
+          {errors.name && (
+            <p id="name-error" className={ui.fieldError}>
+              {errors.name.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="email" className={ui.label}>
+            Email
+          </label>
+          <input
+            {...register("email")}
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? "email-error" : undefined}
+            className={ui.input}
+          />
+          {errors.email && (
+            <p id="email-error" className={ui.fieldError}>
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        <PasswordField {...register("password")} id="password" label="Password" autoComplete="new-password" error={errors.password?.message} />
+
+        <PasswordField
+          {...register("confirmPassword")}
+          id="confirmPassword"
+          label="Confirm password"
+          autoComplete="new-password"
+          error={errors.confirmPassword?.message}
+        />
+
+        <label htmlFor="terms" className="flex items-start gap-3 text-[15px] text-gray-700">
+          <input id="terms" type="checkbox" required className="mt-0.5 h-5 w-5 shrink-0 rounded border-ink accent-ink" />
+          <span>
+            I agree to the{" "}
+            <Link href="/terms" className={ui.link}>
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy-policy" className={ui.link}>
+              Privacy Policy
+            </Link>
+          </span>
+        </label>
+
+        <LoadingButton type="submit" loading={isSubmitting} className={`${ui.primary} h-14 w-full text-base`}>
+          Create account
+        </LoadingButton>
+      </form>
+    </AuthShell>
   );
 }

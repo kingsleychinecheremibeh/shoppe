@@ -6,10 +6,12 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { PasswordField } from "@/app/components/password-field";
 import { api } from "@/lib/api";
+import { ui } from "@/lib/ui";
 
 const schema = z
   .object({
@@ -40,13 +42,13 @@ export function ResetPasswordForm() {
 
   if (!TOKEN_PATTERN.test(token)) {
     return (
-      <div className="rounded-2xl bg-canvas p-6 text-center">
-        <p className="text-sm font-medium text-gray-950">This reset link isn&apos;t valid</p>
-        <p className="mt-1 text-sm text-gray-600">It may be incomplete or already used. Request a new one.</p>
-        <Link
-          href="/forgot-password"
-          className="mt-5 inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover"
-        >
+      <div className="text-center" role="alert">
+        <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-[1.5px] border-ink bg-sun">
+          <HugeiconsIcon icon={Alert02Icon} size={44} strokeWidth={1.5} aria-hidden="true" />
+        </span>
+        <p className="mt-4 text-2xl font-extrabold text-ink">This reset link isn&apos;t valid</p>
+        <p className="mt-2 text-[15px] text-gray-700">It may be incomplete or already used. Request a new one.</p>
+        <Link href="/forgot-password" className={`${ui.primary} mt-5`}>
           Get a new link
         </Link>
       </div>
@@ -55,16 +57,15 @@ export function ResetPasswordForm() {
 
   if (done) {
     return (
-      <div className="rounded-2xl bg-canvas p-6 text-center">
-        <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-600" aria-hidden="true" />
-        <p className="mt-3 text-sm font-medium text-gray-950">Password updated</p>
-        <p className="mt-1 text-sm text-gray-600">
+      <div className="text-center" role="status">
+        <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-[1.5px] border-ink bg-leaf">
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={44} strokeWidth={1.5} aria-hidden="true" />
+        </span>
+        <p className="mt-4 text-2xl font-extrabold text-ink">Password updated</p>
+        <p className="mt-2 text-[15px] text-gray-700">
           For your security we&apos;ve signed you out everywhere. Log in with your new password.
         </p>
-        <Link
-          href="/login"
-          className="mt-5 inline-flex rounded-full bg-brand px-6 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover"
-        >
+        <Link href="/login" className={`${ui.primary} mt-5`}>
           Log in
         </Link>
       </div>
@@ -90,7 +91,7 @@ export function ResetPasswordForm() {
       {errors.root ? (
         <div className="space-y-2">
           <AlertBanner variant="error" message={errors.root.message} />
-          <Link href="/forgot-password" className="text-sm font-medium text-brand hover:text-brand-hover">
+          <Link href="/forgot-password" className={`${ui.link} text-sm`}>
             Request a new link
           </Link>
         </div>
@@ -112,7 +113,7 @@ export function ResetPasswordForm() {
       <LoadingButton
         type="submit"
         loading={isSubmitting}
-        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
+        className={`${ui.primary} h-14 w-full text-base`}
       >
         Update password
       </LoadingButton>

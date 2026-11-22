@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Grid3X3, Search } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft02Icon, ArrowRight02Icon, GridViewIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
+import { getCategoryTheme } from "@/lib/category-colors";
 
 type Category = {
   id: string;
@@ -35,99 +37,98 @@ export default function CategoriesPage() {
   }, []);
 
   const filtered = searchQuery.trim()
-    ? categories.filter((c) =>
-        c.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-      )
+    ? categories.filter((c) => c.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
     : categories;
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <Link
               href="/products"
-              className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-950"
+              className="mb-4 inline-flex items-center gap-2 text-[15px] font-medium underline-offset-4 hover:underline"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <HugeiconsIcon icon={ArrowLeft02Icon} size={22} strokeWidth={1.8} />
               Shop all
             </Link>
-            <h1 className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">Categories</h1>
-            <p className="mt-2 text-sm text-gray-500">Find what you need faster by browsing a category.</p>
+            <h1 className="text-6xl leading-none font-extrabold tracking-[-0.045em] sm:text-7xl">Categories</h1>
+            <p className="mt-3 text-lg text-gray-700">Find what you need faster by browsing a category.</p>
           </div>
 
           {categories.length > 6 && (
-            <div className="relative w-full md:w-80">
-              <label htmlFor="categorySearch" className="sr-only">
-                Search categories
-              </label>
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <label htmlFor="categorySearch" className="flex h-12 w-full items-center gap-2.5 rounded-lg border-[1.5px] border-ink bg-white px-3.5 md:w-80">
+              <span className="sr-only">Search categories</span>
+              <HugeiconsIcon icon={Search01Icon} size={24} strokeWidth={1.6} className="shrink-0" />
               <input
                 id="categorySearch"
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search categories"
-                className="h-11 w-full rounded-full border border-gray-200 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10"
+                className="w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-gray-500"
               />
-            </div>
+            </label>
           )}
         </div>
 
         <div className="mt-10">
           {loading ? (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 md:grid-cols-3 lg:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i}>
-                  <div className="aspect-4/5 animate-pulse rounded-2xl bg-gray-100" />
-                  <div className="mt-3 h-4 w-1/2 animate-pulse rounded bg-gray-100" />
-                </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-56 animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-canvas" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-3xl bg-canvas px-6 py-20 text-center">
-              <Grid3X3 className="mb-4 h-8 w-8 text-gray-300" />
-              <h2 className="text-lg font-semibold text-gray-950">
-                {searchQuery ? "No matching categories" : "No categories yet"}
-              </h2>
-              <p className="mt-1 max-w-sm text-sm text-gray-500">
+            <div className="flex flex-col items-center justify-center rounded-lg border-[1.5px] border-dashed border-ink px-6 py-20 text-center">
+              <span className="mb-4 flex h-20 w-20 items-center justify-center rounded-lg border-[1.5px] border-ink bg-sun">
+                <HugeiconsIcon icon={GridViewIcon} size={44} strokeWidth={1.4} />
+              </span>
+              <h2 className="text-3xl font-extrabold">{searchQuery ? "No matching categories" : "No categories yet"}</h2>
+              <p className="mt-2 max-w-sm text-base text-gray-700">
                 {searchQuery ? "Try a different search." : "Categories will appear here soon."}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((category) => {
                 const imageUrl = getAssetUrl(category.image);
+                const theme = getCategoryTheme(category);
 
                 return (
-                  <Link key={category.id} href={`/category/${category.slug}`} className="group block">
-                    <div className="relative aspect-4/5 overflow-hidden rounded-2xl bg-canvas">
-                      {imageUrl ? (
+                  <Link
+                    key={category.id}
+                    href={`/category/${category.slug}`}
+                    className="sticker group relative flex min-h-56 overflow-hidden rounded-lg border-[1.5px] border-ink"
+                    style={{ background: theme.solid, color: theme.onSolid }}
+                  >
+                    <div className="relative z-10 flex flex-1 flex-col justify-between gap-8 p-6">
+                      <HugeiconsIcon icon={theme.icon} size={72} strokeWidth={1.3} />
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <h2 className="text-3xl leading-tight font-extrabold">{category.name}</h2>
+                          {typeof category.activeProductCount === "number" && (
+                            <p className="font-mono text-sm font-medium">
+                              {category.activeProductCount} {category.activeProductCount === 1 ? "product" : "products"}
+                            </p>
+                          )}
+                        </div>
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-[1.5px] border-ink bg-white text-ink transition group-hover:bg-ink group-hover:text-paper">
+                          <HugeiconsIcon icon={ArrowRight02Icon} size={24} strokeWidth={1.8} />
+                        </span>
+                      </div>
+                    </div>
+                    {imageUrl && (
+                      <div className="relative hidden w-[42%] shrink-0 border-l-[1.5px] border-ink sm:block" style={{ background: theme.soft }}>
                         <ProductImage
                           src={imageUrl}
                           alt=""
                           fill
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                          sizes="(max-width: 640px) 50vw, 25vw"
+                          className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-[1.04]"
+                          sizes="(max-width: 1024px) 25vw, 15vw"
                         />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-gray-300">
-                          <Grid3X3 className="h-8 w-8" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-900">{category.name}</h3>
-                        {typeof category.activeProductCount === "number" && (
-                          <p className="text-xs text-gray-500">
-                            {category.activeProductCount}{" "}
-                            {category.activeProductCount === 1 ? "product" : "products"}
-                          </p>
-                        )}
                       </div>
-                      <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-brand" />
-                    </div>
+                    )}
                   </Link>
                 );
               })}

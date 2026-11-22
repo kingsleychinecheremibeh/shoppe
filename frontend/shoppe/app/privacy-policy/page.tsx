@@ -7,25 +7,25 @@ export const metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-white py-12 sm:py-16">
+    <main className="min-h-screen py-12 sm:py-16">
       <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div>
-          <p className="text-sm font-medium text-brand">
+          <p className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1.5 font-mono text-xs font-semibold tracking-wide uppercase">
             Legal
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+          <h1 className="mt-4 text-5xl leading-none font-extrabold tracking-[-0.045em] text-ink sm:text-6xl">
             Privacy Policy
           </h1>
 
-          <div className="mt-8 space-y-6 text-sm leading-7 text-gray-600">
+          <div className="mt-10 space-y-4 text-[15px] leading-7 text-gray-700">
             <p>
               {storeConfig.storeName} collects customer information needed to
               process orders, deliver products, provide customer support, and
               improve the shopping experience.
             </p>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 Information We Collect
               </h2>
               <p className="mt-2">
@@ -34,8 +34,8 @@ export default function PrivacyPolicyPage() {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 Payments
               </h2>
               <p className="mt-2">
@@ -44,8 +44,8 @@ export default function PrivacyPolicyPage() {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 How We Use Your Information
               </h2>
               <p className="mt-2">
@@ -55,13 +55,13 @@ export default function PrivacyPolicyPage() {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 Contact
               </h2>
               <p className="mt-2">
                 For privacy requests, contact us at{" "}
-                <a className="font-semibold text-gray-950 underline" href={`mailto:${storeConfig.supportEmail}`}>
+                <a className="font-semibold text-ink underline underline-offset-4" href={`mailto:${storeConfig.supportEmail}`}>
                   {storeConfig.supportEmail}
                 </a>
                 .

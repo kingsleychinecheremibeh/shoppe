@@ -4,6 +4,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { PasswordField } from "@/app/components/password-field";
+import { AuthShell } from "@/app/components/auth-shell";
+import { ui } from "@/lib/ui";
 import { api } from "@/lib/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,62 +63,62 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-white px-4 py-16">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-gray-950">Welcome back</h1>
-          <p className="mt-2 text-sm text-gray-500">Log in to check out faster and track your orders.</p>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
-
-          <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              {...register("email")}
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-950 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10"
-            />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-          </div>
-
-          <div>
-            <PasswordField
-              {...register("password")}
-              id="password"
-              label="Password"
-              autoComplete="current-password"
-              error={errors.password?.message}
-            />
-            <div className="mt-2 text-right">
-              <Link href="/forgot-password" className="text-sm text-gray-500 transition hover:text-gray-950">
-                Forgot password?
-              </Link>
-            </div>
-          </div>
-
-          <LoadingButton
-            type="submit"
-            loading={isSubmitting}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Log in
-          </LoadingButton>
-        </form>
-
-        <p className="mt-8 text-center text-sm text-gray-500">
+    <AuthShell
+      title="Welcome back"
+      subtitle="Log in to check out faster and track your orders."
+      accent="sun"
+      footer={
+        <>
           New here?{" "}
-          <Link href="/register" className="font-medium text-gray-950 underline-offset-4 hover:underline">
+          <Link href="/register" className={ui.link}>
             Create an account
           </Link>
-        </p>
-      </div>
-    </main>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
+
+        <div>
+          <label htmlFor="email" className={ui.label}>
+            Email
+          </label>
+          <input
+            {...register("email")}
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? "email-error" : undefined}
+            className={ui.input}
+          />
+          {errors.email && (
+            <p id="email-error" className={ui.fieldError}>
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <PasswordField
+            {...register("password")}
+            id="password"
+            label="Password"
+            autoComplete="current-password"
+            error={errors.password?.message}
+          />
+          <div className="mt-2 text-right">
+            <Link href="/forgot-password" className="text-sm font-medium text-gray-700 underline-offset-4 hover:text-ink hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+
+        <LoadingButton type="submit" loading={isSubmitting} className={`${ui.primary} h-14 w-full text-base`}>
+          Log in
+        </LoadingButton>
+      </form>
+    </AuthShell>
   );
 }

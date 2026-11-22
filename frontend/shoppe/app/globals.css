@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
 /*
- * Shoppe design tokens.
- * - Neutrals: Tailwind's cool "gray" scale is remapped to warm stone tones,
- *   so every existing gray-* class picks up the warmer palette.
- * - Brand: a single terracotta accent, reserved for primary actions,
- *   prices that need emphasis, and active states.
- * - Type: one sans family (loaded in layout.tsx via next/font) for a clean,
- *   consistent look. font-serif intentionally resolves to the same family.
+ * Shoppe "Market Day" design tokens.
+ * - Paper + ink base. Primary actions are ink (black), not a colour.
+ * - Colour carries meaning: each category owns one (see lib/category-colors.ts),
+ *   order statuses own one, and danfo yellow is the brand accent (logo, badges, strip).
+ * - Shapes: small radii (6–10px), crisp 1.5px ink borders, flat fills, and a solid
+ *   offset "sticker" shadow on hover. No gradients, glass or soft grey shadows.
+ * - Type: Bricolage Grotesque for display, Geist for UI text, Geist Mono for prices.
+ *
+ * `brand` is kept as a name so existing classes (bg-brand, text-brand, ring-brand)
+ * pick up the new ink primary automatically.
  */
 
 :root {
-  --background: #ffffff;
-  --foreground: #1c1917;
+  --background: #faf7f0;
+  --foreground: #141414;
 }
 
 @theme inline {
@@ -20,26 +23,59 @@
   --color-foreground: var(--foreground);
 
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-geist), ui-sans-serif, sans-serif;
+  --font-serif: var(--font-bricolage), var(--font-geist), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 @theme {
-  --color-brand: #c2410c;
-  --color-brand-hover: #9a3412;
-  --color-brand-soft: #fff4ed;
-  --color-canvas: #faf8f5;
+  /* Base */
+  --color-ink: #141414;
+  --color-paper: #faf7f0;
+  --color-canvas: #f3eee3;
 
-  --color-gray-50: oklch(98.5% 0.001 106.423);
-  --color-gray-100: oklch(97% 0.001 106.424);
-  --color-gray-200: oklch(92.3% 0.003 48.717);
-  --color-gray-300: oklch(86.9% 0.005 56.366);
+  /* Primary = ink */
+  --color-brand: #141414;
+  --color-brand-hover: #000000;
+  --color-brand-soft: #fff1c2;
+
+  /* Market colours */
+  --color-sun: #ffc400;
+  --color-sun-soft: #fff1c2;
+  --color-pink: #ff4fa3;
+  --color-pink-soft: #ffe0ef;
+  --color-blue: #2f5bff;
+  --color-blue-soft: #e3e9ff;
+  --color-leaf: #1faf6e;
+  --color-leaf-soft: #d6f3e5;
+  --color-coral: #ff6b4a;
+  --color-coral-soft: #ffe1da;
+  --color-violet: #7a5cff;
+  --color-violet-soft: #e6e0ff;
+  --color-danger: #d93636;
+
+  /* Tighter radii across the site */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.625rem;
+  --radius-3xl: 0.75rem;
+
+  /* Warm neutrals */
+  --color-gray-50: oklch(98.5% 0.004 90);
+  --color-gray-100: oklch(96.5% 0.006 85);
+  --color-gray-200: oklch(91.5% 0.008 80);
+  --color-gray-300: oklch(86% 0.01 75);
   --color-gray-400: oklch(70.9% 0.01 56.259);
-  --color-gray-500: oklch(55.3% 0.013 58.071);
+  --color-gray-500: oklch(52% 0.013 58.071);
   --color-gray-600: oklch(44.4% 0.011 73.639);
   --color-gray-700: oklch(37.4% 0.01 67.558);
   --color-gray-800: oklch(26.8% 0.007 34.298);
-  --color-gray-900: oklch(21.6% 0.006 56.043);
+  --color-gray-900: oklch(20% 0.004 56);
   --color-gray-950: oklch(14.7% 0.004 49.25);
+
+  --shadow-sticker: 5px 5px 0 0 #141414;
+  --shadow-sticker-sm: 3px 3px 0 0 #141414;
 }
 
 body {
@@ -50,7 +86,61 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
 ::selection {
-  background: var(--color-brand-soft);
-  color: var(--color-brand-hover);
+  background: var(--color-sun);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+@layer components {
+  /* Sticker lift: solid offset shadow on hover, used by tiles and cards. */
+  .sticker {
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+  .sticker:hover,
+  .group:hover > .sticker-target {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-sticker);
+  }
+  .sticker-target {
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+
+  /* Price tag: monospace figures on ink. */
+  .price-tag {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  /* Info strip scrolls sideways; pauses for reduced-motion users. */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 40s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      animation: none;
+    }
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }

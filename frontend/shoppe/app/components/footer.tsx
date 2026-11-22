@@ -1,171 +1,125 @@
 import Link from "next/link";
-import { ShoppingBag, ArrowUpRight } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Call02Icon,
+  Facebook01Icon,
+  InstagramIcon,
+  Mail01Icon,
+  NewTwitterIcon,
+  TiktokIcon,
+} from "@hugeicons/core-free-icons";
+import { LogoMark } from "@/app/components/logo";
 import { storeConfig } from "@/lib/store-config";
+
+const columns = [
+  {
+    title: "Shop",
+    links: [
+      { href: "/products", label: "All products" },
+      { href: "/products?sort=newest", label: "New in" },
+      { href: "/categories", label: "Categories" },
+      { href: "/cart", label: "Cart" },
+    ],
+  },
+  {
+    title: "Help",
+    links: [
+      { href: "/shipping-policy", label: "Shipping & returns" },
+      { href: "/refund-policy", label: "Refunds" },
+      { href: "/secure-checkout", label: "Secure checkout" },
+      { href: "/faq", label: "FAQ" },
+      { href: "/contact", label: "Contact us" },
+    ],
+  },
+  {
+    title: "Account",
+    links: [
+      { href: "/login", label: "Log in" },
+      { href: "/register", label: "Create account" },
+      { href: "/account/orders", label: "My orders" },
+    ],
+  },
+];
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const socialLinks = [
-    {
-      label: "Instagram",
-      href: storeConfig.socialLinks.instagram,
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4.5 w-4.5">
-          <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01" />
-        </svg>
-      ),
-    },
-    {
-      label: "Twitter",
-      href: storeConfig.socialLinks.twitter,
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4.5 w-4.5">
-          <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-        </svg>
-      ),
-    },
-    {
-      label: "Facebook",
-      href: storeConfig.socialLinks.facebook,
-      icon: (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-4.5 w-4.5" aria-hidden="true">
-          <path d="M14 8.5h2V5h-2.5C10.9 5 9 6.9 9 9.5V12H7v3.5h2V22h4v-6.5h2.7L16 12h-3V9.8c0-.8.4-1.3 1-1.3Z" />
-        </svg>
-      ),
-    },
-    {
-      label: "TikTok",
-      href: storeConfig.socialLinks.tiktok,
-      icon: (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-4.5 w-4.5" aria-hidden="true">
-          <path d="M16.6 5.8A5.4 5.4 0 0 0 19.8 7v3.4a8.3 8.3 0 0 1-3.2-.7v5.5A6.1 6.1 0 1 1 10.5 9v3.5a2.7 2.7 0 1 0 2.7 2.7V2h3.4v3.8Z" />
-        </svg>
-      ),
-    },
+    { label: "Instagram", href: storeConfig.socialLinks.instagram, icon: InstagramIcon },
+    { label: "X (Twitter)", href: storeConfig.socialLinks.twitter, icon: NewTwitterIcon },
+    { label: "Facebook", href: storeConfig.socialLinks.facebook, icon: Facebook01Icon },
+    { label: "TikTok", href: storeConfig.socialLinks.tiktok, icon: TiktokIcon },
   ].filter((link) => link.href);
 
   return (
-    <footer className="bg-canvas border-t border-gray-200 py-14 mt-auto">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Footprint Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12 border-b border-gray-200 pb-12">
-          
-          {/* Column 1: Brand Narrative */}
-          <div className="md:col-span-4 space-y-4">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-lg font-semibold tracking-tight text-gray-950"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
-                <ShoppingBag className="h-4.5 w-4.5" />
-              </span>
-              Shoppe
+    <footer className="mt-auto overflow-hidden bg-ink text-paper">
+      <div className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 border-b border-white/15 pb-12 md:grid-cols-12">
+          <div className="space-y-5 md:col-span-4">
+            <Link href="/" className="inline-flex items-center gap-3" aria-label={`${storeConfig.storeName} home`}>
+              <LogoMark size={48} tone="dark" />
             </Link>
-            <p className="text-sm text-gray-500 leading-relaxed max-w-xs font-sans">
-              Sourced globally, curated locally. Premium clothing, objects, and functional utilities designed to elevate the quiet details of everyday life.
+            <p className="max-w-xs text-[15px] leading-relaxed text-gray-300">
+              Everyday tech, fashion, beauty and home, delivered across Nigeria in {storeConfig.deliveryTime}.
             </p>
+            <div className="flex flex-col gap-2 text-[15px]">
+              <a href={`mailto:${storeConfig.supportEmail}`} className="inline-flex items-center gap-2.5 text-paper hover:text-sun">
+                <HugeiconsIcon icon={Mail01Icon} size={22} strokeWidth={1.6} />
+                {storeConfig.supportEmail}
+              </a>
+              <a href={`tel:${storeConfig.supportPhone}`} className="inline-flex items-center gap-2.5 text-paper hover:text-sun">
+                <HugeiconsIcon icon={Call02Icon} size={22} strokeWidth={1.6} />
+                {storeConfig.supportPhone}
+              </a>
+            </div>
             {socialLinks.length > 0 && (
-              <div className="flex items-center gap-4 pt-2">
+              <div className="flex items-center gap-2 pt-1">
                 {socialLinks.map((link) => (
                   <a
                     key={link.label}
                     href={link.href}
-                    className="text-gray-600 hover:text-gray-950 transition"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/25 text-paper transition hover:border-sun hover:bg-sun hover:text-ink"
                     aria-label={link.label}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {link.icon}
+                    <HugeiconsIcon icon={link.icon} size={22} strokeWidth={1.6} />
                   </a>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Column 2: Shop */}
-          <div className="md:col-span-2 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-950">Shop</h3>
-            <nav className="flex flex-col gap-2">
-              <Link href="/products" className="text-sm text-gray-600 hover:text-brand transition">
-                All Products
-              </Link>
-              <Link href="/cart" className="text-sm text-gray-600 hover:text-brand transition">
-                Cart
-              </Link>
-              <Link href="/login" className="text-sm text-gray-600 hover:text-brand transition">
-                Login
-              </Link>
-              <Link href="/register" className="text-sm text-gray-600 hover:text-brand transition">
-                Create Account
-              </Link>
-            </nav>
-          </div>
-
-          {/* Column 3: Customer Care */}
-          <div className="md:col-span-2 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-950">Customer Care</h3>
-            <nav className="flex flex-col gap-2">
-              <Link href="/shipping-policy" className="text-sm text-gray-600 hover:text-brand transition inline-flex items-center gap-1">
-                Shipping & Returns <ArrowUpRight className="h-3 w-3 text-gray-600" />
-              </Link>
-              <Link href="/faq" className="text-sm text-gray-600 hover:text-brand transition">
-                FAQ
-              </Link>
-              <Link href="/secure-checkout" className="text-sm text-gray-600 hover:text-brand transition">
-                Secure Checkout
-              </Link>
-              <Link href="/privacy-policy" className="text-sm text-gray-600 hover:text-brand transition">
-                Privacy Policy
-              </Link>
-              <Link href="/contact" className="text-sm text-gray-600 hover:text-brand transition">
-                Contact Us
-              </Link>
-            </nav>
-          </div>
-
-          {/* Column 4: Support */}
-          <div className="md:col-span-4 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-950">Support</h3>
-            <p className="text-sm text-gray-500 leading-relaxed font-sans">
-              Need help with an order, delivery, or return? Contact our support team.
-            </p>
-            <div className="flex flex-col gap-2">
-              <a
-                href={`mailto:${storeConfig.supportEmail}`}
-                className="text-sm text-gray-600 hover:text-brand transition"
-              >
-                {storeConfig.supportEmail}
-              </a>
-              <a
-                href={`tel:${storeConfig.supportPhone}`}
-                className="text-sm text-gray-600 hover:text-brand transition"
-              >
-                {storeConfig.supportPhone}
-              </a>
+          {columns.map((column) => (
+            <div key={column.title} className="space-y-4 md:col-span-2 md:col-start-auto">
+              <h3 className="font-mono text-xs font-semibold tracking-wider text-sun uppercase">{column.title}</h3>
+              <nav className="flex flex-col gap-2.5">
+                {column.links.map((link) => (
+                  <Link key={link.href} href={link.href} className="text-[15px] text-paper transition hover:text-sun">
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
             </div>
-          </div>
-
+          ))}
         </div>
 
-        {/* Bottom copyright */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-500">
-            &copy; {currentYear} Shoppe. All rights reserved.
+        <div className="flex flex-col items-start justify-between gap-4 py-6 text-sm text-gray-300 sm:flex-row sm:items-center">
+          <p>
+            &copy; {currentYear} {storeConfig.storeName}. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
-            <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-950 transition">
-              Terms of Service
-            </Link>
-            <Link href="/refund-policy" className="text-xs text-gray-500 hover:text-gray-950 transition">
-              Refund Policy
-            </Link>
-            <Link href="/privacy-policy" className="text-xs text-gray-500 hover:text-gray-950 transition">
-              Privacy Settings
-            </Link>
+          <div className="flex flex-wrap items-center gap-6">
+            <Link href="/terms" className="hover:text-paper">Terms</Link>
+            <Link href="/privacy-policy" className="hover:text-paper">Privacy</Link>
+            <Link href="/refund-policy" className="hover:text-paper">Refund policy</Link>
           </div>
         </div>
+      </div>
 
+      <div
+        aria-hidden="true"
+        className="mx-auto max-w-7xl px-4 font-display text-[28vw] leading-[0.74] font-extrabold tracking-[-0.06em] text-sun select-none sm:px-6 lg:px-8 lg:text-[19rem]"
+      >
+        shoppe
       </div>
     </footer>
   );

@@ -5,7 +5,7 @@ import useSWR, { mutate } from "swr";
 import { api } from "@/lib/api";
 import { useHydrated } from "@/app/hooks/use-hydrated";
 import { toast } from "sonner";
-import { Plus, Truck, X } from "lucide-react";
+import { Plus, Truck, X } from "@/app/components/admin-icons";
 import {
   AlertBanner,
   ConfirmModal,
@@ -159,18 +159,18 @@ export default function AdminShippingPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
+    <main className="min-h-[calc(100vh-5rem)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-xs font-medium text-gray-600">
-              Fulfillment Settings
+            <span className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold tracking-wide uppercase">
+              Checkout
             </span>
-            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">
+            <h1 className="mt-1.5 text-5xl leading-none font-extrabold tracking-[-0.04em] text-ink sm:text-6xl">
               Shipping Methods
             </h1>
-            <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
+            <p className="mt-2 text-sm font-medium text-gray-500 max-w-lg leading-relaxed">
               Configure delivery options available at checkout. Control pricing,
               estimated delivery windows, and visibility.
             </p>
@@ -179,9 +179,9 @@ export default function AdminShippingPage() {
           <button
             type="button"
             onClick={() => handleOpenModal()}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 shadow-xs"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-sm font-semibold text-white transition hover:bg-gray-800"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
             Add Method
           </button>
         </div>
@@ -200,7 +200,7 @@ export default function AdminShippingPage() {
         )}
 
         {/* Table */}
-        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
+        <section className="overflow-hidden rounded-xl border-[1.5px] border-ink bg-white">
           {!mounted || isLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-950" />
@@ -210,22 +210,22 @@ export default function AdminShippingPage() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-500">
                       Method
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-500">
                       Price
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-500">
                       Delivery
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-500">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-500">
                       Order
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500">
+                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-500">
                       Actions
                     </th>
                   </tr>
@@ -236,40 +236,40 @@ export default function AdminShippingPage() {
                       <tr key={method.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
-                              <Truck className="h-4.5 w-4.5" />
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border-[1.5px] border-ink text-gray-600">
+                              <Truck className="h-6 w-6" />
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-gray-900">
+                              <p className="text-sm font-bold text-gray-900">
                                 {method.name}
                               </p>
                               {method.description && (
-                                <p className="text-xs text-gray-600 mt-0.5 max-w-xs truncate">
+                                <p className="text-sm text-gray-600 mt-0.5 max-w-xs truncate">
                                   {method.description}
                                 </p>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-xs font-semibold text-gray-700">
+                        <td className="px-6 py-4 text-sm font-semibold text-gray-700">
                           ₦{Number(method.price).toLocaleString()}
                         </td>
-                        <td className="px-6 py-4 text-xs text-gray-600">
+                        <td className="px-6 py-4 text-sm text-gray-600">
                           {method.estimatedDays || "—"}
                         </td>
                         <td className="px-6 py-4">
                           {method.isActive ? (
-                            <span className="text-emerald-700 font-medium text-xs bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full">
+                            <span className="text-ink font-medium text-sm bg-leaf-soft border border-ink px-2 py-0.5 rounded-lg">
                               Active
                             </span>
                           ) : (
-                            <span className="text-gray-600 font-medium text-xs bg-gray-50 border border-gray-200/50 px-2 py-0.5 rounded-full">
+                            <span className="text-gray-600 font-medium text-sm bg-gray-50 border-[1.5px] border-ink/50 px-2 py-0.5 rounded-lg">
                               Inactive
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <code className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs font-mono font-bold text-gray-700">
+                          <code className="rounded bg-gray-50 border-[1.5px] border-ink px-2 py-0.5 text-sm font-mono font-bold text-gray-700">
                             {method.sortOrder}
                           </code>
                         </td>
@@ -278,7 +278,7 @@ export default function AdminShippingPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenModal(method)}
-                              className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 border border-gray-100"
+                              className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 border border-gray-100"
                             >
                               Edit
                             </button>
@@ -286,10 +286,10 @@ export default function AdminShippingPage() {
                               type="button"
                               onClick={() => toggleActive(method)}
                               disabled={togglingId === method.id}
-                              className={`inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-medium transition border ${
+                              className={`inline-flex h-8 items-center justify-center rounded-lg px-3 text-sm font-medium transition border ${
                                 method.isActive
-                                  ? "text-amber-700 border-amber-200 hover:bg-amber-50"
-                                  : "text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                                  ? "text-ink border-ink hover:bg-sun-soft"
+                                  : "text-ink border-ink hover:bg-leaf-soft"
                               } disabled:opacity-50`}
                             >
                               {togglingId === method.id
@@ -301,7 +301,7 @@ export default function AdminShippingPage() {
                             <button
                               type="button"
                               onClick={() => setMethodToDelete(method)}
-                              className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-medium text-red-600 transition hover:bg-red-50 border border-red-100"
+                              className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-sm font-medium text-danger transition hover:bg-red-50 border border-red-100"
                             >
                               Delete
                             </button>
@@ -319,9 +319,9 @@ export default function AdminShippingPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenModal()}
-                              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800"
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-sm font-semibold text-white transition hover:bg-gray-800"
                             >
-                              <Plus className="h-4 w-4" />
+                              <Plus className="h-5 w-5" />
                               Add Method
                             </button>
                           }
@@ -338,16 +338,16 @@ export default function AdminShippingPage() {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 p-4">
+          <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-sticker border-[1.5px] border-ink py-1">
             <div className="flex items-center justify-between border-b border-gray-100 p-6">
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-gray-950">
+                <h2 className="text-xl font-semibold tracking-tight text-ink">
                   {editingMethod
                     ? "Edit Shipping Method"
                     : "New Shipping Method"}
                 </h2>
-                <p className="mt-1.5 text-xs text-gray-600 font-medium">
+                <p className="mt-1.5 text-sm text-gray-600 font-medium">
                   {editingMethod
                     ? "Update method details. Changes apply to future orders only."
                     : "Define a new delivery option for your storefront checkout."}
@@ -356,10 +356,10 @@ export default function AdminShippingPage() {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
                 aria-label="Close modal"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -367,7 +367,7 @@ export default function AdminShippingPage() {
               <div>
                 <label
                   htmlFor="shippingName"
-                  className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                  className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                 >
                   Method Name
                 </label>
@@ -380,7 +380,7 @@ export default function AdminShippingPage() {
                     setForm({ ...form, name: e.target.value });
                     setFormErrors({ ...formErrors, name: "" });
                   }}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                  className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                   placeholder="e.g. Standard Delivery"
                 />
                 <FieldError message={formErrors.name} />
@@ -389,10 +389,10 @@ export default function AdminShippingPage() {
               <div>
                 <label
                   htmlFor="shippingDesc"
-                  className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                  className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                 >
                   Description
-                  <span className="ml-1 text-xs text-gray-600 normal-case tracking-normal font-normal">
+                  <span className="ml-1 text-sm text-gray-600 normal-case tracking-normal font-normal">
                     (optional)
                   </span>
                 </label>
@@ -403,7 +403,7 @@ export default function AdminShippingPage() {
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                  className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                   placeholder="e.g. Delivered within 3-5 business days"
                 />
               </div>
@@ -412,7 +412,7 @@ export default function AdminShippingPage() {
                 <div>
                   <label
                     htmlFor="shippingPrice"
-                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                    className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                   >
                     Price (₦)
                   </label>
@@ -427,7 +427,7 @@ export default function AdminShippingPage() {
                       setForm({ ...form, price: e.target.value });
                       setFormErrors({ ...formErrors, price: "" });
                     }}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                    className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                     placeholder="0.00"
                   />
                   <FieldError message={formErrors.price} />
@@ -436,10 +436,10 @@ export default function AdminShippingPage() {
                 <div>
                   <label
                     htmlFor="shippingDays"
-                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                    className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                   >
                     Est. Delivery
-                    <span className="ml-1 text-xs text-gray-600 normal-case tracking-normal font-normal">
+                    <span className="ml-1 text-sm text-gray-600 normal-case tracking-normal font-normal">
                       (optional)
                     </span>
                   </label>
@@ -450,7 +450,7 @@ export default function AdminShippingPage() {
                     onChange={(e) =>
                       setForm({ ...form, estimatedDays: e.target.value })
                     }
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                    className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                     placeholder="e.g. 3-5 days"
                   />
                 </div>
@@ -460,7 +460,7 @@ export default function AdminShippingPage() {
                 <div>
                   <label
                     htmlFor="shippingSortOrder"
-                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                    className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                   >
                     Sort Order
                   </label>
@@ -471,13 +471,13 @@ export default function AdminShippingPage() {
                     onChange={(e) =>
                       setForm({ ...form, sortOrder: Number(e.target.value) })
                     }
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
+                    className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-900/5"
                     placeholder="0"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                     Status
                   </label>
                   <button
@@ -485,9 +485,9 @@ export default function AdminShippingPage() {
                     onClick={() =>
                       setForm({ ...form, isActive: !form.isActive })
                     }
-                    className={`w-full rounded-lg border px-4 py-3 text-xs font-semibold transition ${
+                    className={`w-full rounded-lg border px-4 py-3 text-sm font-semibold transition ${
                       form.isActive
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        ? "border-ink bg-leaf-soft text-ink"
                         : "border-gray-200 bg-gray-50 text-gray-500"
                     }`}
                   >
@@ -501,14 +501,14 @@ export default function AdminShippingPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg border-[1.5px] border-ink bg-white px-6 text-sm font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <LoadingButton
                   type="submit"
                   loading={saving}
-                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg bg-gray-950 px-6 text-sm font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {editingMethod ? "Update Method" : "Create Method"}
                 </LoadingButton>

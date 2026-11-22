@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading03Icon } from "@hugeicons/core-free-icons";
 import { storeConfig } from "@/lib/store-config";
 import { ProductCatalog, type CatalogInitialData } from "./product-catalog";
 
@@ -58,8 +59,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-white py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        <main className="flex min-h-screen items-center justify-center py-12">
+          <HugeiconsIcon icon={Loading03Icon} size={36} className="animate-spin text-gray-500" />
         </main>
       }
     >

@@ -2,13 +2,26 @@
 
 import { useEffect, useState, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, ArrowLeft, Lock } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Add01Icon,
+  Alert02Icon,
+  ArrowLeft02Icon,
+  CreditCardIcon,
+  Location01Icon,
+  LockIcon,
+  Mail01Icon,
+  Tick02Icon,
+  WhatsappIcon,
+} from "@hugeicons/core-free-icons";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
+import { notifyCartUpdated } from "@/lib/cart-events";
+import { storeConfig } from "@/lib/store-config";
 import { useHydrated } from "@/app/hooks/use-hydrated";
 import useSWR, { mutate } from "swr";
 import { useForm } from "react-hook-form";
@@ -38,14 +51,22 @@ type Product = {
   name: string;
   price: number | string;
   image?: string | null;
+  images?: { id: string; url: string; isPrimary: boolean }[];
 };
 
 type CartItem = {
   id: string;
   productId: string;
   quantity: number;
+  productImageId?: string | null;
   product: Product;
 };
+
+const cartItemImage = (item: CartItem) =>
+  item.product.images?.find((image) => image.id === item.productImageId)?.url ||
+  item.product.images?.find((image) => image.isPrimary)?.url ||
+  item.product.images?.[0]?.url ||
+  item.product.image;
 
 type Cart = {
   id: string;
@@ -72,35 +93,38 @@ const addressSchema = z.object({
 type AddressFormValues = z.infer<typeof addressSchema>;
 
 const inputClass =
-  "h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10";
-const labelClass = "mb-1.5 block text-sm font-medium text-gray-700";
-const errorClass = "mt-1 block text-xs text-red-600";
+  "h-12 w-full rounded-lg border-[1.5px] border-ink bg-white px-3.5 text-[15px] text-ink placeholder:text-gray-500 outline-none transition focus:shadow-sticker-sm";
+const labelClass = "mb-1.5 block text-sm font-semibold text-ink";
+const errorClass = "mt-1.5 block text-sm font-medium text-danger";
 const optionClass = (selected: boolean) =>
-  `relative w-full rounded-2xl border p-4 text-left text-sm transition ${
-    selected ? "border-gray-950 ring-1 ring-gray-950" : "border-gray-200 hover:border-gray-400"
+  `relative w-full rounded-lg border-[1.5px] border-ink p-4 text-left text-[15px] transition ${
+    selected ? "bg-sun-soft shadow-sticker-sm -translate-x-px -translate-y-px" : "bg-white hover:bg-gray-50"
   }`;
 const Radio = ({ checked }: { checked: boolean }) => (
   <span
-    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-      checked ? "border-brand bg-brand" : "border-gray-300"
-    }`}
+    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-[1.5px] border-ink ${checked ? "bg-ink text-paper" : "bg-white"}`}
     aria-hidden="true"
   >
-    {checked && <span className="h-2 w-2 rounded-full bg-white" />}
+    {checked && <HugeiconsIcon icon={Tick02Icon} size={16} strokeWidth={2.4} />}
   </span>
 );
-const StepTitle = ({ step, title, action }: { step: number; title: string; action?: ReactNode }) => (
-  <div className="mb-5 flex items-center justify-between gap-4">
-    <h2 className="flex items-center gap-3 text-base font-semibold text-gray-950">
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-950 text-xs font-medium text-white">
-        {step}
+const StepTitle = ({ step, title, done, action, id }: { step: number; title: string; done?: boolean; action?: ReactNode; id?: string }) => (
+  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h2 id={id} className="flex items-center gap-3 text-xl font-extrabold text-ink sm:text-2xl">
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-md border-[1.5px] border-ink font-mono text-base font-semibold ${
+          done ? "bg-leaf text-ink" : "bg-ink text-paper"
+        }`}
+        aria-hidden="true"
+      >
+        {done ? <HugeiconsIcon icon={Tick02Icon} size={20} strokeWidth={2.4} /> : step}
       </span>
       {title}
+      {done && <span className="sr-only">(done)</span>}
     </h2>
     {action}
   </div>
 );
-
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -209,7 +233,7 @@ export default function CheckoutPage() {
 
         toast.success("Redirecting to secure Paystack checkout...");
         if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("cart-updated"));
+          notifyCartUpdated();
           window.location.assign(authorizationUrl);
         } else {
           router.push(`/checkout/success?orderId=${order.id}`);
@@ -238,33 +262,41 @@ export default function CheckoutPage() {
 
   if (!mounted || loading) {
     return (
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="h-9 w-40 animate-pulse rounded bg-gray-100" />
-          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
+          <div className="h-14 w-56 animate-pulse rounded-md bg-canvas" />
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_400px]">
             <div className="space-y-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-40 animate-pulse rounded-2xl bg-gray-100" />
+                <div key={i} className="h-40 animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-canvas" />
               ))}
             </div>
-            <div className="h-80 animate-pulse rounded-2xl bg-gray-100" />
+            <div className="h-80 animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-canvas" />
           </div>
         </div>
       </main>
     );
   }
 
+  // Tell the shopper exactly what is stopping them from paying.
+  const noDeliveryOptions = shippingMethods.length === 0;
+  const missing: { message: string; target: string; buttonLabel: string } | null = !activeAddressId
+    ? { message: "Add a delivery address.", target: "#step-address", buttonLabel: "Add an address to pay" }
+    : noDeliveryOptions
+      ? { message: "Delivery isn't set up yet — contact us and we'll complete your order.", target: "#step-delivery", buttonLabel: "Delivery unavailable" }
+      : !selectedShippingMethod
+        ? { message: "Choose a delivery option.", target: "#step-delivery", buttonLabel: "Choose delivery to pay" }
+        : null;
+  const whatsappDigits = storeConfig.whatsappNumber.replace(/\D/g, "");
+
   return (
-    <main className="min-h-screen bg-white pb-28 lg:pb-0">
+    <main className="min-h-screen pb-32 lg:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link
-          href="/cart"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-950"
-        >
-          <ArrowLeft className="h-4 w-4" />
+        <Link href="/cart" className="mb-4 inline-flex items-center gap-2 text-[15px] font-semibold underline-offset-4 hover:underline">
+          <HugeiconsIcon icon={ArrowLeft02Icon} size={22} strokeWidth={1.8} />
           Back to cart
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">Checkout</h1>
+        <h1 className="text-6xl leading-none font-extrabold tracking-[-0.045em] text-ink">Checkout</h1>
 
         {checkoutError ? (
           <div className="mt-6">
@@ -272,21 +304,23 @@ export default function CheckoutPage() {
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px] lg:items-start">
-          <div className="space-y-10">
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+          <div className="min-w-0 space-y-10">
             {/* 1. Address */}
-            <section>
+            <section aria-labelledby="step-address" className="scroll-mt-36">
               <StepTitle
+                id="step-address"
                 step={1}
                 title="Delivery address"
+                done={Boolean(activeAddressId) && !showAddressForm}
                 action={
                   !showAddressForm && addresses.length > 0 ? (
                     <button
                       type="button"
                       onClick={() => setShowAddressForm(true)}
-                      className="inline-flex items-center gap-1 text-sm font-medium text-brand transition hover:text-brand-hover"
+                      className="inline-flex h-11 items-center gap-1.5 rounded-lg border-[1.5px] border-ink bg-white px-3 text-[15px] font-semibold transition hover:bg-sun"
                     >
-                      <Plus className="h-4 w-4" />
+                      <HugeiconsIcon icon={Add01Icon} size={20} strokeWidth={1.8} />
                       New address
                     </button>
                   ) : null
@@ -309,12 +343,12 @@ export default function CheckoutPage() {
                           <div className="flex gap-3">
                             <Radio checked={selected} />
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-950">{address.fullName}</p>
-                              <p className="mt-1 text-gray-600">{address.street}</p>
-                              <p className="text-gray-600">
+                              <p className="font-semibold text-ink">{address.fullName}</p>
+                              <p className="mt-1 text-gray-700">{address.street}</p>
+                              <p className="text-gray-700">
                                 {address.city}, {address.state}
                               </p>
-                              <p className="mt-1 text-gray-500">{address.phone}</p>
+                              <p className="mt-1 font-mono text-sm text-gray-600">{address.phone}</p>
                             </div>
                           </div>
                         </button>
@@ -322,22 +356,24 @@ export default function CheckoutPage() {
                     })}
                   </div>
                 ) : (
-                  <div className="rounded-2xl bg-canvas p-8 text-center">
-                    <MapPin className="mx-auto h-6 w-6 text-gray-400" aria-hidden="true" />
-                    <p className="mt-2 text-sm text-gray-600">Add where you want your order delivered.</p>
+                  <div className="flex flex-col items-center rounded-lg border-[1.5px] border-dashed border-ink p-8 text-center">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-lg border-[1.5px] border-ink bg-sun">
+                      <HugeiconsIcon icon={Location01Icon} size={36} strokeWidth={1.5} aria-hidden="true" />
+                    </span>
+                    <p className="mt-3 text-base text-gray-700">Where should we deliver your order?</p>
                     <button
                       type="button"
                       onClick={() => setShowAddressForm(true)}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
+                      className="mt-4 inline-flex h-12 items-center gap-2 rounded-lg bg-ink px-5 text-[15px] font-semibold text-paper transition hover:bg-black"
                     >
-                      <Plus className="h-4 w-4" />
+                      <HugeiconsIcon icon={Add01Icon} size={22} strokeWidth={1.8} />
                       Add address
                     </button>
                   </div>
                 ))}
 
               {showAddressForm && (
-                <form onSubmit={handleSubmit(onSubmitAddress)} className="space-y-4 rounded-2xl border border-gray-200 p-5">
+                <form onSubmit={handleSubmit(onSubmitAddress)} className="space-y-4 rounded-lg border-[1.5px] border-ink bg-white p-5">
                   {errors.root && <AlertBanner variant="error" message={errors.root.message} />}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
@@ -379,7 +415,7 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setShowAddressForm(false)}
-                        className="rounded-full px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                        className="h-12 rounded-lg px-5 text-[15px] font-semibold text-ink transition hover:bg-gray-100"
                       >
                         Cancel
                       </button>
@@ -387,7 +423,7 @@ export default function CheckoutPage() {
                     <LoadingButton
                       type="submit"
                       loading={isSubmitting}
-                      className="rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-60"
+                      className="h-12 rounded-lg bg-ink px-5 text-[15px] font-semibold text-paper transition hover:bg-black"
                     >
                       Save address
                     </LoadingButton>
@@ -396,9 +432,9 @@ export default function CheckoutPage() {
               )}
             </section>
 
-            {/* 2. Shipping */}
-            <section>
-              <StepTitle step={2} title="Delivery speed" />
+            {/* 2. Delivery */}
+            <section aria-labelledby="step-delivery" className="scroll-mt-36">
+              <StepTitle id="step-delivery" step={2} title="Delivery speed" done={Boolean(selectedMethod)} />
               {shippingMethods.length > 0 ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {shippingMethods.map((method) => {
@@ -415,12 +451,11 @@ export default function CheckoutPage() {
                           <Radio checked={selected} />
                           <div className="flex min-w-0 flex-1 justify-between gap-3">
                             <div>
-                              <p className="font-medium text-gray-950">{method.name}</p>
-                              {method.estimatedDays && <p className="mt-0.5 text-gray-500">{method.estimatedDays}</p>}
+                              <p className="font-semibold text-ink">{method.name}</p>
+                              {method.estimatedDays && <p className="mt-0.5 text-gray-600">{method.estimatedDays}</p>}
+                              {method.description && <p className="mt-0.5 text-sm text-gray-600">{method.description}</p>}
                             </div>
-                            <p className="shrink-0 font-medium text-gray-950">
-                              {Number(method.price) === 0 ? "Free" : formatPrice(method.price)}
-                            </p>
+                            <p className="price-tag shrink-0 text-ink">{Number(method.price) === 0 ? "Free" : formatPrice(method.price)}</p>
                           </div>
                         </div>
                       </button>
@@ -428,28 +463,52 @@ export default function CheckoutPage() {
                   })}
                 </div>
               ) : (
-                <p className="rounded-2xl bg-canvas p-5 text-sm text-gray-600">
-                  Delivery options are not available right now. Please contact us to complete your order.
-                </p>
+                <div className="rounded-lg border-[1.5px] border-ink bg-sun-soft p-5">
+                  <p className="flex items-start gap-3 text-[15px] text-ink">
+                    <HugeiconsIcon icon={Alert02Icon} size={24} strokeWidth={1.7} className="shrink-0" />
+                    Delivery options aren&apos;t set up right now. Message us and we&apos;ll arrange delivery and complete your order.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <a
+                      href={`https://wa.me/${whatsappDigits}?text=${encodeURIComponent("Hi, I'd like to complete my Shoppe order.")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-11 items-center gap-2 rounded-lg bg-ink px-4 text-[15px] font-semibold text-paper hover:bg-black"
+                    >
+                      <HugeiconsIcon icon={WhatsappIcon} size={22} strokeWidth={1.6} />
+                      WhatsApp us
+                    </a>
+                    <a
+                      href={`mailto:${storeConfig.supportEmail}?subject=${encodeURIComponent("Complete my order")}`}
+                      className="inline-flex h-11 items-center gap-2 rounded-lg border-[1.5px] border-ink bg-white px-4 text-[15px] font-semibold hover:bg-gray-50"
+                    >
+                      <HugeiconsIcon icon={Mail01Icon} size={22} strokeWidth={1.6} />
+                      Email us
+                    </a>
+                  </div>
+                </div>
               )}
             </section>
 
             {/* 3. Payment */}
-            <section>
-              <StepTitle step={3} title="Payment" />
+            <section aria-labelledby="step-payment">
+              <StepTitle id="step-payment" step={3} title="Payment" />
               <div className={optionClass(paymentGateway === "PAYSTACK")}>
-                <div className="flex gap-3">
+                <div className="flex items-center gap-3">
                   <Radio checked={paymentGateway === "PAYSTACK"} />
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border-[1.5px] border-ink bg-pink">
+                    <HugeiconsIcon icon={CreditCardIcon} size={26} strokeWidth={1.5} />
+                  </span>
                   <div>
-                    <p className="font-medium text-gray-950">Pay with Paystack</p>
-                    <p className="mt-0.5 text-gray-500">Card, bank transfer or USSD. You&apos;ll finish payment on Paystack.</p>
+                    <p className="font-semibold text-ink">Pay with Paystack</p>
+                    <p className="mt-0.5 text-gray-700">Card, bank transfer or USSD. You&apos;ll finish payment on Paystack.</p>
                   </div>
                 </div>
               </div>
-              <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
-                <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+              <p className="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                <HugeiconsIcon icon={LockIcon} size={20} strokeWidth={1.6} aria-hidden="true" />
                 We never see or store your card details.{" "}
-                <Link href="/secure-checkout" className="underline underline-offset-2 hover:text-gray-950">
+                <Link href="/secure-checkout" className="font-medium text-ink underline underline-offset-2">
                   Learn more
                 </Link>
               </p>
@@ -457,84 +516,101 @@ export default function CheckoutPage() {
           </div>
 
           {/* Summary */}
-          <aside className="rounded-2xl bg-canvas p-6 lg:sticky lg:top-24">
-            <h2 className="text-base font-semibold text-gray-950">Order summary</h2>
+          <aside className="rounded-lg border-[1.5px] border-ink bg-white p-6 shadow-sticker lg:sticky lg:top-32">
+            <h2 className="text-2xl font-extrabold text-ink">Order summary</h2>
 
-            <ul className="mt-5 max-h-72 space-y-4 overflow-y-auto">
-              {cart?.items.map((item) => (
-                <li key={item.id} className="flex gap-3 text-sm">
-                  <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-white">
-                    {item.product.image ? (
-                      <ProductImage
-                        src={getAssetUrl(item.product.image) || item.product.image}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover"
-                        sizes="56px"
-                      />
-                    ) : null}
-                    <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-950 px-1 text-[10px] font-medium text-white">
-                      {item.quantity}
-                    </span>
-                  </div>
-                  <p className="min-w-0 flex-1 truncate pt-0.5 text-gray-900">{item.product.name}</p>
-                  <span className="shrink-0 pt-0.5 font-medium text-gray-950">
-                    {formatPrice(Number(item.product.price) * item.quantity)}
-                  </span>
-                </li>
-              ))}
+            <ul className="mt-5 max-h-72 space-y-4 overflow-y-auto pt-1 pr-1">
+              {cart?.items.map((item) => {
+                const url = cartItemImage(item);
+                return (
+                  <li key={item.id} className="flex items-center gap-3 text-[15px]">
+                    <div className="relative h-16 w-14 shrink-0 rounded-md border-[1.5px] border-ink bg-canvas">
+                      <div className="absolute inset-0 overflow-hidden rounded-[5px]">
+                        {url ? (
+                          <ProductImage src={getAssetUrl(url) || url} alt={item.product.name} fill className="object-cover mix-blend-multiply" sizes="56px" />
+                        ) : null}
+                      </div>
+                      <span className="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-md border-[1.5px] border-ink bg-sun px-1 font-mono text-xs font-semibold">
+                        {item.quantity}
+                      </span>
+                    </div>
+                    <p className="min-w-0 flex-1 truncate text-ink">{item.product.name}</p>
+                    <span className="shrink-0 font-mono font-semibold text-ink">{formatPrice(Number(item.product.price) * item.quantity)}</span>
+                  </li>
+                );
+              })}
             </ul>
 
-            <dl className="mt-6 space-y-3 border-t border-gray-200 pt-5 text-sm">
+            <dl className="mt-6 space-y-3 border-t-[1.5px] border-ink pt-5 text-[15px]">
               <div className="flex justify-between">
-                <dt className="text-gray-600">Subtotal</dt>
-                <dd className="font-medium text-gray-950">{formatPrice(subtotal)}</dd>
+                <dt className="text-gray-700">Subtotal</dt>
+                <dd className="font-mono font-semibold text-ink">{formatPrice(subtotal)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-600">Shipping</dt>
-                <dd className="font-medium text-gray-950">
-                  {selectedMethod ? (shipping === 0 ? "Free" : formatPrice(shipping)) : "—"}
+                <dt className="text-gray-700">Delivery</dt>
+                <dd className="font-mono font-semibold text-ink">
+                  {selectedMethod ? (shipping === 0 ? "Free" : formatPrice(shipping)) : <span className="font-sans font-normal text-gray-600">Not chosen yet</span>}
                 </dd>
               </div>
             </dl>
-            <div className="mt-5 flex items-baseline justify-between border-t border-gray-200 pt-5">
-              <span className="text-sm font-medium text-gray-950">Total</span>
-              <span className="text-xl font-semibold text-gray-950">{formatPrice(total)}</span>
+            <div className="mt-5 flex items-baseline justify-between border-t-[1.5px] border-ink pt-5">
+              <span className="text-base font-semibold text-ink">Total</span>
+              <span className="price-tag text-3xl text-ink">{formatPrice(total)}</span>
             </div>
 
             <LoadingButton
               onClick={handlePlaceOrder}
               loading={submittingOrder}
-              disabled={!activeAddressId || !selectedShippingMethod}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
+              disabled={Boolean(missing)}
+              aria-describedby={missing ? "checkout-missing" : undefined}
+              className="mt-6 h-14 w-full rounded-lg bg-ink text-base font-semibold text-paper transition hover:bg-black"
             >
-              Pay {formatPrice(total)}
+              {missing ? missing.buttonLabel : `Pay ${formatPrice(total)}`}
             </LoadingButton>
-            <p className="mt-3 text-center text-xs leading-5 text-gray-500">
+            {missing && (
+              <p id="checkout-missing" className="mt-3 flex items-start gap-2 rounded-lg bg-sun-soft px-3 py-2.5 text-sm text-ink">
+                <HugeiconsIcon icon={Alert02Icon} size={20} strokeWidth={1.7} className="mt-px shrink-0" />
+                <span>
+                  Before you pay:{" "}
+                  <a href={missing.target} className="font-semibold underline underline-offset-2">
+                    {missing.message}
+                  </a>
+                </span>
+              </p>
+            )}
+            <p className="mt-3 text-center text-sm leading-6 text-gray-600">
               By paying you agree to our{" "}
-              <Link href="/terms" className="underline underline-offset-2 hover:text-gray-950">Terms</Link>,{" "}
-              <Link href="/privacy-policy" className="underline underline-offset-2 hover:text-gray-950">Privacy</Link> and{" "}
-              <Link href="/refund-policy" className="underline underline-offset-2 hover:text-gray-950">Refund</Link> policies.
+              <Link href="/terms" className="underline underline-offset-2 hover:text-ink">Terms</Link>,{" "}
+              <Link href="/privacy-policy" className="underline underline-offset-2 hover:text-ink">Privacy</Link> and{" "}
+              <Link href="/refund-policy" className="underline underline-offset-2 hover:text-ink">Refund</Link> policies.
             </p>
           </aside>
         </div>
       </div>
 
       {/* Mobile: keep the total and Pay button in reach while filling in the steps */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t-[1.5px] border-ink bg-paper px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center gap-4">
           <div className="min-w-0">
-            <p className="text-xs text-gray-500">{selectedMethod ? "Total" : "Subtotal"}</p>
-            <p className="text-lg font-semibold text-gray-950">{formatPrice(selectedMethod ? total : subtotal)}</p>
+            <p className="text-sm text-gray-600">{selectedMethod ? "Total" : "Subtotal"}</p>
+            <p className="price-tag text-xl text-ink">{formatPrice(selectedMethod ? total : subtotal)}</p>
           </div>
-          <LoadingButton
-            onClick={handlePlaceOrder}
-            loading={submittingOrder}
-            disabled={!activeAddressId || !selectedShippingMethod}
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
-          >
-            {!activeAddressId ? "Add an address to pay" : "Pay now"}
-          </LoadingButton>
+          {missing ? (
+            <a
+              href={missing.target}
+              className="inline-flex h-12 flex-1 items-center justify-center rounded-lg border-[1.5px] border-ink bg-sun px-3 text-center text-[15px] font-semibold text-ink"
+            >
+              {missing.buttonLabel}
+            </a>
+          ) : (
+            <LoadingButton
+              onClick={handlePlaceOrder}
+              loading={submittingOrder}
+              className="h-12 flex-1 rounded-lg bg-ink text-[15px] font-semibold text-paper transition hover:bg-black"
+            >
+              Pay now
+            </LoadingButton>
+          )}
         </div>
       </div>
     </main>
