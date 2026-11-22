@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 
 /**
  * Microsoft Clarity (heatmaps + session recordings).
- * Turned on by setting NEXT_PUBLIC_CLARITY_ID in Vercel; does nothing without it.
+ * Loads in production only (see layout.tsx).
  * Pages with personal details are masked in recordings so customer data is never captured.
  */
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID?.trim();
+// Public project ID (it is visible in the page anyway). NEXT_PUBLIC_CLARITY_ID overrides it.
+const CLARITY_ID = (process.env.NEXT_PUBLIC_CLARITY_ID || "wxskh2zpsf").trim();
 const MASKED_PREFIXES = ["/admin", "/account", "/checkout", "/orders", "/reset-password"];
 
 export function Clarity() {
