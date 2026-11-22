@@ -12,9 +12,23 @@ const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1
 const apiOrigin = new URL(apiUrl).origin;
 const apiImagesHost = new URL(apiOrigin);
 
+// Production calls the API through this site (NEXT_PUBLIC_API_URL = https://<site>/backend/api/v1)
+// so auth cookies stay first-party. This rewrite forwards /backend/* to the Render backend.
+// It is required in production: removing it makes every API call 404.
+const backendOrigin = (process.env.BACKEND_ORIGIN || "https://shoppe-backend-yko6.onrender.com").replace(/\/+$/, "");
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: {},
+  async rewrites() {
+    return [
+      {
+        source: "/backend/:path*",
+        destination: `${backendOrigin}/:path*`,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
