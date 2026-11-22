@@ -158,6 +158,20 @@ export const api = {
 
   getMe: () => request("/auth/me"),
 
+  forgotPassword: (email: string) =>
+    request<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+      skipRefresh: true,
+    }),
+
+  resetPassword: (token: string, password: string) =>
+    request<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+      skipRefresh: true,
+    }),
+
   getAdminAnalytics: (range = "30d") => request(`/admin/analytics?range=${encodeURIComponent(range)}`),
 
   getAdminUsers: () => request("/admin/users"),

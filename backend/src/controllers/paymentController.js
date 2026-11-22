@@ -85,7 +85,7 @@ export const handlePaystackWebhook = asyncHandler(async (req, res) => {
 /**
  * @desc    Synchronously verify Paystack payment via reference
  * @route   POST /api/v1/payment/verify-paystack
- * @access  Public
+ * @access  Private (order owner)
  */
 export const verifyPaystackPayment = asyncHandler(async (req, res) => {
   const { reference } = req.body;
@@ -93,7 +93,7 @@ export const verifyPaystackPayment = asyncHandler(async (req, res) => {
     throw new AppError("Transaction reference is required", 400);
   }
 
-  const result = await paymentService.verifyPaystackTransaction(reference);
+  const result = await paymentService.verifyPaystackTransaction(reference, req.user.id);
   if (result?.orderId) {
     await auditRepository.log({
       req,

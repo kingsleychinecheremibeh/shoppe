@@ -30,20 +30,20 @@ const faqs = [
 
 export default function FaqPage() {
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
+    <main className="min-h-screen bg-white py-12 sm:py-16">
       <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">
+        <div>
+          <p className="text-sm font-medium text-brand">
             Help
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
             Frequently Asked Questions
           </h1>
 
           <div className="mt-8 divide-y divide-gray-100">
             {faqs.map((faq) => (
               <section key={faq.question} className="py-5">
-                <h2 className="text-base font-bold text-gray-950">
+                <h2 className="text-base font-semibold text-gray-950">
                   {faq.question}
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-gray-600">

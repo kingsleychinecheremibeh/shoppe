@@ -31,6 +31,13 @@ export const orderService = {
     }
 
     for (const item of cart.items) {
+      if (item.product.deletedAt) {
+        throw new AppError(
+          `${item.product.name} is no longer available. Please remove it from your cart.`,
+          400
+        );
+      }
+
       if (item.quantity > item.product.stock) {
         throw new AppError(
           `${item.product.name} does not have enough stock`,
@@ -76,8 +83,12 @@ export const orderService = {
 
     const isOwner = order.userId === currentUser.id;
     const isAdmin = currentUser.role === "ADMIN";
+    const isOrderManager =
+      currentUser.role === "MANAGER" &&
+      Array.isArray(currentUser.managerPermissions) &&
+      currentUser.managerPermissions.includes("ORDER_MANAGEMENT");
 
-    if (!isOwner && !isAdmin) {
+    if (!isOwner && !isAdmin && !isOrderManager) {
       throw new AppError("Access denied", 403);
     }
 
@@ -113,6 +124,14 @@ export const orderService = {
       );
     }
 
+    if (status === "CANCELLED") {
+      const cancelledOrder = await orderRepository.cancelOrderAndRestock(orderId);
+      if (!cancelledOrder) {
+        throw new AppError("This order can no longer be cancelled.", 409);
+      }
+      return cancelledOrder;
+    }
+
     const updatedOrder = await orderRepository.updateOrderStatus(orderId, status);
 
     if (status === "SHIPPED") {
@@ -133,6 +152,25 @@ export const orderService = {
       throw new AppError("Order not found", 404);
     }
 
-    return orderRepository.deleteOrder(orderId);
+    // PENDING and PAID orders still hold stock; give it back when the order is removed.
+    const restock = order.status === "PENDING" || order.status === "PAID";
+    return orderRepository.deleteOrder(orderId, { restock });
+  },
+
+  /**
+   * Cancels unpaid orders older than `ttlMinutes` and returns their stock.
+   * Returns the number of orders cancelled.
+   */
+  async cancelExpiredPendingOrders(ttlMinutes) {
+    const cutoff = new Date(Date.now() - ttlMinutes * 60 * 1000);
+    const orderIds = await orderRepository.findExpiredPendingOrderIds(cutoff);
+
+    let cancelled = 0;
+    for (const orderId of orderIds) {
+      const result = await orderRepository.cancelOrderAndRestock(orderId);
+      if (result) cancelled += 1;
+    }
+
+    return cancelled;
   },
 };

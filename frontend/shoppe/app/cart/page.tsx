@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useMemo } from "react";
 
-import { Trash2, Plus, Minus, ArrowRight, Truck, ShieldCheck } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, Lock, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ConfirmModal, EmptyState } from "@/app/components/feedback";
+import { ConfirmModal } from "@/app/components/feedback";
 import { ProductImage } from "@/app/components/product-image";
 import { api, getAssetUrl } from "@/lib/api";
+import { formatPrice } from "@/lib/format";
 
 type Category = {
   id: string;
@@ -38,11 +39,6 @@ type Cart = {
   id: string;
   items: CartItem[];
 };
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "NGN",
-});
 
 export default function CartPage() {
 
@@ -148,239 +144,196 @@ export default function CartPage() {
 
   
 
-  const FREE_SHIPPING_THRESHOLD = 150000;
-  const DEFAULT_ESTIMATED_SHIPPING = 2500;
-  const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const estimatedShipping = qualifiesForFreeShipping ? 0 : DEFAULT_ESTIMATED_SHIPPING;
-  const total = subtotal + estimatedShipping;
-  const progressToFreeShipping = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
-
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-black" />
+      <main className="min-h-screen bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="h-9 w-40 animate-pulse rounded bg-gray-100" />
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
+            <div className="space-y-6">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="h-28 w-24 animate-pulse rounded-xl bg-gray-100" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+                    <div className="h-4 w-1/4 animate-pulse rounded bg-gray-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="h-56 animate-pulse rounded-2xl bg-gray-100" />
+          </div>
+        </div>
       </main>
     );
   }
 
   const hasItems = cart && cart.items.length > 0;
+  const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Title */}
-        <div className="mb-8 border-b border-gray-200 pb-5">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-950">Shopping Cart</h1>
-          <p className="mt-2 text-sm text-gray-600">Review your items before checkout.</p>
-        </div>
+    <main className="min-h-screen bg-white">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">Cart</h1>
+        {hasItems && (
+          <p className="mt-2 text-sm text-gray-500">
+            {itemCount} {itemCount === 1 ? "item" : "items"}
+          </p>
+        )}
 
         {hasItems ? (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
-            
-            {/* Items List */}
-            <div className="space-y-6">
-              
-              {/* Free Shipping Progress Alert */}
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
-                <div className="flex items-center gap-3 mb-3">
-                  <Truck className="h-5 w-5 text-gray-900" />
-                  <p className="text-sm font-semibold text-gray-950">
-                    {qualifiesForFreeShipping ? (
-                      <span className="text-green-600 font-bold">You qualify for FREE shipping!</span>
-                    ) : (
-                      <>Add <span className="font-bold text-gray-950">{currencyFormatter.format(FREE_SHIPPING_THRESHOLD - subtotal)}</span> more for FREE shipping</>
-                    )}
-                  </p>
-                </div>
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-500 rounded-full ${
-                      qualifiesForFreeShipping ? "bg-green-500" : "bg-gray-950"
-                    }`}
-                    style={{ width: `${progressToFreeShipping}%` }}
-                  />
-                </div>
-              </div>
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px] lg:items-start">
+            {/* Items */}
+            <div>
+              <ul className="divide-y divide-gray-100 border-y border-gray-100">
+                {cart.items.map((item) => {
+                  const imgUrl =
+                    item.product.images?.find((i) => i.id === item.productImageId)?.url ||
+                    item.product.images?.find((i) => i.isPrimary)?.url ||
+                    item.product.image;
+                  const busy = updatingItemId === item.id;
 
-              {/* Items Card */}
-              <div className="rounded-xl border border-gray-200 bg-white shadow-xs overflow-hidden">
-                <div className="divide-y divide-gray-200">
-                  {cart.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`p-6 flex flex-col sm:flex-row gap-6 transition ${
-                        updatingItemId === item.id ? "opacity-50 pointer-events-none" : ""
-                      }`}
-                    >
-                      {/* Product Thumbnail */}
+                  return (
+                    <li key={item.id} className={`flex gap-4 py-6 transition sm:gap-6 ${busy ? "pointer-events-none opacity-50" : ""}`}>
                       <Link
                         href={`/products/${item.productId}`}
-                        className="aspect-square w-24 sm:w-28 shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 block"
+                        className="relative block h-32 w-24 shrink-0 overflow-hidden rounded-xl bg-canvas sm:h-36 sm:w-28"
                       >
-                        {(() => {
-                          const imgUrl = item.product.images?.find(i => i.id === item.productImageId)?.url || item.product.image;
-                          return imgUrl ? (
-                            <ProductImage
-                              src={getAssetUrl(imgUrl) || imgUrl}
-                              alt={item.product.name}
-                              className="h-full w-full object-cover"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-gray-600">
-                              No image
-                            </div>
-                          );
-                        })()}
+                        {imgUrl ? (
+                          <ProductImage
+                            src={getAssetUrl(imgUrl) || imgUrl}
+                            alt={item.product.name}
+                            fill
+                            className="object-cover"
+                            sizes="112px"
+                          />
+                        ) : null}
                       </Link>
 
-                      {/* Text details */}
-                      <div className="flex-1 flex flex-col justify-between min-w-0">
-                        <div>
-                          <div className="flex justify-between items-start gap-4 mb-1">
-                            <Link href={`/products/${item.productId}`} className="hover:underline">
-                              <h3 className="font-bold text-gray-950 text-base line-clamp-1">{item.product.name}</h3>
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <Link
+                              href={`/products/${item.productId}`}
+                              className="line-clamp-2 text-sm font-medium text-gray-900 hover:underline hover:underline-offset-4"
+                            >
+                              {item.product.name}
                             </Link>
-                            <p className="font-black text-gray-950 text-base text-right shrink-0">
-                              {currencyFormatter.format(Number(item.product.price) * item.quantity)}
+                            <p className="mt-1 text-sm text-gray-500">
+                              {[item.product.category?.name, item.selectedColor].filter(Boolean).join(" · ")}
                             </p>
+                            <p className="mt-1 text-sm text-gray-500">{formatPrice(item.product.price)} each</p>
                           </div>
-                          <p className="text-xs text-gray-600 uppercase font-semibold mb-3">
-                            {item.product.category?.name || "Product"}
-                            {item.selectedColor && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 normal-case">
-                                {item.selectedColor}
-                              </span>
-                            )}
+                          <p className="shrink-0 text-sm font-semibold text-gray-950">
+                            {formatPrice(Number(item.product.price) * item.quantity)}
                           </p>
                         </div>
 
-                        {/* Interactive Quantity Control & Trash Row */}
-                        <div className="flex items-center justify-between gap-4 mt-auto">
-                          
-                          {/* Selector */}
-                          <div className="inline-flex items-center rounded-lg border border-gray-300 bg-white">
+                        <div className="mt-auto flex items-center justify-between gap-4 pt-4">
+                          <div className="inline-flex h-10 items-center rounded-full border border-gray-200">
                             <button
+                              type="button"
                               onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                              className="p-2 text-gray-500 hover:text-gray-950 transition"
-                              title="Decrease quantity"
+                              aria-label={`Decrease quantity of ${item.product.name}`}
+                              className="flex h-10 w-10 items-center justify-center rounded-l-full text-gray-600 transition hover:text-gray-950"
                             >
                               <Minus className="h-3.5 w-3.5" />
                             </button>
-                            <span className="w-10 text-center text-sm font-bold text-gray-950 select-none">
+                            <span className="w-6 select-none text-center text-sm font-medium text-gray-950" aria-live="polite">
                               {item.quantity}
                             </span>
                             <button
+                              type="button"
                               onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
-                              className="p-2 text-gray-500 hover:text-gray-950 transition"
-                              title="Increase quantity"
+                              disabled={item.quantity >= item.product.stock}
+                              aria-label={`Increase quantity of ${item.product.name}`}
+                              className="flex h-10 w-10 items-center justify-center rounded-r-full text-gray-600 transition hover:text-gray-950 disabled:opacity-30"
                             >
                               <Plus className="h-3.5 w-3.5" />
                             </button>
                           </div>
 
-                          {/* Trash button */}
                           <button
+                            type="button"
                             onClick={() => handleRemoveItem(item.id)}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-700 transition p-2 rounded-md hover:bg-red-50"
-                            title="Remove item"
+                            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                             Remove
                           </button>
-
                         </div>
-
                       </div>
+                    </li>
+                  );
+                })}
+              </ul>
 
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons underneath */}
-              <div className="flex items-center justify-between">
+              <div className="mt-6 flex items-center justify-between">
                 <Link
                   href="/products"
-                  className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 transition hover:text-gray-950"
                 >
-                  Continue Shopping
+                  <ArrowLeft className="h-4 w-4" />
+                  Continue shopping
                 </Link>
-                
                 <button
+                  type="button"
                   onClick={() => setClearCartOpen(true)}
-                  className="rounded-lg border border-red-200 bg-red-50 text-red-600 px-5 py-2.5 text-sm font-semibold hover:bg-red-100 hover:text-red-700 transition"
+                  className="text-sm text-gray-500 underline-offset-4 transition hover:text-red-600 hover:underline"
                 >
-                  Clear Shopping Cart
+                  Empty cart
                 </button>
               </div>
-
             </div>
 
-            {/* Order Summary Panel */}
-            <aside className="space-y-6">
-              
-              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-                <h3 className="text-lg font-bold text-gray-950 mb-4 border-b border-gray-100 pb-3">Order Summary</h3>
-                
-                <div className="space-y-3.5">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-gray-950">{currencyFormatter.format(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Estimated Shipping</span>
-                    <span className="font-semibold text-gray-950">
-                      {estimatedShipping === 0 ? "Free" : currencyFormatter.format(estimatedShipping)}
-                    </span>
-                  </div>
-                  
-                  <div className="border-t border-gray-100 pt-3.5 flex justify-between items-end">
-                    <span className="text-base font-bold text-gray-900">Estimated Total</span>
-                    <span className="text-2xl font-black text-gray-950">{currencyFormatter.format(total)}</span>
-                  </div>
+            {/* Summary */}
+            <aside className="rounded-2xl bg-canvas p-6 lg:sticky lg:top-24">
+              <h2 className="text-base font-semibold text-gray-950">Order summary</h2>
+              <dl className="mt-5 space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-600">Subtotal</dt>
+                  <dd className="font-medium text-gray-950">{formatPrice(subtotal)}</dd>
                 </div>
-
-                <Link
-                  href="/checkout"
-                  className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gray-950 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm"
-                >
-                  Proceed to Checkout
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600">Shipping</dt>
+                  <dd className="text-gray-500">Calculated at checkout</dd>
+                </div>
+              </dl>
+              <div className="mt-5 flex items-baseline justify-between border-t border-gray-200 pt-5">
+                <span className="text-sm font-medium text-gray-950">Total so far</span>
+                <span className="text-xl font-semibold text-gray-950">{formatPrice(subtotal)}</span>
               </div>
 
-              {/* Guarantees panel */}
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-gray-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-xs font-bold text-gray-900 mb-0.5">Secure Checkout</h4>
-                  <p className="text-[10px] text-gray-500 leading-normal">
-                    Your payment is handled securely. Products are checked before they are shipped.
-                  </p>
-                </div>
-              </div>
+              <Link
+                href="/checkout"
+                className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover"
+              >
+                Checkout
+                <ArrowRight className="h-4 w-4" />
+              </Link>
 
+              <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-gray-500">
+                <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+                Secure payment through Paystack
+              </p>
             </aside>
-
           </div>
         ) : (
-          /* Empty state view */
-          <EmptyState
-            title="Your cart is empty"
-            message="Browse products and add items when you are ready to order."
-            action={
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center rounded-lg bg-gray-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 shadow-sm"
-              >
-                Start Shopping
-              </Link>
-            }
-          />
+          <div className="mt-8 flex flex-col items-center rounded-3xl bg-canvas px-6 py-20 text-center">
+            <ShoppingBag className="h-10 w-10 text-gray-300" aria-hidden="true" />
+            <h2 className="mt-4 text-lg font-semibold text-gray-950">Your cart is empty</h2>
+            <p className="mt-1 max-w-sm text-sm text-gray-500">
+              Have a look around. When you find something you like, add it here.
+            </p>
+            <Link
+              href="/products"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-hover"
+            >
+              Start shopping
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         )}
-
       </div>
       <ConfirmModal
         open={clearCartOpen}

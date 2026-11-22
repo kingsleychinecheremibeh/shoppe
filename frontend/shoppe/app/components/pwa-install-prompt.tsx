@@ -69,27 +69,26 @@ export function PwaInstallPrompt() {
       role="banner"
       aria-label="Install app"
     >
-      <div className="bg-gray-950 text-white">
+      <div className="bg-brand text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2.5 min-w-0">
-            <Download className="h-4 w-4 shrink-0 opacity-70" />
-            <p className="truncate text-[11px] font-medium sm:text-xs">
-              Install <span className="font-bold">Shoppe</span> for a faster,
-              app-like experience
+            <Download className="h-4 w-4 shrink-0 opacity-80" />
+            <p className="truncate text-xs font-medium sm:text-sm">
+              Add Shoppe to your home screen for faster shopping
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={handleInstall}
-              className="rounded-md bg-white px-3.5 py-1 text-[11px] font-bold text-gray-950 uppercase tracking-wider transition hover:bg-gray-100 active:scale-95"
+              className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-brand transition hover:bg-brand-soft active:scale-95"
             >
               Install
             </button>
             <button
               type="button"
               onClick={handleDismiss}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition hover:bg-white/10 hover:text-white"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white"
               aria-label="Dismiss install banner"
             >
               <X className="h-3.5 w-3.5" />

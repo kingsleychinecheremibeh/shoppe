@@ -150,7 +150,7 @@ export function Header() {
         setUser((data as MeResponse).user);
         const notificationData = await api.getNotifications({ limit: 8 }).catch(() => []);
         if (!ignore) {
-          setNotifications((notificationData as Notification[]) || []);
+          setNotifications(Array.isArray(notificationData) ? (notificationData as Notification[]) : []);
         }
         if (!showStorefrontTools) return;
 
@@ -270,18 +270,18 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between gap-4">
+        <div className="flex h-16 items-center justify-between gap-4">
           
           {/* Logo */}
           <Link
             href={isAdminRoute ? staffLandingPath : "/"}
-            className="flex shrink-0 items-center gap-2.5 text-xl font-serif font-black tracking-widest text-gray-950 uppercase transition hover:opacity-80"
+            className="flex shrink-0 items-center gap-2 text-lg font-semibold tracking-tight text-gray-950 transition hover:opacity-80"
             onClick={closeMenus}
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-gray-950 text-white shadow-sm">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
               <ShoppingBag className="h-4.5 w-4.5" />
             </span>
-            SHOPPE
+            Shoppe
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -296,7 +296,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => setCategoriesOpen((o) => !o)}
-                  className={`relative flex items-center gap-1 py-1 text-[11px] font-bold uppercase tracking-widest transition duration-300 after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-950 after:transition-all hover:after:w-full ${
+                  className={`relative flex items-center gap-1 py-1 text-sm font-medium transition duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-brand after:transition-all hover:after:w-full ${
                     categoriesOpen || pathname.startsWith("/category")
                       ? "text-gray-950 after:w-full"
                       : "text-gray-600 hover:text-gray-950"
@@ -341,7 +341,7 @@ export function Header() {
                       <div className="border-t border-gray-100">
                         <Link
                           href="/categories"
-                          className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 transition hover:bg-gray-50 hover:text-gray-950"
+                          className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium text-gray-500 transition hover:bg-gray-50 hover:text-gray-950"
                           onClick={closeMenus}
                         >
                           View All Categories
@@ -362,7 +362,7 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative py-1 text-[11px] font-bold uppercase tracking-widest transition duration-300 after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-gray-950 after:transition-all hover:after:w-full ${
+                  className={`relative py-1 text-sm font-medium transition duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-brand after:transition-all hover:after:w-full ${
                     active ? "text-gray-950 after:w-full" : "text-gray-600 hover:text-gray-950"
                   }`}
                   onClick={closeMenus}
@@ -386,7 +386,7 @@ export function Header() {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search products..."
-                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50/50 pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-950 focus:bg-white focus:ring-2 focus:ring-gray-950/5"
+                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50/50 pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-brand/10"
                 />
               </label>
             </form>
@@ -400,7 +400,7 @@ export function Header() {
             {isStaff && !isAdminRoute && (
               <Link
                 href={staffLandingPath}
-                className="hidden h-9 items-center gap-1.5 rounded-lg bg-gray-950 px-3.5 text-xs font-bold text-white shadow-xs transition hover:bg-gray-800 lg:inline-flex uppercase tracking-wider"
+                className="hidden h-9 items-center gap-1.5 rounded-lg bg-gray-950 px-3.5 text-xs font-medium text-white shadow-xs transition hover:bg-gray-800 lg:inline-flex"
                 onClick={closeMenus}
               >
                 <LayoutDashboard className="h-3.5 w-3.5" />
@@ -425,7 +425,7 @@ export function Header() {
                 >
                   <Bell className="h-4.5 w-4.5" />
                   {unreadCount > 0 && (
-                    <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white shadow-xs border border-white">
+                    <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white border-2 border-white">
                       {unreadCount}
                     </span>
                   )}
@@ -434,12 +434,12 @@ export function Header() {
                 {notificationsOpen && (
                   <div className="absolute right-0 mt-3.5 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-3 duration-200">
                     <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                      <p className="text-xs font-black uppercase tracking-widest text-gray-950">Notifications</p>
+                      <p className="text-sm font-semibold text-gray-950">Notifications</p>
                       {unreadCount > 0 && (
                         <button
                           type="button"
                           onClick={handleMarkAllNotificationsRead}
-                          className="text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-gray-950"
+                          className="text-xs font-medium text-gray-500 hover:text-gray-950"
                         >
                           Mark read
                         </button>
@@ -456,7 +456,7 @@ export function Header() {
                           const content = (
                             <>
                               <p className="text-xs font-bold text-gray-950">{notification.title}</p>
-                              <p className="mt-1 text-[11px] font-medium leading-relaxed text-gray-600">
+                              <p className="mt-1 text-xs font-medium leading-relaxed text-gray-600">
                                 {notification.message}
                               </p>
                             </>
@@ -496,7 +496,7 @@ export function Header() {
             {isAdminRoute && (
               <Link
                 href="/"
-                className="hidden h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-xs font-bold text-gray-700 shadow-xs transition hover:bg-gray-50 hover:text-gray-950 sm:inline-flex uppercase tracking-wider"
+                className="hidden h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-xs font-medium text-gray-700 shadow-xs transition hover:bg-gray-50 hover:text-gray-950 sm:inline-flex"
                 onClick={closeMenus}
               >
                 <ShoppingBag className="h-3.5 w-3.5" />
@@ -513,7 +513,7 @@ export function Header() {
               >
                 <ShoppingCart className="h-4.5 w-4.5" />
                 {cartCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-gray-950 px-1 text-[9px] font-black text-white shadow-xs border border-white">
+                  <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white border-2 border-white">
                     {cartCount}
                   </span>
                 )}
@@ -545,20 +545,20 @@ export function Header() {
                         <p className="truncate text-xs font-bold text-gray-950">
                           {user.name}
                         </p>
-                        <p className="truncate text-[10px] text-gray-600 font-medium mt-0.5">
+                        <p className="truncate text-xs text-gray-600 font-medium mt-0.5">
                           {user.email}
                         </p>
                       </div>
                       <Link
                         href="/account"
-                        className="block px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                         onClick={closeMenus}
                       >
                         My Account
                       </Link>
                       <Link
                         href="/account/orders"
-                        className="block px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                         onClick={closeMenus}
                       >
                         Orders List
@@ -567,7 +567,7 @@ export function Header() {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-bold uppercase tracking-wider text-red-500 hover:bg-red-50 transition"
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition"
                       >
                         <LogOut className="h-3.5 w-3.5" />
                         Logout
@@ -577,7 +577,7 @@ export function Header() {
                     <>
                       <Link
                         href="/login"
-                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                         onClick={closeMenus}
                       >
                         <LogIn className="h-3.5 w-3.5" />
@@ -585,7 +585,7 @@ export function Header() {
                       </Link>
                       <Link
                         href="/register"
-                        className="block px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
+                        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                         onClick={closeMenus}
                       >
                         Create Account
@@ -640,7 +640,7 @@ export function Header() {
               {showStorefrontTools && categories.length > 0 && (
                 <Link
                   href="/categories"
-                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                   onClick={closeMenus}
                 >
                   <Grid3X3 className="h-4 w-4" />
@@ -651,7 +651,7 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                   onClick={closeMenus}
                 >
                   {link.label}
@@ -660,7 +660,7 @@ export function Header() {
               {isStaff && !isAdminRoute && (
                 <Link
                   href={staffLandingPath}
-                  className="rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                   onClick={closeMenus}
                 >
                   Dashboard
@@ -669,7 +669,7 @@ export function Header() {
               {isAdminRoute && (
                 <Link
                   href="/"
-                  className="rounded-lg px-4 py-3 text-sm font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
                   onClick={closeMenus}
                 >
                   View Store
@@ -681,10 +681,10 @@ export function Header() {
             <div className="mt-6 border-t border-gray-100 pt-6">
               <a
                 href="mailto:codewithneche@gmail.com?subject=I%20want%20a%20website%20like%20this"
-                className="flex items-center gap-2.5 rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition group"
+                className="flex items-center gap-2.5 rounded-lg px-4 py-3 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition group"
                 onClick={closeMenus}
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-100 text-gray-500 group-hover:bg-gray-950 group-hover:text-white transition">
+                <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-100 text-gray-500 group-hover:bg-brand group-hover:text-white transition">
                   <Code2 className="h-3 w-3" />
                 </span>
                 Hire the Developer

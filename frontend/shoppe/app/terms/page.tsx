@@ -7,13 +7,13 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
+    <main className="min-h-screen bg-white py-12 sm:py-16">
       <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">
+        <div>
+          <p className="text-sm font-medium text-brand">
             Legal
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
             Terms and Conditions
           </h1>
 
@@ -24,7 +24,7 @@ export default function TermsPage() {
             </p>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">Orders</h2>
+              <h2 className="text-base font-semibold text-gray-950">Orders</h2>
               <p className="mt-2">
                 Orders are subject to product availability, payment confirmation,
                 and delivery coverage. We may cancel or reject orders where
@@ -34,7 +34,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">Pricing</h2>
+              <h2 className="text-base font-semibold text-gray-950">Pricing</h2>
               <p className="mt-2">
                 Prices may change without notice. If a pricing error occurs, we
                 may contact you to confirm or cancel the affected order.
@@ -42,7 +42,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">Accounts</h2>
+              <h2 className="text-base font-semibold text-gray-950">Accounts</h2>
               <p className="mt-2">
                 Customers are responsible for keeping login details secure and
                 providing accurate delivery information.
@@ -50,7 +50,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">Contact</h2>
+              <h2 className="text-base font-semibold text-gray-950">Contact</h2>
               <p className="mt-2">
                 For questions, contact{" "}
                 <a className="font-semibold text-gray-950 underline" href={`mailto:${storeConfig.supportEmail}`}>

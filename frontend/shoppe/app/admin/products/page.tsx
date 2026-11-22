@@ -407,8 +407,8 @@ export default function AdminProductsPage() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Inventory Catalog</span>
-            <h1 className="mt-1.5 text-4xl font-serif font-black tracking-tight text-gray-950">Store Products</h1>
+            <span className="text-xs font-medium text-gray-600">Inventory Catalog</span>
+            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Store Products</h1>
             <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
               Manage product listings, pricing edits, instant stock allocations, and shop taxonomy updates.
             </p>
@@ -433,7 +433,7 @@ export default function AdminProductsPage() {
               type="button"
               onClick={() => handleOpenModal()}
               disabled={!categories.length}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 uppercase tracking-wider shadow-xs"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 shadow-xs"
             >
               <Plus className="h-4 w-4" />
               Add Product
@@ -551,10 +551,10 @@ export default function AdminProductsPage() {
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
             <div className="flex items-center justify-between border-b border-gray-100 p-6">
               <div>
-                <h2 className="text-xl font-serif font-black tracking-tight text-gray-950">
+                <h2 className="text-xl font-semibold tracking-tight text-gray-950">
                   {editingProduct ? "Modify Product Details" : "Create New Product"}
                 </h2>
-                <p className="mt-1.5 text-[10px] text-gray-600 font-medium">
+                <p className="mt-1.5 text-xs text-gray-600 font-medium">
                   All slugs, indexing paths, and search arrays are updated dynamically on save.
                 </p>
               </div>
@@ -571,7 +571,7 @@ export default function AdminProductsPage() {
             <form onSubmit={handleSubmit} className="space-y-5 p-6">
               <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label htmlFor="name" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  <label htmlFor="name" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                     Product Title
                   </label>
                   <input
@@ -589,7 +589,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="price" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  <label htmlFor="price" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                     Selling Price (NGN)
                   </label>
                   <input
@@ -608,7 +608,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="stock" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  <label htmlFor="stock" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                     Stock Quantity
                   </label>
                   <input
@@ -629,7 +629,7 @@ export default function AdminProductsPage() {
                 <div className="sm:col-span-2">
                   <label
                     htmlFor="categoryId"
-                    className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                   >
                     Parent Category
                   </label>
@@ -655,7 +655,7 @@ export default function AdminProductsPage() {
               <div>
                 <label
                   htmlFor="description"
-                  className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide"
+                  className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
                 >
                   Product Description
                 </label>
@@ -674,10 +674,10 @@ export default function AdminProductsPage() {
 
               <div>
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <label htmlFor="image" className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  <label htmlFor="image" className="block text-xs font-medium text-gray-700 tracking-wide">
                     Image Source
                   </label>
-                  <label className="inline-flex h-8 cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 text-[10px] font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50">
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50">
                     {uploadingImage ? "Uploading..." : "Upload File"}
                     <input
                       id="productImageUpload"
@@ -706,7 +706,7 @@ export default function AdminProductsPage() {
                 <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
                   <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <label htmlFor="galleryColor" className="mb-2 block text-xs font-bold text-gray-700 uppercase tracking-wide">
+                      <label htmlFor="galleryColor" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
                         Gallery Color
                       </label>
                       <input
@@ -764,7 +764,7 @@ export default function AdminProductsPage() {
                                 </div>
                               )}
                               {image.isPrimary && (
-                                <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-green-700 shadow-sm">
+                                <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-medium tracking-wide text-green-700 shadow-sm">
                                   <CheckCircle2 className="h-3 w-3" />
                                   Primary
                                 </span>
@@ -772,7 +772,7 @@ export default function AdminProductsPage() {
                             </div>
                             <div className="space-y-2 p-2">
                               <div className="flex items-center justify-between gap-2">
-                                <span className="truncate text-[10px] font-bold uppercase tracking-wide text-gray-600">
+                                <span className="truncate text-xs font-medium tracking-wide text-gray-600">
                                   {image.color || "Default"}
                                 </span>
                                 {image.isPrimary && <CheckCircle2 className="h-3.5 w-3.5 text-green-700" />}
@@ -815,14 +815,14 @@ export default function AdminProductsPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <LoadingButton
                   type="submit"
                   loading={saving}
-                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {editingProduct ? "Update Product" : "Create Product"}
                 </LoadingButton>
@@ -880,7 +880,7 @@ function ProductImageSummary({ product }: { product: Product }) {
           <CheckCircle2 className="h-3.5 w-3.5" />
           {galleryCount} {galleryCount === 1 ? "image" : "images"}
         </span>
-        <p className="text-[10px] font-medium text-gray-500">
+        <p className="text-xs font-medium text-gray-500">
           {primaryImage ? "Primary selected" : "First image shown"}
         </p>
       </div>
@@ -893,7 +893,7 @@ function ProductImageSummary({ product }: { product: Product }) {
         <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
           Cover set
         </span>
-        <p className="text-[10px] font-medium text-gray-500">Legacy fallback</p>
+        <p className="text-xs font-medium text-gray-500">Legacy fallback</p>
       </div>
     );
   }

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { AppError } from "../utils/AppError.js";
 import { orderRepository } from "../repositories/orderRepository.js";
 import { notificationService } from "./notificationService.js";
+import { logger } from "../utils/logger.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy");
 
@@ -21,13 +22,24 @@ const buildCheckoutCallbackUrl = (orderId) => {
   return callbackUrl.toString();
 };
 
-const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount }) => {
+const signaturesMatch = (expectedHex, receivedHex) => {
+  if (typeof receivedHex !== "string") return false;
+  const expected = Buffer.from(expectedHex, "hex");
+  const received = Buffer.from(receivedHex, "hex");
+  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
+};
+
+const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount, expectedUserId, paymentReference }) => {
   if (!orderId) {
     throw new AppError("Payment metadata missing order ID", 400);
   }
 
   const order = await orderRepository.findOrderById(orderId);
   if (!order) {
+    throw new AppError("Order not found", 404);
+  }
+
+  if (expectedUserId && order.userId !== expectedUserId) {
     throw new AppError("Order not found", 404);
   }
 
@@ -39,21 +51,52 @@ const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount }) => {
     return { orderId, status: "PAID", alreadyProcessed: true };
   }
 
-  if (order.status !== "PENDING") {
-    throw new AppError("Order is not payable", 400);
-  }
-
   const actualAmount = Number(paidAmount);
   const expectedAmount = toMinorUnit(order.total);
+
+  // Money was taken but can't be applied to the order (it expired/was cancelled, or the amount
+  // is wrong). Acknowledge the event so the provider stops retrying, and alert staff to refund.
+  const flagForRefund = async (status, reason = "NOT_PAYABLE") => {
+    logger.error("Payment could not be applied to order; refund required", {
+      orderId,
+      gateway,
+      status,
+      reason,
+      amount: actualAmount,
+      expectedAmount,
+    });
+    try {
+      await notificationService.notifyRefundRequired({
+        orderId,
+        gateway,
+        amountMinor: actualAmount,
+        reason,
+        status,
+      });
+    } catch (err) {
+      logger.error("Failed to notify staff about required refund", { orderId, error: err.message });
+    }
+    return { orderId, status, requiresRefund: true };
+  };
+
   if (!Number.isFinite(actualAmount) || actualAmount !== expectedAmount) {
-    throw new AppError("Payment amount does not match order total", 400);
+    return flagForRefund(order.status, "AMOUNT_MISMATCH");
   }
 
-  const paidOrder = await orderRepository.updateOrderStatus(orderId, "PAID");
-  await notificationService.notifyPaymentReceived({
-    ...order,
-    ...paidOrder,
-  });
+  if (order.status !== "PENDING") {
+    return flagForRefund(order.status);
+  }
+
+  const transitioned = await orderRepository.markPaidIfPending(orderId, paymentReference);
+  if (!transitioned) {
+    const latest = await orderRepository.findOrderById(orderId);
+    if (latest?.status === "PAID") {
+      return { orderId, status: "PAID", alreadyProcessed: true };
+    }
+    return flagForRefund(latest?.status || "UNKNOWN");
+  }
+
+  await notificationService.notifyPaymentReceived({ ...order, status: "PAID" });
   return { orderId, status: "PAID" };
 };
 
@@ -153,6 +196,7 @@ export const paymentService = {
         orderId,
         gateway: "STRIPE",
         paidAmount: paymentIntent.amount_received ?? paymentIntent.amount,
+        paymentReference: paymentIntent.id,
       });
     }
 
@@ -173,7 +217,7 @@ export const paymentService = {
       .update(rawStringBody)
       .digest("hex");
 
-    if (hash !== signature) {
+    if (!signaturesMatch(hash, signature)) {
       throw new AppError("Paystack Webhook Signature Verification Failed", 400);
     }
 
@@ -184,6 +228,7 @@ export const paymentService = {
         orderId,
         gateway: "PAYSTACK",
         paidAmount: body.data.amount,
+        paymentReference: body.data.reference,
       });
     }
 
@@ -194,7 +239,7 @@ export const paymentService = {
    * Synchronously verify a Paystack transaction by reference
    * @param {string} reference - The Paystack transaction reference
    */
-  async verifyPaystackTransaction(reference) {
+  async verifyPaystackTransaction(reference, userId) {
     if (!reference) {
       throw new AppError("Transaction reference is required", 400);
     }
@@ -220,12 +265,14 @@ export const paymentService = {
           orderId,
           gateway: "PAYSTACK",
           paidAmount: data.amount,
+          expectedUserId: userId,
+          paymentReference: data.reference || reference,
         });
       }
 
       return null;
     } catch (error) {
-      console.error("Paystack synchronous verification error:", error.response?.data || error.message);
+      logger.warn("Paystack verification did not complete", { error: error.response?.data?.message || error.message });
       return null; // Return null instead of throwing to allow polling to continue
     }
   },

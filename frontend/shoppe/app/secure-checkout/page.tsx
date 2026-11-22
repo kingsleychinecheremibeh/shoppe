@@ -35,13 +35,13 @@ const checkoutDetails = [
 
 export default function SecureCheckoutPage() {
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
+    <main className="min-h-screen bg-white py-12 sm:py-16">
       <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">
+        <div>
+          <p className="text-sm font-medium text-brand">
             Customer Protection
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
             Secure Checkout
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-gray-600">

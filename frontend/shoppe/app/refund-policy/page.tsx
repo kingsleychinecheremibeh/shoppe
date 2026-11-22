@@ -7,13 +7,13 @@ export const metadata = {
 
 export default function RefundPolicyPage() {
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
+    <main className="min-h-screen bg-white py-12 sm:py-16">
       <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 sm:p-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">
+        <div>
+          <p className="text-sm font-medium text-brand">
             Customer Care
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
             Refund and Return Policy
           </h1>
 
@@ -25,7 +25,7 @@ export default function RefundPolicyPage() {
             </p>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">
+              <h2 className="text-base font-semibold text-gray-950">
                 Return Conditions
               </h2>
               <p className="mt-2">
@@ -36,7 +36,7 @@ export default function RefundPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">
+              <h2 className="text-base font-semibold text-gray-950">
                 Damaged or Wrong Items
               </h2>
               <p className="mt-2">
@@ -46,7 +46,7 @@ export default function RefundPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">Refunds</h2>
+              <h2 className="text-base font-semibold text-gray-950">Refunds</h2>
               <p className="mt-2">
                 Approved refunds are processed within{" "}
                 {storeConfig.refundProcessingDays}. Refund timing may also
@@ -55,7 +55,7 @@ export default function RefundPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-base font-bold text-gray-950">
+              <h2 className="text-base font-semibold text-gray-950">
                 Start a Return
               </h2>
               <p className="mt-2">

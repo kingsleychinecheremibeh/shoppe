@@ -2,10 +2,10 @@ import { jest } from "@jest/globals";
 import express from 'express';
 import request from 'supertest';
 
-const protect = (req, res, next) => {
+const protect = jest.fn((req, res, next) => {
   req.user = { id: 'user-1', role: req.headers['x-role'] || 'USER' };
   next();
-};
+});
 const adminOnly = (req, res, next) => {
   if (req.user?.role === 'ADMIN') return next();
   return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -28,6 +28,8 @@ const authHandlers = {
   refreshAccessToken: jest.fn((req, res) => res.json({ handler: 'refreshAccessToken' })),
   getCurrentUser: jest.fn((req, res) => res.json({ handler: 'getCurrentUser' })),
   logoutUser: jest.fn((req, res) => res.json({ handler: 'logoutUser' })),
+  forgotPassword: jest.fn((req, res) => res.json({ handler: 'forgotPassword' })),
+  resetPassword: jest.fn((req, res) => res.json({ handler: 'resetPassword' })),
 };
 const cartHandlers = {
   getCart: jest.fn((req, res) => res.json({ handler: 'getCart' })),
@@ -105,6 +107,19 @@ describe('remaining routes', () => {
     expect((await request(app).post('/auth/refresh-token')).body).toEqual({ handler: 'refreshAccessToken' });
     expect((await request(app).post('/auth/logout')).body).toEqual({ handler: 'logoutUser' });
     expect((await request(app).get('/auth/me')).body).toEqual({ handler: 'getCurrentUser' });
+    expect((await request(app).post('/auth/forgot-password').send({ email: 'ada@example.com' })).body).toEqual({ handler: 'forgotPassword' });
+    expect((await request(app).post('/auth/reset-password').send({ token: 'a'.repeat(64), password: 'secret12' })).body).toEqual({ handler: 'resetPassword' });
+  });
+
+  test('logout does not require a valid access token', async () => {
+    protect.mockClear();
+    await request(app).post('/auth/logout');
+    expect(protect).not.toHaveBeenCalled();
+  });
+
+  test('password reset routes validate their input', async () => {
+    expect((await request(app).post('/auth/forgot-password').send({ email: 'nope' })).status).toBe(400);
+    expect((await request(app).post('/auth/reset-password').send({ token: 'short', password: 'secret12' })).status).toBe(400);
   });
 
   test('cart routes call their handlers', async () => {
