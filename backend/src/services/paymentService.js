@@ -29,7 +29,7 @@ const signaturesMatch = (expectedHex, receivedHex) => {
   return expected.length === received.length && crypto.timingSafeEqual(expected, received);
 };
 
-const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount, expectedUserId }) => {
+const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount, expectedUserId, paymentReference }) => {
   if (!orderId) {
     throw new AppError("Payment metadata missing order ID", 400);
   }
@@ -87,7 +87,7 @@ const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount, expected
     return flagForRefund(order.status);
   }
 
-  const transitioned = await orderRepository.markPaidIfPending(orderId);
+  const transitioned = await orderRepository.markPaidIfPending(orderId, paymentReference);
   if (!transitioned) {
     const latest = await orderRepository.findOrderById(orderId);
     if (latest?.status === "PAID") {
@@ -196,6 +196,7 @@ export const paymentService = {
         orderId,
         gateway: "STRIPE",
         paidAmount: paymentIntent.amount_received ?? paymentIntent.amount,
+        paymentReference: paymentIntent.id,
       });
     }
 
@@ -227,6 +228,7 @@ export const paymentService = {
         orderId,
         gateway: "PAYSTACK",
         paidAmount: body.data.amount,
+        paymentReference: body.data.reference,
       });
     }
 
@@ -264,6 +266,7 @@ export const paymentService = {
           gateway: "PAYSTACK",
           paidAmount: data.amount,
           expectedUserId: userId,
+          paymentReference: data.reference || reference,
         });
       }
 
