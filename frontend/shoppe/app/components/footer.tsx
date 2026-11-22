@@ -52,9 +52,10 @@ export function Footer() {
 
   return (
     <footer className="mt-auto overflow-hidden bg-ink text-paper">
-      <div className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 border-b border-white/15 pb-12 md:grid-cols-12">
-          <div className="space-y-5 md:col-span-4">
+      <div className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 sm:pt-14 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 border-b border-white/15 pb-10 md:grid-cols-12 md:pb-12">
+          {/* Brand + contact */}
+          <div className="space-y-5 md:col-span-5 lg:col-span-4">
             <Link href="/" className="inline-flex items-center gap-3" aria-label={`${storeConfig.storeName} home`}>
               <LogoMark size={48} tone="dark" />
             </Link>
@@ -62,12 +63,12 @@ export function Footer() {
               Everyday tech, fashion, beauty and home, delivered across Nigeria in {storeConfig.deliveryTime}.
             </p>
             <div className="flex flex-col gap-2 text-[15px]">
-              <a href={`mailto:${storeConfig.supportEmail}`} className="inline-flex items-center gap-2.5 text-paper hover:text-sun">
-                <HugeiconsIcon icon={Mail01Icon} size={22} strokeWidth={1.6} />
+              <a href={`mailto:${storeConfig.supportEmail}`} className="inline-flex items-center gap-2.5 break-all text-paper hover:text-sun">
+                <HugeiconsIcon icon={Mail01Icon} size={22} strokeWidth={1.6} className="shrink-0" />
                 {storeConfig.supportEmail}
               </a>
               <a href={`tel:${storeConfig.supportPhone}`} className="inline-flex items-center gap-2.5 text-paper hover:text-sun">
-                <HugeiconsIcon icon={Call02Icon} size={22} strokeWidth={1.6} />
+                <HugeiconsIcon icon={Call02Icon} size={22} strokeWidth={1.6} className="shrink-0" />
                 {storeConfig.supportPhone}
               </a>
             </div>
@@ -89,25 +90,30 @@ export function Footer() {
             )}
           </div>
 
-          {columns.map((column) => (
-            <div key={column.title} className="space-y-4 md:col-span-2 md:col-start-auto">
-              <h3 className="font-mono text-xs font-semibold tracking-wider text-sun uppercase">{column.title}</h3>
-              <nav className="flex flex-col gap-2.5">
-                {column.links.map((link) => (
-                  <Link key={link.href} href={link.href} className="text-[15px] text-paper transition hover:text-sun">
-                    {link.label}
-                  </Link>
-                ))}
+          {/* Link groups: side by side on phones, three columns on larger screens */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 md:col-span-7 lg:col-span-7 lg:col-start-6">
+            {columns.map((column) => (
+              <nav key={column.title} aria-label={column.title} className="space-y-3">
+                <h3 className="font-mono text-xs font-semibold tracking-wider text-sun uppercase">{column.title}</h3>
+                <ul className="flex flex-col gap-2">
+                  {column.links.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="inline-block py-0.5 text-[15px] text-paper transition hover:text-sun">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </nav>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-col items-start justify-between gap-4 py-6 text-sm text-gray-300 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 py-6 text-sm text-gray-300 sm:flex-row sm:items-center sm:justify-between">
           <p>
             &copy; {currentYear} {storeConfig.storeName}. All rights reserved.
           </p>
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link href="/terms" className="hover:text-paper">Terms</Link>
             <Link href="/privacy-policy" className="hover:text-paper">Privacy</Link>
             <Link href="/refund-policy" className="hover:text-paper">Refund policy</Link>
@@ -117,7 +123,7 @@ export function Footer() {
 
       <div
         aria-hidden="true"
-        className="mx-auto max-w-7xl px-4 font-display text-[28vw] leading-[0.74] font-extrabold tracking-[-0.06em] text-sun select-none sm:px-6 lg:px-8 lg:text-[19rem]"
+        className="mx-auto max-w-7xl px-4 font-display text-[28vw] leading-[0.74] font-extrabold tracking-[-0.06em] text-sun select-none sm:px-6 lg:px-8 lg:text-[22rem]"
       >
         shoppe
       </div>
