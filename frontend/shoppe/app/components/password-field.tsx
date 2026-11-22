@@ -1,25 +1,22 @@
 "use client";
 
 import { InputHTMLAttributes, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ViewIcon, ViewOffSlashIcon } from "@hugeicons/core-free-icons";
+import { ui } from "@/lib/ui";
 
 type PasswordFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   error?: string;
 };
 
-export function PasswordField({
-  label,
-  error,
-  className = "",
-  id,
-  ...props
-}: PasswordFieldProps) {
+export function PasswordField({ label, error, className = "", id, ...props }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
+  const errorId = error && id ? `${id}-error` : undefined;
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-gray-700">
+      <label htmlFor={id} className={ui.label}>
         {label}
       </label>
       <div className="relative">
@@ -27,19 +24,26 @@ export function PasswordField({
           {...props}
           id={id}
           type={visible ? "text" : "password"}
-          className={`h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-12 text-sm text-gray-950 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10 ${className}`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={errorId}
+          className={`${ui.input} pr-14 ${className}`}
         />
         <button
           type="button"
           onClick={() => setVisible((current) => !current)}
-          className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-950"
+          className="absolute top-1/2 right-1.5 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-ink transition hover:bg-gray-100"
           aria-label={visible ? "Hide password" : "Show password"}
+          aria-pressed={visible}
           title={visible ? "Hide password" : "Show password"}
         >
-          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          <HugeiconsIcon icon={visible ? ViewOffSlashIcon : ViewIcon} size={22} strokeWidth={1.6} />
         </button>
       </div>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && (
+        <p id={errorId} className={ui.fieldError}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

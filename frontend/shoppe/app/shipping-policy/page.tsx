@@ -7,25 +7,25 @@ export const metadata = {
 
 export default function ShippingPolicyPage() {
   return (
-    <main className="min-h-screen bg-white py-12 sm:py-16">
+    <main className="min-h-screen py-12 sm:py-16">
       <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div>
-          <p className="text-sm font-medium text-brand">
+          <p className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1.5 font-mono text-xs font-semibold tracking-wide uppercase">
             Delivery
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+          <h1 className="mt-4 text-5xl leading-none font-extrabold tracking-[-0.045em] text-ink sm:text-6xl">
             Shipping Policy
           </h1>
 
-          <div className="mt-8 space-y-6 text-sm leading-7 text-gray-600">
+          <div className="mt-10 space-y-4 text-[15px] leading-7 text-gray-700">
             <p>
               {storeConfig.storeName} delivers to selected locations in{" "}
               {storeConfig.country}. Estimated delivery time is{" "}
               {storeConfig.deliveryTime}.
             </p>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 Delivery Areas
               </h2>
               <p className="mt-2">
@@ -34,8 +34,8 @@ export default function ShippingPolicyPage() {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 Delivery Fees
               </h2>
               <p className="mt-2">
@@ -43,8 +43,8 @@ export default function ShippingPolicyPage() {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-base font-semibold text-gray-950">
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">
                 Failed Delivery
               </h2>
               <p className="mt-2">

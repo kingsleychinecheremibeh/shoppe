@@ -2,23 +2,39 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  ChevronDown,
-  Code2,
-  Grid3X3,
-  LayoutDashboard,
-  Bell,
-  LogIn,
-  LogOut,
-  Menu,
-  Search,
-  ShoppingBag,
-  ShoppingCart,
-  User,
-  X,
-} from "lucide-react";
+  ArrowDown01Icon,
+  Cancel01Icon,
+  DashboardSquare02Icon,
+  GridViewIcon,
+  Login03Icon,
+  Logout03Icon,
+  Menu01Icon,
+  Notification03Icon,
+  Search01Icon,
+  ShoppingCart01Icon,
+  SourceCodeIcon,
+  Store01Icon,
+  UserIcon,
+} from "@hugeicons/core-free-icons";
 import { SyntheticEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { api, getAssetUrl } from "@/lib/api";
+import { api } from "@/lib/api";
+import { getCategoryTheme } from "@/lib/category-colors";
+import { storeConfig } from "@/lib/store-config";
+import { Logo } from "@/app/components/logo";
+import { CART_UPDATED_EVENT, openCart } from "@/lib/cart-events";
+
+const stripItems = [
+  `Delivery across Nigeria in ${storeConfig.deliveryTime}`,
+  "Pay with card, bank transfer or USSD",
+  `Returns within ${storeConfig.returnWindowDays} days`,
+];
+
+const iconButton =
+  "relative flex h-11 w-11 items-center justify-center rounded-lg border-[1.5px] border-ink bg-white text-ink transition hover:bg-sun";
+const menuPanel =
+  "absolute right-0 mt-3 overflow-hidden rounded-lg border-[1.5px] border-ink bg-white shadow-sticker";
 
 type UserData = {
   id: string;
@@ -61,7 +77,7 @@ type Notification = {
 
 const primaryNavLinks = [
   { href: "/products", label: "Shop" },
-  { href: "/products?sort=newest", label: "New Arrivals" },
+  { href: "/products?sort=newest", label: "New in" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
@@ -193,9 +209,9 @@ export function Header() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      window.addEventListener("cart-updated", fetchCart);
+      window.addEventListener(CART_UPDATED_EVENT, fetchCart);
       return () => {
-        window.removeEventListener("cart-updated", fetchCart);
+        window.removeEventListener(CART_UPDATED_EVENT, fetchCart);
       };
     }
   }, [fetchCart]);
@@ -268,430 +284,410 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md transition-all duration-300">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
-          
-          {/* Logo */}
-          <Link
-            href={isAdminRoute ? staffLandingPath : "/"}
-            className="flex shrink-0 items-center gap-2 text-lg font-semibold tracking-tight text-gray-950 transition hover:opacity-80"
-            onClick={closeMenus}
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
-              <ShoppingBag className="h-4.5 w-4.5" />
-            </span>
-            Shoppe
-          </Link>
+    <header className="sticky top-0 z-50 bg-paper">
+      {showStorefrontTools && (
+        <div className="overflow-hidden border-b-[1.5px] border-ink bg-sun" aria-label="Store information">
+          <div className="marquee gap-10 py-2 font-mono text-xs font-semibold tracking-wide uppercase">
+            {[0, 1].map((copy) => (
+              <div key={copy} className="flex shrink-0 gap-10 pr-10" aria-hidden={copy === 1}>
+                {[...stripItems, ...stripItems].map((item, index) => (
+                  <span key={`${copy}-${index}`} className="flex items-center gap-10 whitespace-nowrap">
+                    {item}
+                    <span aria-hidden="true">·</span>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden items-center gap-6 lg:flex">
-            {/* Categories Dropdown (Jumia-style) */}
-            {showStorefrontTools && categories.length > 0 && (
-              <div
-                className="relative"
-                onMouseEnter={() => setCategoriesOpen(true)}
-                onMouseLeave={() => setCategoriesOpen(false)}
-              >
-                <button
-                  type="button"
-                  onClick={() => setCategoriesOpen((o) => !o)}
-                  className={`relative flex items-center gap-1 py-1 text-sm font-medium transition duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-brand after:transition-all hover:after:w-full ${
-                    categoriesOpen || pathname.startsWith("/category")
-                      ? "text-gray-950 after:w-full"
-                      : "text-gray-600 hover:text-gray-950"
-                  }`}
+      <div className="border-b-[1.5px] border-ink">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-[76px] items-center justify-between gap-4 lg:gap-8">
+            <Link
+              href={isAdminRoute ? staffLandingPath : "/"}
+              className="flex shrink-0 items-center transition hover:opacity-90"
+              aria-label={`${storeConfig.storeName} home`}
+              onClick={closeMenus}
+            >
+              <Logo size={46} wordmarkClassName="hidden min-[420px]:inline" />
+            </Link>
+
+            <nav className="hidden items-center gap-7 lg:flex" aria-label="Main">
+              {showStorefrontTools && categories.length > 0 && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => setCategoriesOpen(true)}
+                  onMouseLeave={() => setCategoriesOpen(false)}
                 >
-                  Categories
-                  <ChevronDown
-                    className={`h-3 w-3 transition-transform duration-200 ${
-                      categoriesOpen ? "rotate-180" : ""
+                  <button
+                    type="button"
+                    onClick={() => setCategoriesOpen((o) => !o)}
+                    aria-expanded={categoriesOpen}
+                    className={`flex items-center gap-1 py-2 text-[15px] font-medium transition ${
+                      categoriesOpen || pathname.startsWith("/category") ? "text-ink underline decoration-2 underline-offset-8" : "text-gray-700 hover:text-ink"
                     }`}
-                  />
-                </button>
+                  >
+                    Categories
+                    <HugeiconsIcon
+                      icon={ArrowDown01Icon}
+                      size={18}
+                      strokeWidth={1.8}
+                      className={`transition-transform duration-200 ${categoriesOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
 
-                {categoriesOpen && (
-                  <div className="absolute left-0 top-full pt-3 z-50">
-                    <div className="w-64 overflow-hidden rounded-xl border border-gray-200/80 bg-white/95 backdrop-blur-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="max-h-80 overflow-y-auto overscroll-contain">
-                        {categories.map((cat) => {
-                          const imgUrl = getAssetUrl(cat.image);
-                          return (
-                            <Link
-                              key={cat.id}
-                              href={`/category/${cat.slug}`}
-                              className="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 hover:text-gray-950 group"
-                              onClick={closeMenus}
-                            >
-                              {imgUrl ? (
-                                <div
-                                  className="h-8 w-8 shrink-0 rounded-lg bg-gray-100 bg-cover bg-center border border-gray-200/50 group-hover:border-gray-300 transition"
-                                  style={{ backgroundImage: `url("${imgUrl}")` }}
-                                />
-                              ) : (
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200/50 text-gray-400 group-hover:bg-gray-100 group-hover:text-gray-600 transition">
-                                  <Grid3X3 className="h-3.5 w-3.5" />
-                                </div>
-                              )}
-                              <span className="truncate">{cat.name}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                      <div className="border-t border-gray-100">
+                  {categoriesOpen && (
+                    <div className="absolute left-0 top-full z-50 pt-3">
+                      <div className="w-72 overflow-hidden rounded-lg border-[1.5px] border-ink bg-white shadow-sticker">
+                        <div className="max-h-96 overflow-y-auto overscroll-contain p-2">
+                          {categories.map((cat) => {
+                            const theme = getCategoryTheme(cat);
+                            return (
+                              <Link
+                                key={cat.id}
+                                href={`/category/${cat.slug}`}
+                                className="flex items-center gap-3 rounded-md px-2 py-2 text-[15px] font-medium text-ink transition hover:bg-gray-100"
+                                onClick={closeMenus}
+                              >
+                                <span
+                                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border-[1.5px] border-ink"
+                                  style={{ background: theme.solid, color: theme.onSolid }}
+                                >
+                                  <HugeiconsIcon icon={theme.icon} size={24} strokeWidth={1.5} />
+                                </span>
+                                <span className="truncate">{cat.name}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
                         <Link
                           href="/categories"
-                          className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium text-gray-500 transition hover:bg-gray-50 hover:text-gray-950"
+                          className="flex items-center justify-center gap-2 border-t-[1.5px] border-ink px-4 py-3 text-sm font-semibold text-ink transition hover:bg-sun"
                           onClick={closeMenus}
                         >
-                          View All Categories
+                          <HugeiconsIcon icon={GridViewIcon} size={20} strokeWidth={1.6} />
+                          All categories
                         </Link>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {navLinks.map((link) => {
-              const active =
-                pathname === link.href ||
-                (link.href !== "/admin" && pathname.startsWith(link.href));
-
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative py-1 text-sm font-medium transition duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1.5px] after:w-0 after:bg-brand after:transition-all hover:after:w-full ${
-                    active ? "text-gray-950 after:w-full" : "text-gray-600 hover:text-gray-950"
-                  }`}
-                  onClick={closeMenus}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Search form in Header */}
-          {showStorefrontTools ? (
-            <form onSubmit={handleSearch} className="hidden min-w-0 max-w-xs flex-1 md:block">
-              <label htmlFor="desktopProductSearch" className="relative block">
-                <span className="sr-only">Search products</span>
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-                <input
-                  id="desktopProductSearch"
-                  name="productSearch"
-                  type="search"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search products..."
-                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50/50 pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-brand/10"
-                />
-              </label>
-            </form>
-          ) : (
-            <div className="hidden min-w-0 max-w-xs flex-1 md:block" />
-          )}
-
-          {/* Action Tools */}
-          <div className="flex shrink-0 items-center gap-1.5">
-            
-            {isStaff && !isAdminRoute && (
-              <Link
-                href={staffLandingPath}
-                className="hidden h-9 items-center gap-1.5 rounded-lg bg-gray-950 px-3.5 text-xs font-medium text-white shadow-xs transition hover:bg-gray-800 lg:inline-flex"
-                onClick={closeMenus}
-              >
-                <LayoutDashboard className="h-3.5 w-3.5" />
-                Dashboard
-              </Link>
-            )}
-
-            {user && (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNotificationsOpen((open) => !open);
-                    setAccountOpen(false);
-                    setMobileOpen(false);
-                  }}
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 ${
-                    notificationsOpen ? "bg-gray-50 text-gray-950" : ""
-                  }`}
-                  aria-label="Notifications"
-                  aria-expanded={notificationsOpen}
-                >
-                  <Bell className="h-4.5 w-4.5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white border-2 border-white">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {notificationsOpen && (
-                  <div className="absolute right-0 mt-3.5 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-3 duration-200">
-                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                      <p className="text-sm font-semibold text-gray-950">Notifications</p>
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={handleMarkAllNotificationsRead}
-                          className="text-xs font-medium text-gray-500 hover:text-gray-950"
-                        >
-                          Mark read
-                        </button>
-                      )}
-                    </div>
-                    <div className="max-h-80 overflow-y-auto">
-                      {notifications.length ? (
-                        notifications.map((notification) => {
-                          const href = getNotificationHref(notification);
-                          const className = `block border-b border-gray-50 px-4 py-3 text-left last:border-b-0 ${
-                              notification.readAt ? "bg-white" : "bg-gray-50/70"
-                            } ${href ? "transition hover:bg-gray-100" : ""}`;
-
-                          const content = (
-                            <>
-                              <p className="text-xs font-bold text-gray-950">{notification.title}</p>
-                              <p className="mt-1 text-xs font-medium leading-relaxed text-gray-600">
-                                {notification.message}
-                              </p>
-                            </>
-                          );
-
-                          return href ? (
-                            <Link
-                              key={notification.id}
-                              href={href}
-                              className={className}
-                              onClick={() => void handleNotificationClick(notification)}
-                            >
-                              {content}
-                            </Link>
-                          ) : (
-                            <button
-                              key={notification.id}
-                              type="button"
-                              className={`w-full ${className}`}
-                              onClick={() => void handleNotificationClick(notification)}
-                            >
-                              {content}
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <p className="px-4 py-6 text-center text-xs font-semibold text-gray-500">
-                          No notifications yet.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {isAdminRoute && (
-              <Link
-                href="/"
-                className="hidden h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-xs font-medium text-gray-700 shadow-xs transition hover:bg-gray-50 hover:text-gray-950 sm:inline-flex"
-                onClick={closeMenus}
-              >
-                <ShoppingBag className="h-3.5 w-3.5" />
-                View Store
-              </Link>
-            )}
-
-            {showStorefrontTools && (
-              <Link
-                href="/cart"
-                className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950"
-                aria-label="Cart"
-                onClick={closeMenus}
-              >
-                <ShoppingCart className="h-4.5 w-4.5" />
-                {cartCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white border-2 border-white">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountOpen((open) => !open)
-                  setMobileOpen(false);
-                }}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 ${
-                  accountOpen ? "bg-gray-50 text-gray-950" : ""
-                }`}
-                aria-label="Account menu"
-                aria-expanded={accountOpen}
-              >
-                <User className="h-4.5 w-4.5" />
-              </button>
-
-              {accountOpen && (
-                <div className="absolute right-0 mt-3.5 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl py-1.5 animate-in fade-in slide-in-from-top-3 duration-200">
-                  {user ? (
-                    <>
-                      <div className="border-b border-gray-100 px-4 py-3">
-                        <p className="truncate text-xs font-bold text-gray-950">
-                          {user.name}
-                        </p>
-                        <p className="truncate text-xs text-gray-600 font-medium mt-0.5">
-                          {user.email}
-                        </p>
-                      </div>
-                      <Link
-                        href="/account"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                        onClick={closeMenus}
-                      >
-                        My Account
-                      </Link>
-                      <Link
-                        href="/account/orders"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                        onClick={closeMenus}
-                      >
-                        Orders List
-                      </Link>
-                      <div className="border-t border-gray-100 my-1" />
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition"
-                      >
-                        <LogOut className="h-3.5 w-3.5" />
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        href="/login"
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                        onClick={closeMenus}
-                      >
-                        <LogIn className="h-3.5 w-3.5" />
-                        Login
-                      </Link>
-                      <Link
-                        href="/register"
-                        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                        onClick={closeMenus}
-                      >
-                        Create Account
-                      </Link>
-                    </>
                   )}
                 </div>
               )}
-            </div>
 
-            {/* Mobile Menu Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                setMobileOpen((open) => !open)
-                  setAccountOpen(false);
-                  setNotificationsOpen(false);
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 lg:hidden"
-              aria-label="Menu"
-              aria-expanded={mobileOpen}
-            >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+              {navLinks.map((link) => {
+                const active =
+                  pathname === link.href ||
+                  (link.href !== "/admin" && pathname.startsWith(link.href));
 
-          </div>
-        </div>
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`py-2 text-[15px] font-medium transition ${
+                      active ? "text-ink underline decoration-2 underline-offset-8" : "text-gray-700 hover:text-ink"
+                    }`}
+                    onClick={closeMenus}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-        {/* Mobile Slideout Navigation */}
-        {mobileOpen && (
-          <div className="border-t border-gray-100 py-6 lg:hidden animate-in slide-in-from-top duration-300">
-            {showStorefrontTools && (
-              <form onSubmit={handleSearch} className="mb-6">
-                <label htmlFor="mobileProductSearch" className="relative block">
+            {showStorefrontTools ? (
+              <form onSubmit={handleSearch} className="hidden min-w-0 max-w-sm flex-1 md:block" role="search">
+                <label htmlFor="desktopProductSearch" className="flex h-12 items-center gap-2.5 rounded-lg border-[1.5px] border-ink bg-white px-3.5 focus-within:shadow-sticker-sm">
                   <span className="sr-only">Search products</span>
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                  <HugeiconsIcon icon={Search01Icon} size={24} strokeWidth={1.6} className="shrink-0 text-ink" />
                   <input
-                    id="mobileProductSearch"
+                    id="desktopProductSearch"
                     name="productSearch"
                     type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search products..."
-                    className="h-11 w-full rounded-full border border-gray-200 bg-gray-50/50 pl-10 pr-4 text-xs font-medium text-gray-950 outline-none focus:border-gray-950 focus:bg-white"
+                    placeholder="Search sneakers, perfume, headphones…"
+                    className="w-full min-w-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-gray-500"
                   />
                 </label>
               </form>
+            ) : (
+              <div className="hidden min-w-0 max-w-sm flex-1 md:block" />
             )}
 
-            <nav className="grid gap-2">
-              {/* Jumia-style: single Browse Categories link on mobile */}
-              {showStorefrontTools && categories.length > 0 && (
-                <Link
-                  href="/categories"
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                  onClick={closeMenus}
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                  Browse Categories
-                </Link>
-              )}
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
-                  onClick={closeMenus}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <div className="flex shrink-0 items-center gap-2">
               {isStaff && !isAdminRoute && (
                 <Link
                   href={staffLandingPath}
-                  className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="hidden h-11 items-center gap-2 rounded-lg border-[1.5px] border-ink bg-white px-3.5 text-sm font-semibold text-ink transition hover:bg-sun xl:inline-flex"
                   onClick={closeMenus}
                 >
+                  <HugeiconsIcon icon={DashboardSquare02Icon} size={22} strokeWidth={1.6} />
                   Dashboard
                 </Link>
               )}
+
               {isAdminRoute && (
                 <Link
                   href="/"
-                  className="rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-950 transition"
+                  className="hidden h-11 items-center gap-2 rounded-lg border-[1.5px] border-ink bg-white px-3.5 text-sm font-semibold text-ink transition hover:bg-sun sm:inline-flex"
                   onClick={closeMenus}
                 >
-                  View Store
+                  <HugeiconsIcon icon={Store01Icon} size={22} strokeWidth={1.6} />
+                  View store
                 </Link>
               )}
-            </nav>
 
-            {/* Developer Signature */}
-            <div className="mt-6 border-t border-gray-100 pt-6">
-              <a
-                href="mailto:codewithneche@gmail.com?subject=I%20want%20a%20website%20like%20this"
-                className="flex items-center gap-2.5 rounded-lg px-4 py-3 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-950 transition group"
-                onClick={closeMenus}
+              {user && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotificationsOpen((open) => !open);
+                      setAccountOpen(false);
+                      setMobileOpen(false);
+                    }}
+                    className={`${iconButton} ${notificationsOpen ? "bg-sun" : ""}`}
+                    aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+                    aria-expanded={notificationsOpen}
+                  >
+                    <HugeiconsIcon icon={Notification03Icon} size={24} strokeWidth={1.6} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-md border-[1.5px] border-ink bg-pink px-1 font-mono text-[11px] font-semibold text-ink">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {notificationsOpen && (
+                    <div className={`${menuPanel} w-80`}>
+                      <div className="flex items-center justify-between border-b-[1.5px] border-ink px-4 py-3">
+                        <p className="font-display text-lg font-bold">Notifications</p>
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleMarkAllNotificationsRead}
+                            className="text-sm font-medium text-gray-600 underline-offset-4 hover:text-ink hover:underline"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifications.length ? (
+                          notifications.map((notification) => {
+                            const href = getNotificationHref(notification);
+                            const className = `block border-b border-gray-200 px-4 py-3 text-left last:border-b-0 ${
+                              notification.readAt ? "bg-white" : "bg-sun-soft"
+                            } ${href ? "transition hover:bg-gray-100" : ""}`;
+
+                            const content = (
+                              <>
+                                <p className="text-sm font-semibold text-ink">{notification.title}</p>
+                                <p className="mt-1 text-sm leading-relaxed text-gray-600">{notification.message}</p>
+                              </>
+                            );
+
+                            return href ? (
+                              <Link
+                                key={notification.id}
+                                href={href}
+                                className={className}
+                                onClick={() => void handleNotificationClick(notification)}
+                              >
+                                {content}
+                              </Link>
+                            ) : (
+                              <button
+                                key={notification.id}
+                                type="button"
+                                className={`w-full ${className}`}
+                                onClick={() => void handleNotificationClick(notification)}
+                              >
+                                {content}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <p className="px-4 py-8 text-center text-sm text-gray-600">No notifications yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAccountOpen((open) => !open);
+                    setMobileOpen(false);
+                    setNotificationsOpen(false);
+                  }}
+                  className={`${iconButton} ${accountOpen ? "bg-sun" : ""}`}
+                  aria-label="Account menu"
+                  aria-expanded={accountOpen}
+                >
+                  <HugeiconsIcon icon={UserIcon} size={24} strokeWidth={1.6} />
+                </button>
+
+                {accountOpen && (
+                  <div className={`${menuPanel} w-64 py-1.5`}>
+                    {user ? (
+                      <>
+                        <div className="border-b-[1.5px] border-ink px-4 py-3">
+                          <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+                          <p className="mt-0.5 truncate text-sm text-gray-600">{user.email}</p>
+                        </div>
+                        <Link href="/account" className="block px-4 py-2.5 text-[15px] text-ink transition hover:bg-gray-100" onClick={closeMenus}>
+                          My account
+                        </Link>
+                        <Link href="/account/orders" className="block px-4 py-2.5 text-[15px] text-ink transition hover:bg-gray-100" onClick={closeMenus}>
+                          My orders
+                        </Link>
+                        <div className="my-1 border-t border-gray-200" />
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[15px] text-danger transition hover:bg-red-50"
+                        >
+                          <HugeiconsIcon icon={Logout03Icon} size={22} strokeWidth={1.6} />
+                          Log out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/login" className="flex items-center gap-2.5 px-4 py-2.5 text-[15px] text-ink transition hover:bg-gray-100" onClick={closeMenus}>
+                          <HugeiconsIcon icon={Login03Icon} size={22} strokeWidth={1.6} />
+                          Log in
+                        </Link>
+                        <Link href="/register" className="block px-4 py-2.5 text-[15px] text-ink transition hover:bg-gray-100" onClick={closeMenus}>
+                          Create account
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {showStorefrontTools && (
+                <Link
+                  href="/cart"
+                  className="relative flex h-11 items-center gap-2 rounded-lg border-[1.5px] border-ink bg-ink pl-2.5 pr-3 text-paper transition hover:shadow-sticker-sm hover:-translate-x-px hover:-translate-y-px"
+                  aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
+                  onClick={(event) => {
+                    closeMenus();
+                    // Plain click opens the slide-out cart; modified clicks still open /cart normally.
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+                    event.preventDefault();
+                    openCart();
+                  }}
+                >
+                  <HugeiconsIcon icon={ShoppingCart01Icon} size={24} strokeWidth={1.6} />
+                  <span className="hidden text-sm font-semibold sm:inline">Cart</span>
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-md bg-sun px-1 font-mono text-xs font-semibold text-ink">
+                    {cartCount}
+                  </span>
+                </Link>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen((open) => !open);
+                  setAccountOpen(false);
+                  setNotificationsOpen(false);
+                }}
+                className={`${iconButton} lg:hidden ${mobileOpen ? "bg-sun" : ""}`}
+                aria-label="Menu"
+                aria-expanded={mobileOpen}
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-100 text-gray-500 group-hover:bg-brand group-hover:text-white transition">
-                  <Code2 className="h-3 w-3" />
-                </span>
-                Hire the Developer
-              </a>
+                <HugeiconsIcon icon={mobileOpen ? Cancel01Icon : Menu01Icon} size={24} strokeWidth={1.7} />
+              </button>
             </div>
           </div>
-        )}
+
+          {mobileOpen && (
+            <div className="border-t-[1.5px] border-ink py-5 lg:hidden">
+              {showStorefrontTools && (
+                <form onSubmit={handleSearch} className="mb-5" role="search">
+                  <label htmlFor="mobileProductSearch" className="flex h-12 items-center gap-2.5 rounded-lg border-[1.5px] border-ink bg-white px-3.5">
+                    <span className="sr-only">Search products</span>
+                    <HugeiconsIcon icon={Search01Icon} size={24} strokeWidth={1.6} className="shrink-0" />
+                    <input
+                      id="mobileProductSearch"
+                      name="productSearch"
+                      type="search"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search Shoppe"
+                      className="w-full min-w-0 bg-transparent text-base text-ink outline-none placeholder:text-gray-500"
+                    />
+                  </label>
+                </form>
+              )}
+
+              {showStorefrontTools && categories.length > 0 && (
+                <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {categories.slice(0, 6).map((cat) => {
+                    const theme = getCategoryTheme(cat);
+                    return (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${cat.slug}`}
+                        onClick={closeMenus}
+                        className="flex flex-col items-center gap-1.5 rounded-lg border-[1.5px] border-ink p-3 text-center text-xs font-semibold"
+                        style={{ background: theme.solid, color: theme.onSolid }}
+                      >
+                        <HugeiconsIcon icon={theme.icon} size={34} strokeWidth={1.4} />
+                        <span className="w-full truncate">{cat.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
+              <nav className="grid gap-1" aria-label="Mobile">
+                {showStorefrontTools && categories.length > 0 && (
+                  <Link href="/categories" className="flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-gray-100" onClick={closeMenus}>
+                    <HugeiconsIcon icon={GridViewIcon} size={24} strokeWidth={1.6} />
+                    All categories
+                  </Link>
+                )}
+                {navLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-gray-100" onClick={closeMenus}>
+                    {link.label}
+                  </Link>
+                ))}
+                {isStaff && !isAdminRoute && (
+                  <Link href={staffLandingPath} className="flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-gray-100" onClick={closeMenus}>
+                    <HugeiconsIcon icon={DashboardSquare02Icon} size={24} strokeWidth={1.6} />
+                    Dashboard
+                  </Link>
+                )}
+                {isAdminRoute && (
+                  <Link href="/" className="flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-gray-100" onClick={closeMenus}>
+                    <HugeiconsIcon icon={Store01Icon} size={24} strokeWidth={1.6} />
+                    View store
+                  </Link>
+                )}
+              </nav>
+
+              <div className="mt-5 border-t border-gray-200 pt-5">
+                <a
+                  href="mailto:codewithneche@gmail.com?subject=I%20want%20a%20website%20like%20this"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-ink"
+                  onClick={closeMenus}
+                >
+                  <HugeiconsIcon icon={SourceCodeIcon} size={22} strokeWidth={1.6} />
+                  Hire the developer
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

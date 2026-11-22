@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading03Icon } from "@hugeicons/core-free-icons";
 
 export default function CategoryRedirectPage() {
   const params = useParams();
@@ -17,8 +19,9 @@ export default function CategoryRedirectPage() {
   }, [slug, router]);
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-brand" />
+    <main className="flex min-h-screen items-center justify-center" aria-busy="true">
+      <HugeiconsIcon icon={Loading03Icon} size={36} className="animate-spin text-gray-500" />
+      <span className="sr-only">Loading category</span>
     </main>
   );
 }

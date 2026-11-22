@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ImageIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Image01Icon } from "@hugeicons/core-free-icons";
 
 type ProductImageProps = {
   src: string;
@@ -22,11 +23,11 @@ export function ProductImage({ src, alt, className, width = 500, height = 500, f
   if (failed) {
     return (
       <div
-        className={`${className || ""} flex items-center justify-center bg-gray-100 text-gray-500`}
+        className={`${className || ""} flex items-center justify-center bg-canvas text-gray-500`}
         role="img"
         aria-label={alt}
       >
-        <ImageIcon className="h-6 w-6" />
+        <HugeiconsIcon icon={Image01Icon} size={36} strokeWidth={1.4} />
       </div>
     );
   }

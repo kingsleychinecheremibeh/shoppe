@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Eye, ImageIcon, Search, X } from "lucide-react";
+import { Eye, ImageIcon, Search, X } from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { api, getAssetUrl } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
@@ -101,20 +101,21 @@ const formatStatus = (status: string) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 };
 
+// Same colours as the customer's "My orders" page (see lib/order-status.ts).
 const getStatusClassName = (status: OrderStatus) => {
   switch (status) {
     case "PENDING":
-      return "bg-orange-100 text-orange-800";
+      return "border-[1.5px] border-ink bg-sun text-ink";
     case "PAID":
-      return "bg-blue-100 text-blue-800";
+      return "border-[1.5px] border-ink bg-leaf text-ink";
     case "SHIPPED":
-      return "bg-purple-100 text-purple-800";
+      return "border-[1.5px] border-ink bg-blue text-white";
     case "DELIVERED":
-      return "bg-green-100 text-green-800";
+      return "border-[1.5px] border-ink bg-ink text-paper";
     case "CANCELLED":
-      return "bg-red-100 text-red-800";
+      return "border-[1.5px] border-ink bg-danger text-white";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "border-[1.5px] border-ink bg-white text-ink";
   }
 };
 
@@ -203,22 +204,22 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
+    <main className="min-h-[calc(100vh-5rem)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-xs font-medium text-gray-600">Order Flow Desk</span>
-            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Store Purchases</h1>
-            <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
-              Monitor active checkout orders, trace full client shipping structures, and transition logistics delivery stages.
+            <span className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold tracking-wide uppercase">Sales</span>
+            <h1 className="mt-1.5 text-5xl leading-none font-extrabold tracking-[-0.04em] text-ink sm:text-6xl">Orders</h1>
+            <p className="mt-2 text-sm font-medium text-gray-500 max-w-lg leading-relaxed">
+              Check payments and move orders through shipping and delivery.
             </p>
           </div>
 
           <label className="relative block lg:w-96">
             <span className="sr-only">Search orders</span>
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
             <input
               id="adminOrderSearch"
               name="adminOrderSearch"
@@ -226,13 +227,13 @@ export default function AdminOrdersPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by ID, customer name, email..."
-              className="h-10 w-full rounded-full border border-gray-200 bg-white pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
+              className="h-10 w-full rounded-lg border-[1.5px] border-ink bg-white pl-10 pr-4 text-sm font-medium text-ink outline-none transition duration-300 focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
             />
           </label>
         </div>
 
         {/* Table List Layout */}
-        <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-lg border-[1.5px] border-ink bg-white">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-950" />
@@ -254,23 +255,23 @@ export default function AdminOrdersPage() {
                   {filteredOrders.length ? (
                     filteredOrders.map((order) => (
                       <tr key={order.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-semibold text-gray-950">
+                        <td className="px-6 py-4 text-sm font-semibold text-ink">
                           #{order.id.slice(0, 8)}
                         </td>
                         <td className="px-6 py-4">
                           <div>
-                            <p className="text-xs font-bold text-gray-900">
+                            <p className="text-sm font-bold text-gray-900">
                               {order.user?.name || "N/A"}
                             </p>
-                            <p className="text-xs text-gray-600 font-medium mt-0.5">
+                            <p className="text-sm text-gray-600 font-medium mt-0.5">
                               {order.user?.email || "N/A"}
                             </p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-xs font-medium text-gray-500">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-500">
                           {dateFormatter.format(new Date(order.createdAt))}
                         </td>
-                        <td className="px-6 py-4 text-xs font-semibold text-gray-950">
+                        <td className="px-6 py-4 text-sm font-semibold text-ink">
                           {formatPrice(getNumber(order.total))}
                         </td>
                         <td className="px-6 py-4">
@@ -288,7 +289,7 @@ export default function AdminOrdersPage() {
                               className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 border border-gray-100 hover:bg-gray-100 hover:text-gray-950 transition"
                               aria-label={`View order ${order.id}`}
                             >
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-5 w-5" />
                             </button>
                           </div>
                         </td>
@@ -335,7 +336,7 @@ function OrderStatusControl({
   if (isFinal) {
     return (
       <span
-        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClassName(
+        className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${getStatusClassName(
           order.status
         )}`}
       >
@@ -353,7 +354,7 @@ function OrderStatusControl({
       onChange={(event: ChangeEvent<HTMLSelectElement>) =>
         onChange(order, event.target.value as OrderStatus)
       }
-      className={`h-8 rounded-full border border-gray-200 bg-white px-3 text-[10px] font-bold uppercase tracking-wider outline-none transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${getStatusClassName(
+      className={`h-10 rounded-lg px-3 text-xs font-bold uppercase tracking-wider outline-none transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${getStatusClassName(
         order.status
       )}`}
     >
@@ -397,25 +398,25 @@ function OrderDetailsModal({
   const shippingLabel = order.shippingMethodName || "Shipping";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 p-4 backdrop-blur-xs">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 p-4">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-sticker border-[1.5px] border-ink py-1">
         <div className="flex items-center justify-between border-b border-gray-100 p-6">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight text-gray-950">Fulfillment Details</h2>
-            <p className="mt-1.5 text-xs text-gray-600 font-mono">ORDER ID: #{order.id.toUpperCase()}</p>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">Fulfillment Details</h2>
+            <p className="mt-1.5 text-sm text-gray-600 font-mono">ORDER ID: #{order.id.toUpperCase()}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
             aria-label="Close modal"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="space-y-6 p-6">
-          <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 bg-gray-50/50 border border-gray-200 rounded-xl p-5">
+          <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 bg-gray-50/50 border-[1.5px] border-ink rounded-xl p-5">
             <InfoBlock label="Date & Time Placed">
               {dateTimeFormatter.format(new Date(order.createdAt))}
             </InfoBlock>
@@ -423,8 +424,8 @@ function OrderDetailsModal({
               <div className="mt-1"><OrderStatusControl order={order} disabled={updating} onChange={onStatusChange} /></div>
             </InfoBlock>
             <InfoBlock label="Registered Account">
-              <span className="block text-xs font-bold text-gray-950">{order.user?.name || "N/A"}</span>
-              <span className="block text-xs text-gray-600 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
+              <span className="block text-sm font-bold text-ink">{order.user?.name || "N/A"}</span>
+              <span className="block text-sm text-gray-600 font-medium mt-0.5">{order.user?.email || "N/A"}</span>
             </InfoBlock>
             <InfoBlock label="Total">
               {formatPrice(total)}
@@ -432,7 +433,7 @@ function OrderDetailsModal({
           </div>
 
           <section>
-            <h3 className="mb-3 font-semibold text-gray-950">Order Items</h3>
+            <h3 className="mb-3 font-semibold text-ink">Order Items</h3>
             <div className="space-y-3">
               {order.orderItems?.length ? (
                 order.orderItems.map((item) => (
@@ -442,10 +443,10 @@ function OrderDetailsModal({
                   >
                     <ItemThumbnail item={item} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-gray-950 flex items-center gap-2">
+                      <p className="truncate font-semibold text-ink flex items-center gap-2">
                         {item.product?.name || "Product"}
                         {item.selectedColor && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-sm font-medium bg-gray-100 text-gray-800">
                             {item.selectedColor}
                           </span>
                         )}
@@ -454,13 +455,13 @@ function OrderDetailsModal({
                         {item.quantity} x {formatPrice(getNumber(item.price))}
                       </p>
                     </div>
-                    <p className="text-xs font-bold text-gray-950">
+                    <p className="text-sm font-bold text-ink">
                       {formatPrice(item.quantity * getNumber(item.price))}
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-xs font-semibold text-gray-600">
+                <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm font-semibold text-gray-600">
                   No items listed inside order register records.
                 </p>
               )}
@@ -469,17 +470,17 @@ function OrderDetailsModal({
 
           {order.address && (
             <section>
-              <h3 className="mb-3 text-xs font-medium text-gray-700 tracking-wide">Shipping Address</h3>
-              <div className="rounded-xl border border-gray-200 bg-gray-50/20 p-4">
-                <p className="text-xs font-bold text-gray-900">{order.address.fullName}</p>
-                <p className="mt-1.5 text-xs text-gray-600 leading-relaxed font-medium">
+              <h3 className="mb-3 text-sm font-medium text-gray-700 tracking-wide">Shipping Address</h3>
+              <div className="rounded-xl border-[1.5px] border-ink bg-gray-50/20 p-4">
+                <p className="text-sm font-bold text-gray-900">{order.address.fullName}</p>
+                <p className="mt-1.5 text-sm text-gray-600 leading-relaxed font-medium">
                   {order.address.street}
                   <br />
                   {order.address.city}, {order.address.state}
                   <br />
                   {order.address.country}
                 </p>
-                <p className="mt-2 text-xs font-semibold text-gray-500 border-t border-gray-100 pt-2">Phone linkage: {order.address.phone}</p>
+                <p className="mt-2 text-sm font-semibold text-gray-500 border-t border-gray-100 pt-2">Phone linkage: {order.address.phone}</p>
               </div>
             </section>
           )}
@@ -489,7 +490,7 @@ function OrderDetailsModal({
               <SummaryRow label="Items Subtotal" value={subtotal} />
               <SummaryRow label={shippingLabel} value={shippingFee} />
               <SummaryRow label="Regional Taxes" value={taxes} />
-              <div className="flex justify-between border-t border-gray-100 pt-3 text-sm font-semibold text-gray-950">
+              <div className="flex justify-between border-t border-gray-100 pt-3 text-sm font-semibold text-ink">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>
@@ -510,7 +511,7 @@ function TableHead({
 }) {
   return (
     <th
-      className={`px-6 py-3 text-xs font-semibold uppercase text-gray-500 ${
+      className={`px-6 py-3 text-sm font-semibold uppercase text-gray-500 ${
         align === "right" ? "text-right" : "text-left"
       }`}
     >
@@ -529,16 +530,16 @@ function InfoBlock({
   return (
     <div>
       <p className="text-sm text-gray-600">{label}</p>
-      <div className="mt-1 font-semibold text-gray-950">{children}</div>
+      <div className="mt-1 font-semibold text-ink">{children}</div>
     </div>
   );
 }
 
 function SummaryRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex justify-between text-xs font-medium">
+    <div className="flex justify-between text-sm font-medium">
       <span className="text-gray-600">{label}</span>
-      <span className="text-gray-950">{formatPrice(value)}</span>
+      <span className="text-ink">{formatPrice(value)}</span>
     </div>
   );
 }
@@ -553,15 +554,15 @@ function ItemThumbnail({ item }: { item: OrderItem }) {
 
   if (!image) {
     return (
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
-        <ImageIcon className="h-5 w-5" />
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-50 border-[1.5px] border-ink text-gray-600">
+        <ImageIcon className="h-6 w-6" />
       </div>
     );
   }
 
   return (
     <div
-      className="h-12 w-12 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border border-gray-200"
+      className="h-12 w-12 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border-[1.5px] border-ink"
       style={{ backgroundImage: `url("${image}")` }}
       aria-label={item.product?.name || "Product image"}
     />

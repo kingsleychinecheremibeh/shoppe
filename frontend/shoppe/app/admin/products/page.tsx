@@ -1,8 +1,9 @@
 "use client";
 
 import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Edit, ImageIcon, Plus, Search, Star, Trash2, X } from "lucide-react";
+import { CheckCircle2, Edit, ImageIcon, Plus, Search, Star, Trash2, X } from "@/app/components/admin-icons";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/format";
 import { AlertBanner, ConfirmModal, FieldError, LoadingButton } from "@/app/components/feedback";
 import { api, getAssetUrl } from "@/lib/api";
 
@@ -70,10 +71,6 @@ const initialFormData: ProductFormData = {
   image: "",
 };
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "NGN",
-});
 
 const getNumber = (value: number | string | null | undefined) => {
   const parsed = Number(value ?? 0);
@@ -86,9 +83,9 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 const getStockClassName = (stock: number) => {
-  if (stock === 0) return "bg-red-100 text-red-800";
-  if (stock < 10) return "bg-orange-100 text-orange-800";
-  return "bg-green-100 text-green-800";
+  if (stock === 0) return "bg-red-50 text-danger";
+  if (stock < 10) return "bg-sun-soft text-ink";
+  return "bg-leaf-soft text-ink";
 };
 
 const getProductFormData = (product: Product): ProductFormData => ({
@@ -401,23 +398,23 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-gray-50/50 py-12">
+    <main className="min-h-[calc(100vh-5rem)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* Header Section */}
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-gray-100 pb-8">
           <div>
-            <span className="text-xs font-medium text-gray-600">Inventory Catalog</span>
-            <h1 className="mt-1.5 text-4xl font-semibold tracking-tight text-gray-950">Store Products</h1>
-            <p className="mt-2 text-xs font-medium text-gray-500 max-w-lg leading-relaxed">
-              Manage product listings, pricing edits, instant stock allocations, and shop taxonomy updates.
+            <span className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold tracking-wide uppercase">Catalog</span>
+            <h1 className="mt-1.5 text-5xl leading-none font-extrabold tracking-[-0.04em] text-ink sm:text-6xl">Products</h1>
+            <p className="mt-2 text-sm font-medium text-gray-500 max-w-lg leading-relaxed">
+              Add products, update prices and stock, and manage photos.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="relative block sm:w-80">
               <span className="sr-only">Search products</span>
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
               <input
                 id="adminProductSearch"
                 name="adminProductSearch"
@@ -425,7 +422,7 @@ export default function AdminProductsPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search products by title, category..."
-                className="h-10 w-full rounded-full border border-gray-200 bg-white pl-10 pr-4 text-xs font-medium text-gray-950 outline-none transition duration-300 focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
+                className="h-10 w-full rounded-lg border-[1.5px] border-ink bg-white pl-10 pr-4 text-sm font-medium text-ink outline-none transition duration-300 focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
               />
             </label>
 
@@ -433,9 +430,9 @@ export default function AdminProductsPage() {
               type="button"
               onClick={() => handleOpenModal()}
               disabled={!categories.length}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-xs font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 shadow-xs"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
               Add Product
             </button>
           </div>
@@ -458,7 +455,7 @@ export default function AdminProductsPage() {
         )}
 
         {/* Table List Layout */}
-        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs">
+        <section className="overflow-hidden rounded-xl border-[1.5px] border-ink bg-white">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-950" />
@@ -484,22 +481,22 @@ export default function AdminProductsPage() {
                           <div className="flex items-center gap-3">
                             <ProductThumbnail product={product} />
                             <div className="min-w-0">
-                              <p className="truncate font-semibold text-gray-950">
+                              <p className="truncate font-semibold text-ink">
                                 {product.name}
                               </p>
-                              <p className="text-xs text-gray-500">{product.slug}</p>
+                              <p className="text-sm text-gray-500">{product.slug}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-700">
                           {product.category?.name || "Uncategorized"}
                         </td>
-                        <td className="px-6 py-4 text-sm font-semibold text-gray-950">
-                          {currencyFormatter.format(getNumber(product.price))}
+                        <td className="px-6 py-4 font-mono text-sm font-semibold text-ink">
+                          {formatPrice(getNumber(product.price))}
                         </td>
                         <td className="px-6 py-4">
                           <span
-                            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStockClassName(
+                            className={`rounded-lg px-2.5 py-1 text-sm font-semibold ${getStockClassName(
                               product.stock
                             )}`}
                           >
@@ -517,15 +514,15 @@ export default function AdminProductsPage() {
                               className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-950 border border-gray-100"
                               aria-label={`Edit ${product.name}`}
                             >
-                              <Edit className="h-3.5 w-3.5" />
+                              <Edit className="h-5 w-5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => setProductToDelete(product)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 hover:text-red-700 border border-red-100"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-danger transition hover:bg-red-50 hover:text-red-700 border border-red-100"
                               aria-label={`Delete ${product.name}`}
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-5 w-5" />
                             </button>
                           </div>
                         </td>
@@ -533,7 +530,7 @@ export default function AdminProductsPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-6 py-16 text-center text-xs font-medium text-gray-500">
+                      <td colSpan={6} className="px-6 py-16 text-center text-sm font-medium text-gray-500">
                         {query ? "No active products match your search criteria." : "No registered products inside catalog database."}
                       </td>
                     </tr>
@@ -547,31 +544,31 @@ export default function AdminProductsPage() {
 
       {/* Modern Modal Box Popup */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-xs">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-2xl border border-gray-200 py-1">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-sticker border-[1.5px] border-ink py-1">
             <div className="flex items-center justify-between border-b border-gray-100 p-6">
               <div>
-                <h2 className="text-xl font-semibold tracking-tight text-gray-950">
+                <h2 className="text-xl font-semibold tracking-tight text-ink">
                   {editingProduct ? "Modify Product Details" : "Create New Product"}
                 </h2>
-                <p className="mt-1.5 text-xs text-gray-600 font-medium">
+                <p className="mt-1.5 text-sm text-gray-600 font-medium">
                   All slugs, indexing paths, and search arrays are updated dynamically on save.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
+                className="inline-flex h-8.5 w-8.5 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-950"
                 aria-label="Close modal"
               >
-                <X className="h-4.5 w-4.5" />
+                <X className="h-6 w-6" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 p-6">
               <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label htmlFor="name" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                     Product Title
                   </label>
                   <input
@@ -583,13 +580,13 @@ export default function AdminProductsPage() {
                     maxLength={100}
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
+                    className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
                     placeholder="e.g. Minimal European Linen Blazer"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="price" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                  <label htmlFor="price" className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                     Selling Price (NGN)
                   </label>
                   <input
@@ -601,14 +598,14 @@ export default function AdminProductsPage() {
                     required
                     value={formData.price}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-950 outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
+                    className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-gray-950 focus:ring-2 focus:ring-gray-950/5"
                     placeholder="129.00"
                   />
                   <FieldError message={formErrors.price} />
                 </div>
 
                 <div>
-                  <label htmlFor="stock" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                  <label htmlFor="stock" className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                     Stock Quantity
                   </label>
                   <input
@@ -620,7 +617,7 @@ export default function AdminProductsPage() {
                     required
                     value={formData.stock}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
+                    className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
                     placeholder="50"
                   />
                   <FieldError message={formErrors.stock} />
@@ -629,7 +626,7 @@ export default function AdminProductsPage() {
                 <div className="sm:col-span-2">
                   <label
                     htmlFor="categoryId"
-                    className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                    className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                   >
                     Parent Category
                   </label>
@@ -639,7 +636,7 @@ export default function AdminProductsPage() {
                     required
                     value={formData.categoryId}
                     onChange={handleChange}
-                    className="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
+                    className="h-11 w-full rounded-lg border-[1.5px] border-ink bg-white px-4 text-sm font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
                   >
                     <option value="">Select a category</option>
                     {categories.map((category) => (
@@ -655,7 +652,7 @@ export default function AdminProductsPage() {
               <div>
                 <label
                   htmlFor="description"
-                  className="mb-2 block text-xs font-medium text-gray-700 tracking-wide"
+                  className="mb-2 block text-sm font-medium text-gray-700 tracking-wide"
                 >
                   Product Description
                 </label>
@@ -667,17 +664,17 @@ export default function AdminProductsPage() {
                   rows={4}
                   value={formData.description}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
+                  className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
                   placeholder="Draft editorial descriptions, organic textures, materials, sizing, and details..."
                 />
               </div>
 
               <div>
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <label htmlFor="image" className="block text-xs font-medium text-gray-700 tracking-wide">
+                  <label htmlFor="image" className="block text-sm font-medium text-gray-700 tracking-wide">
                     Image Source
                   </label>
-                  <label className="inline-flex h-8 cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50">
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-lg border-[1.5px] border-ink bg-white px-3 text-sm font-medium tracking-wide text-gray-700 transition hover:bg-gray-50">
                     {uploadingImage ? "Uploading..." : "Upload File"}
                     <input
                       id="productImageUpload"
@@ -696,17 +693,17 @@ export default function AdminProductsPage() {
                   type="text"
                   value={formData.image}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
+                  className="w-full rounded-lg border-[1.5px] border-ink bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5"
                   placeholder="/uploads/image.webp or https://images.unsplash.com/photo-..."
                 />
                 <FieldError message={formErrors.image} />
               </div>
 
               {editingProduct && (
-                <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+                <div className="rounded-xl border-[1.5px] border-ink bg-gray-50/50 p-4">
                   <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <label htmlFor="galleryColor" className="mb-2 block text-xs font-medium text-gray-700 tracking-wide">
+                      <label htmlFor="galleryColor" className="mb-2 block text-sm font-medium text-gray-700 tracking-wide">
                         Gallery Color
                       </label>
                       <input
@@ -715,16 +712,16 @@ export default function AdminProductsPage() {
                         type="text"
                         value={galleryColor}
                         onChange={(event) => setGalleryColor(event.target.value)}
-                        className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5 sm:w-52"
+                        className="h-10 w-full rounded-lg border-[1.5px] border-ink bg-white px-3 text-sm font-medium text-gray-900 outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-950/5 sm:w-52"
                         placeholder="Black, Blue, Red..."
                       />
                     </div>
                     <label
-                      className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-[10px] font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50 ${
+                      className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink bg-white px-4 text-[10px] font-bold uppercase tracking-wide text-gray-700 transition hover:bg-gray-50 ${
                         uploadingGalleryImage || saving ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                       }`}
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="h-5 w-5" />
                       {uploadingGalleryImage ? "Uploading..." : "Add Gallery Image"}
                       <input
                         id="productGalleryImageUpload"
@@ -751,7 +748,7 @@ export default function AdminProductsPage() {
                           saving;
 
                         return (
-                          <div key={image.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                          <div key={image.id} className="overflow-hidden rounded-lg border-[1.5px] border-ink bg-white">
                             <div className="relative aspect-square bg-gray-50">
                               {imageUrl ? (
                                 <div
@@ -760,41 +757,41 @@ export default function AdminProductsPage() {
                                 />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-gray-600">
-                                  <ImageIcon className="h-5 w-5" />
+                                  <ImageIcon className="h-6 w-6" />
                                 </div>
                               )}
                               {image.isPrimary && (
-                                <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-medium tracking-wide text-green-700 shadow-sm">
-                                  <CheckCircle2 className="h-3 w-3" />
+                                <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-lg bg-white/95 px-2 py-1 text-sm font-medium tracking-wide text-ink">
+                                  <CheckCircle2 className="h-4 w-4" />
                                   Primary
                                 </span>
                               )}
                             </div>
                             <div className="space-y-2 p-2">
                               <div className="flex items-center justify-between gap-2">
-                                <span className="truncate text-xs font-medium tracking-wide text-gray-600">
+                                <span className="truncate text-sm font-medium tracking-wide text-gray-600">
                                   {image.color || "Default"}
                                 </span>
-                                {image.isPrimary && <CheckCircle2 className="h-3.5 w-3.5 text-green-700" />}
+                                {image.isPrimary && <CheckCircle2 className="h-5 w-5 text-ink" />}
                               </div>
                               <div className="flex gap-1.5">
                                 <button
                                   type="button"
                                   onClick={() => handleSetPrimaryImage(image)}
                                   disabled={image.isPrimary || actionDisabled}
-                                  className="inline-flex h-7 flex-1 items-center justify-center rounded-md border border-gray-200 text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 disabled:cursor-default disabled:opacity-40"
+                                  className="inline-flex h-7 flex-1 items-center justify-center rounded-md border-[1.5px] border-ink text-gray-600 transition hover:bg-gray-50 hover:text-gray-950 disabled:cursor-default disabled:opacity-40"
                                   aria-label="Set primary image"
                                 >
-                                  <Star className={`h-3.5 w-3.5 ${isSettingPrimary ? "animate-pulse" : ""}`} />
+                                  <Star className={`h-5 w-5 ${isSettingPrimary ? "animate-pulse" : ""}`} />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteGalleryImage(image)}
                                   disabled={actionDisabled}
-                                  className="inline-flex h-7 flex-1 items-center justify-center rounded-md border border-red-100 text-red-600 transition hover:bg-red-50"
+                                  className="inline-flex h-7 flex-1 items-center justify-center rounded-md border border-red-100 text-danger transition hover:bg-red-50"
                                   aria-label="Delete gallery image"
                                 >
-                                  <Trash2 className={`h-3.5 w-3.5 ${isDeleting ? "animate-pulse" : ""}`} />
+                                  <Trash2 className={`h-5 w-5 ${isDeleting ? "animate-pulse" : ""}`} />
                                 </button>
                               </div>
                             </div>
@@ -803,7 +800,7 @@ export default function AdminProductsPage() {
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-lg border border-dashed border-gray-200 bg-white px-4 py-6 text-center text-xs font-medium text-gray-500">
+                    <div className="rounded-lg border border-dashed border-gray-200 bg-white px-4 py-6 text-center text-sm font-medium text-gray-500">
                       No gallery images
                     </div>
                   )}
@@ -815,14 +812,14 @@ export default function AdminProductsPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="h-11 rounded-lg border border-gray-200 bg-white px-6 text-xs font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg border-[1.5px] border-ink bg-white px-6 text-sm font-medium tracking-wide text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <LoadingButton
                   type="submit"
                   loading={saving}
-                  className="h-11 rounded-lg bg-gray-950 px-6 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 rounded-lg bg-gray-950 px-6 text-sm font-medium tracking-wide text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {editingProduct ? "Update Product" : "Create Product"}
                 </LoadingButton>
@@ -861,7 +858,7 @@ function TableHead({
 }) {
   return (
     <th
-      className={`px-6 py-3 text-xs font-semibold uppercase text-gray-500 ${align === "right" ? "text-right" : "text-left"
+      className={`px-6 py-3 text-sm font-semibold uppercase text-gray-500 ${align === "right" ? "text-right" : "text-left"
         }`}
     >
       {children}
@@ -876,11 +873,11 @@ function ProductImageSummary({ product }: { product: Product }) {
   if (galleryCount > 0) {
     return (
       <div className="space-y-1">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
-          <CheckCircle2 className="h-3.5 w-3.5" />
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-leaf-soft px-2.5 py-1 text-sm font-semibold text-ink">
+          <CheckCircle2 className="h-5 w-5" />
           {galleryCount} {galleryCount === 1 ? "image" : "images"}
         </span>
-        <p className="text-xs font-medium text-gray-500">
+        <p className="text-sm font-medium text-gray-500">
           {primaryImage ? "Primary selected" : "First image shown"}
         </p>
       </div>
@@ -890,10 +887,10 @@ function ProductImageSummary({ product }: { product: Product }) {
   if (product.image) {
     return (
       <div className="space-y-1">
-        <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+        <span className="inline-flex rounded-lg bg-blue-soft px-2.5 py-1 text-sm font-semibold text-ink">
           Cover set
         </span>
-        <p className="text-xs font-medium text-gray-500">Legacy fallback</p>
+        <p className="text-sm font-medium text-gray-500">Legacy fallback</p>
       </div>
     );
   }
@@ -910,15 +907,15 @@ function ProductThumbnail({ product }: { product: Product }) {
 
   if (!imageUrl) {
     return (
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-200 text-gray-600">
-        <ImageIcon className="h-4.5 w-4.5" />
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-50 border-[1.5px] border-ink text-gray-600">
+        <ImageIcon className="h-6 w-6" />
       </div>
     );
   }
 
   return (
     <div
-      className="h-11 w-11 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border border-gray-200"
+      className="h-11 w-11 shrink-0 rounded-lg bg-gray-50 bg-cover bg-center border-[1.5px] border-ink"
       style={{ backgroundImage: `url("${imageUrl}")` }}
       aria-label={product.name}
     />

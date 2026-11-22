@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { MailCheck } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MailValidation01Icon } from "@hugeicons/core-free-icons";
 import { AlertBanner, LoadingButton } from "@/app/components/feedback";
 import { api } from "@/lib/api";
+import { ui } from "@/lib/ui";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -36,12 +38,14 @@ export function ForgotPasswordForm() {
 
   if (sentTo) {
     return (
-      <div className="rounded-2xl bg-canvas p-6 text-center">
-        <MailCheck className="mx-auto h-8 w-8 text-brand" aria-hidden="true" />
-        <p className="mt-3 text-sm font-medium text-gray-950">Check your inbox</p>
-        <p className="mt-1 text-sm leading-relaxed text-gray-600">
-          If an account exists for <span className="font-medium text-gray-900">{sentTo}</span>, we&apos;ve sent a link
-          to reset your password. It works for 30 minutes. Check your spam folder if you don&apos;t see it.
+      <div className="text-center" role="status">
+        <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-[1.5px] border-ink bg-leaf">
+          <HugeiconsIcon icon={MailValidation01Icon} size={44} strokeWidth={1.5} aria-hidden="true" />
+        </span>
+        <p className="mt-4 text-2xl font-extrabold text-ink">Check your inbox</p>
+        <p className="mt-2 text-[15px] leading-relaxed text-gray-700">
+          If an account exists for <span className="font-semibold text-ink">{sentTo}</span>, we&apos;ve sent a link to reset your
+          password. It works for 30 minutes. Check your spam folder if you don&apos;t see it.
         </p>
       </div>
     );
@@ -51,7 +55,7 @@ export function ForgotPasswordForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 text-left" noValidate>
       {errors.root ? <AlertBanner variant="error" message={errors.root.message} /> : null}
       <div>
-        <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+        <label htmlFor="email" className={ui.label}>
           Email
         </label>
         <input
@@ -60,15 +64,17 @@ export function ForgotPasswordForm() {
           type="email"
           autoComplete="email"
           placeholder="you@example.com"
-          className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-950 placeholder-gray-400 outline-none transition focus:border-gray-400 focus:ring-4 focus:ring-brand/10"
+          aria-invalid={errors.email ? true : undefined}
+          aria-describedby={errors.email ? "email-error" : undefined}
+          className={ui.input}
         />
-        {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+        {errors.email && (
+          <p id="email-error" className={ui.fieldError}>
+            {errors.email.message}
+          </p>
+        )}
       </div>
-      <LoadingButton
-        type="submit"
-        loading={isSubmitting}
-        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
-      >
+      <LoadingButton type="submit" loading={isSubmitting} className={`${ui.primary} h-14 w-full text-base`}>
         Send reset link
       </LoadingButton>
     </form>

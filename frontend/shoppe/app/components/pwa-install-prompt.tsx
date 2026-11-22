@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Download, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { LogoMark } from "@/app/components/logo";
 
 // Extend the Window interface to include the beforeinstallprompt event
 interface BeforeInstallPromptEvent extends Event {
@@ -16,6 +19,7 @@ declare global {
 }
 
 export function PwaInstallPrompt() {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(() => {
@@ -60,41 +64,37 @@ export function PwaInstallPrompt() {
 
   // Don't render anything if no prompt is available or the banner was dismissed
   if (!deferredPrompt || dismissed) return null;
+  // Never cover the checkout flow (it has its own sticky Pay bar on phones), and skip staff pages.
+  if (pathname.startsWith("/checkout") || pathname.startsWith("/admin")) return null;
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-60 transition-transform duration-500 ease-out ${
-        isVisible ? "translate-y-0" : "-translate-y-full"
+      className={`fixed inset-x-3 bottom-3 z-60 transition-all duration-500 ease-out sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-[380px] ${
+        isVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0"
       }`}
-      role="banner"
+      role="region"
       aria-label="Install app"
     >
-      <div className="bg-brand text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <Download className="h-4 w-4 shrink-0 opacity-80" />
-            <p className="truncate text-xs font-medium sm:text-sm">
-              Add Shoppe to your home screen for faster shopping
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={handleInstall}
-              className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-brand transition hover:bg-brand-soft active:scale-95"
-            >
-              Install
-            </button>
-            <button
-              type="button"
-              onClick={handleDismiss}
-              className="flex h-7 w-7 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white"
-              aria-label="Dismiss install banner"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+      <div className="flex items-center gap-3 rounded-lg border-[1.5px] border-ink bg-white p-3 shadow-sticker">
+        <LogoMark size={44} />
+        <p className="min-w-0 flex-1 text-sm leading-snug font-medium text-ink">
+          Add Shoppe to your home screen for faster shopping
+        </p>
+        <button
+          type="button"
+          onClick={handleInstall}
+          className="h-10 shrink-0 rounded-lg bg-ink px-4 text-sm font-semibold text-paper transition hover:bg-black"
+        >
+          Install
+        </button>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink transition hover:bg-gray-100"
+          aria-label="Dismiss install prompt"
+        >
+          <HugeiconsIcon icon={Cancel01Icon} size={22} strokeWidth={1.8} />
+        </button>
       </div>
     </div>
   );

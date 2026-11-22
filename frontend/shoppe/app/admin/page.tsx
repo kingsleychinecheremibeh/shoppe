@@ -19,7 +19,7 @@ import {
   TrendingUp,
   Truck,
   Users,
-} from "lucide-react";
+} from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
@@ -180,11 +180,12 @@ const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 const statusColors: Record<string, string> = {
-  PENDING: "#d97706",
-  PAID: "#0284c7",
-  SHIPPED: "#7c3aed",
-  DELIVERED: "#059669",
-  CANCELLED: "#dc2626",
+  // Shared order colours (lib/order-status.ts)
+  PENDING: "#FFC400",
+  PAID: "#1FAF6E",
+  SHIPPED: "#2F5BFF",
+  DELIVERED: "#141414",
+  CANCELLED: "#D93636",
 };
 
 const getNumber = (value: number | string | null | undefined) => {
@@ -282,10 +283,10 @@ export default function AdminDashboardPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 border-b border-gray-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <span className="text-xs font-medium text-gray-600">
+            <span className="inline-block rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold tracking-wide uppercase">
               Admin dashboard{user ? `, ${user.name}` : ""}
             </span>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-gray-950 md:text-4xl">
+            <h1 className="mt-1 text-5xl leading-none font-extrabold tracking-[-0.04em] text-ink md:text-6xl">
               Store Overview
             </h1>
             <p className="mt-2 max-w-2xl text-sm font-medium text-gray-600">
@@ -294,13 +295,13 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+            <div className="inline-flex rounded-lg border-[1.5px] border-ink bg-white p-1">
               {rangeOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => setRange(option.value)}
-                  className={`h-8 rounded-md px-3 text-xs font-bold transition ${
+                  className={`h-8 rounded-md px-3 text-sm font-bold transition ${
                     range === option.value
                       ? "bg-gray-950 text-white"
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-950"
@@ -313,10 +314,10 @@ export default function AdminDashboardPage() {
 
             <Link
               href="/admin/orders"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-4 text-xs font-medium tracking-wide text-white transition hover:bg-gray-800"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gray-950 px-4 text-sm font-medium tracking-wide text-white transition hover:bg-gray-800"
             >
               Orders
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
         </div>
@@ -389,12 +390,12 @@ export default function AdminDashboardPage() {
                   <div key={item.status} className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <span
-                        className="h-2.5 w-2.5 rounded-full"
+                        className="h-2.5 w-2.5 rounded-[3px]"
                         style={{ backgroundColor: statusColors[item.status] || "#6b7280" }}
                       />
-                      <span className="text-xs font-bold text-gray-700">{formatStatus(item.status)}</span>
+                      <span className="text-sm font-bold text-gray-700">{formatStatus(item.status)}</span>
                     </div>
-                    <span className="text-sm font-semibold text-gray-950">{item.count}</span>
+                    <span className="text-sm font-semibold text-ink">{item.count}</span>
                   </div>
                 ))}
               </div>
@@ -552,26 +553,23 @@ type KpiCardProps = {
 };
 
 const kpiToneClasses: Record<KpiCardProps["tone"], string> = {
-  emerald: "border-emerald-100 bg-emerald-50 text-emerald-700",
-  sky: "border-sky-100 bg-sky-50 text-sky-700",
-  violet: "border-violet-100 bg-violet-50 text-violet-700",
-  amber: "border-amber-100 bg-amber-50 text-amber-700",
-  rose: "border-rose-100 bg-rose-50 text-rose-700",
-  slate: "border-slate-200 bg-slate-50 text-slate-700",
+  emerald: "bg-leaf text-ink",
+  sky: "bg-blue text-white",
+  violet: "bg-violet text-white",
+  amber: "bg-sun text-ink",
+  rose: "bg-pink text-ink",
+  slate: "bg-canvas text-ink",
 };
 
 function KpiCard({ label, value, helper, icon: Icon, tone }: KpiCardProps) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-xs xl:col-span-1">
-      <div className="flex items-start justify-between gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${kpiToneClasses[tone]}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <TrendingUp className="h-4 w-4 text-emerald-500" />
+    <section className="sticker rounded-lg border-[1.5px] border-ink bg-white p-5 xl:col-span-1">
+      <div className={`flex h-14 w-14 items-center justify-center rounded-lg border-[1.5px] border-ink ${kpiToneClasses[tone]}`}>
+        <Icon className="h-8 w-8" strokeWidth={1.5} />
       </div>
-      <p className="mt-4 text-2xl font-semibold tracking-tight text-gray-950">{value}</p>
-      <p className="mt-1 text-xs font-medium text-gray-500">{label}</p>
-      <p className="mt-3 border-t border-gray-100 pt-2 text-xs font-medium text-gray-600">{helper}</p>
+      <p className="price-tag mt-4 text-3xl text-ink">{value}</p>
+      <p className="mt-1 text-[15px] font-semibold text-ink">{label}</p>
+      <p className="mt-3 border-t border-gray-200 pt-2 text-sm text-gray-600">{helper}</p>
     </section>
   );
 }
@@ -588,11 +586,11 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-xs">
+    <section className="rounded-lg border-[1.5px] border-ink bg-white p-5">
       <div className="mb-5 flex flex-col gap-3 border-b border-gray-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-base font-semibold tracking-tight text-gray-950">{title}</h2>
-          <p className="mt-1 text-xs font-medium text-gray-600">{description}</p>
+          <h2 className="font-display text-2xl font-extrabold text-ink">{title}</h2>
+          <p className="mt-1 text-sm font-medium text-gray-600">{description}</p>
         </div>
         {action}
       </div>
@@ -603,9 +601,9 @@ function Panel({
 
 function MetricPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-      <p className="text-xs font-medium text-gray-500">{label}</p>
-      <p className="text-sm font-semibold text-gray-950">{value}</p>
+    <div className="rounded-lg border-[1.5px] border-ink bg-gray-50 px-3 py-2">
+      <p className="text-sm font-medium text-gray-500">{label}</p>
+      <p className="text-sm font-semibold text-ink">{value}</p>
     </div>
   );
 }
@@ -614,10 +612,10 @@ function MiniMetric({ label, value, icon: Icon }: { label: string; value: number
   return (
     <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-medium text-gray-500">{label}</p>
-        <Icon className="h-3.5 w-3.5 text-gray-500" />
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <Icon className="h-5 w-5 text-gray-500" />
       </div>
-      <p className="mt-2 text-lg font-semibold text-gray-950">{value}</p>
+      <p className="mt-2 text-lg font-semibold text-ink">{value}</p>
     </div>
   );
 }
@@ -625,9 +623,9 @@ function MiniMetric({ label, value, icon: Icon }: { label: string; value: number
 function MediaMetric({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
-      <Camera className="mb-2 h-4 w-4 text-gray-500" />
-      <p className="text-lg font-semibold text-gray-950">{value}</p>
-      <p className="text-xs font-medium tracking-wide text-gray-500">{label}</p>
+      <Camera className="mb-2 h-5 w-5 text-gray-500" />
+      <p className="text-lg font-semibold text-ink">{value}</p>
+      <p className="text-sm font-medium tracking-wide text-gray-500">{label}</p>
     </div>
   );
 }
@@ -696,14 +694,14 @@ function LineChart({
           const y = padding + (line / 3) * usableHeight;
           return <line key={line} x1={padding} x2={width - padding} y1={y} y2={y} stroke="#e7e5e4" />;
         })}
-        <polyline points={revenuePoints} fill="none" stroke="#c2410c" strokeWidth="4" strokeLinecap="round" />
+        <polyline points={revenuePoints} fill="none" stroke="#2F5BFF" strokeWidth="4" strokeLinecap="round" />
         <polyline points={aovPoints} fill="none" stroke="#a8a29e" strokeWidth="3" strokeLinecap="round" opacity="0.75" />
         {activePoint && (
           <>
             <line x1={activePoint.x} x2={activePoint.x} y1={padding} y2={height - padding} stroke="#a8a29e" strokeDasharray="4 4" />
-            <circle cx={activePoint.x} cy={activePoint.y} r="7" fill="#c2410c" stroke="#ffffff" strokeWidth="3" />
+            <circle cx={activePoint.x} cy={activePoint.y} r="7" fill="#2F5BFF" stroke="#ffffff" strokeWidth="3" />
             <g>
-              <rect x={tooltipX} y={tooltipY} width="212" height="88" rx="8" fill="#1c1917" />
+              <rect x={tooltipX} y={tooltipY} width="212" height="88" rx="8" fill="#141414" />
               <text x={tooltipX + 12} y={tooltipY + 20} className="fill-white text-[13px] font-bold">
                 {fullDateFormatter.format(new Date(activePoint.date))}
               </text>
@@ -721,7 +719,7 @@ function LineChart({
         )}
         {chartPoints.map((point) => (
           <g key={point.date}>
-            <circle cx={point.x} cy={point.y} r="4" fill="#c2410c" />
+            <circle cx={point.x} cy={point.y} r="4" fill="#2F5BFF" />
             <circle
               cx={point.x}
               cy={point.y}
@@ -747,9 +745,9 @@ function LineChart({
           {dateFormatter.format(new Date(data[data.length - 1].date))}
         </text>
       </svg>
-      <div className="flex flex-wrap gap-4 border-t border-gray-100 bg-white px-4 py-3 text-xs font-bold text-gray-600">
-        <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand" /> Daily sales</span>
-        <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-gray-400" /> Average order value</span>
+      <div className="flex flex-wrap gap-4 border-t border-gray-100 bg-white px-4 py-3 text-sm font-bold text-gray-600">
+        <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-[3px] bg-brand" /> Daily sales</span>
+        <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-[3px] bg-gray-400" /> Average order value</span>
       </div>
     </div>
   );
@@ -792,8 +790,8 @@ function DonutChart({ data, total }: { data: StatusMetric[]; total: number }) {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-2xl font-semibold text-gray-950">{total}</p>
-        <p className="text-xs font-medium text-gray-500">Orders</p>
+        <p className="text-2xl font-semibold text-ink">{total}</p>
+        <p className="text-sm font-medium text-gray-500">Orders</p>
       </div>
     </div>
   );
@@ -829,13 +827,13 @@ function BarList({
           <div key={item.id}>
             <div className="mb-1 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-xs font-bold text-gray-950">{item.name}</p>
-                <p className="text-xs font-medium text-gray-500">{item.category}</p>
+                <p className="truncate text-sm font-bold text-ink">{item.name}</p>
+                <p className="text-sm font-medium text-gray-500">{item.category}</p>
               </div>
-              <span className="shrink-0 text-xs font-semibold text-gray-950">{formatValue(value)}</span>
+              <span className="shrink-0 text-sm font-semibold text-ink">{formatValue(value)}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-              <div className={`h-full rounded-full ${reverse ? "bg-amber-500" : "bg-gray-950"}`} style={{ width }} />
+            <div className="h-2 overflow-hidden rounded-[3px] bg-gray-100">
+              <div className={`h-full rounded-lg ${reverse ? "bg-sun" : "bg-gray-950"}`} style={{ width }} />
             </div>
           </div>
         );
@@ -859,14 +857,14 @@ function HorizontalBarChart({ data, formatValue }: { data: NamedRevenue[]; forma
           className="group grid grid-cols-[110px_1fr_90px] items-center gap-3 rounded-md px-1 py-1 transition hover:bg-gray-50"
           title={`${item.name}: ${formatValue(item.revenue)}`}
         >
-          <p className="truncate text-xs font-bold text-gray-700">{item.name}</p>
-          <div className="h-3 overflow-hidden rounded-full bg-gray-100">
+          <p className="truncate text-sm font-bold text-gray-700">{item.name}</p>
+          <div className="h-3 overflow-hidden rounded-lg bg-gray-100">
             <div
-              className="h-full origin-left rounded-full bg-sky-600 transition-all duration-300 group-hover:bg-sky-700"
+              className="h-full origin-left rounded-lg bg-blue transition-all duration-300 group-hover:bg-ink"
               style={{ width: `${Math.max((item.revenue / maxValue) * 100, 5)}%` }}
             />
           </div>
-          <p className="text-right text-xs font-semibold text-gray-950">{formatValue(item.revenue)}</p>
+          <p className="text-right text-sm font-semibold text-ink">{formatValue(item.revenue)}</p>
         </div>
       ))}
     </div>
@@ -894,7 +892,7 @@ function DataTable({
         <thead className="bg-gray-50">
           <tr>
             {columns.map((column) => (
-              <th key={column} className="px-3 py-2 text-left text-xs font-medium text-gray-500">
+              <th key={column} className="px-3 py-2 text-left text-sm font-medium text-gray-500">
                 {column}
               </th>
             ))}
@@ -904,7 +902,7 @@ function DataTable({
           {rows.map((row, index) => (
             <tr key={`${row[0]}-${index}`}>
               {row.map((cell, cellIndex) => (
-                <td key={`${cell}-${cellIndex}`} className="px-3 py-3 text-xs font-medium text-gray-700">
+                <td key={`${cell}-${cellIndex}`} className="px-3 py-3 text-sm font-medium text-gray-700">
                   {cell}
                 </td>
               ))}
@@ -930,20 +928,20 @@ function InsightList({
   return (
     <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-gray-600" />
-        <p className="text-xs font-semibold text-gray-950">{title}</p>
+        <Icon className="h-5 w-5 text-gray-600" />
+        <p className="text-sm font-semibold text-ink">{title}</p>
       </div>
       {items.length ? (
         <div className="space-y-3">
           {items.map((item) => (
             <div key={item.label}>
-              <p className="truncate text-xs font-bold text-gray-800">{item.label}</p>
-              <p className="text-xs font-medium text-gray-500">{item.helper}</p>
+              <p className="truncate text-sm font-bold text-gray-800">{item.label}</p>
+              <p className="text-sm font-medium text-gray-500">{item.helper}</p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-xs font-medium text-gray-500">{emptyText}</p>
+        <p className="text-sm font-medium text-gray-500">{emptyText}</p>
       )}
     </div>
   );
@@ -952,8 +950,8 @@ function InsightList({
 function EmptyState({ text }: { text: string }) {
   return (
     <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
-      <PackageX className="mx-auto mb-2 h-5 w-5 text-gray-400" />
-      <p className="text-xs font-semibold text-gray-500">{text}</p>
+      <PackageX className="mx-auto mb-2 h-6 w-6 text-gray-400" />
+      <p className="text-sm font-semibold text-gray-500">{text}</p>
     </div>
   );
 }
@@ -961,7 +959,7 @@ function EmptyState({ text }: { text: string }) {
 function EmptyChart({ message, height }: { message: string; height: number }) {
   return (
     <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50" style={{ height }}>
-      <p className="text-xs font-semibold text-gray-500">{message}</p>
+      <p className="text-sm font-semibold text-gray-500">{message}</p>
     </div>
   );
 }

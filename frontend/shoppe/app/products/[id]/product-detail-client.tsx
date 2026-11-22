@@ -2,10 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, ChevronRight, Loader2, ShieldCheck, Truck, RefreshCw, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowRight01Icon,
+  CheckmarkCircle02Icon,
+  DeliveryTruck01Icon,
+  Image01Icon,
+  Loading03Icon,
+  MinusSignIcon,
+  PlusSignIcon,
+  RefreshIcon,
+  Shield01Icon,
+  ShoppingCart01Icon,
+} from "@hugeicons/core-free-icons";
 import { ProductImage } from "@/app/components/product-image";
+import { notifyCartUpdated, openCart } from "@/lib/cart-events";
+import { getCategoryTheme } from "@/lib/category-colors";
 import { api, getAssetUrl } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
 import { storeConfig } from "@/lib/store-config";
@@ -135,10 +149,8 @@ export default function ProductDetailClient({
         product.images?.[0];
       const selectedColor = selectedImage?.color || undefined;
       await api.addToCart(product.id, quantity, selectedColor, selectedImage?.id);
-      toast.success(`${quantity} ${quantity > 1 ? "items" : "item"} added to cart!`);
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("cart-updated"));
-      }
+      notifyCartUpdated();
+      openCart({ addedName: quantity > 1 ? `${quantity} × ${product.name}` : product.name });
     } catch {
       toast.error("Please login to add items to your cart.");
       router.push("/login");
@@ -149,14 +161,14 @@ export default function ProductDetailClient({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
-          <div className="aspect-4/5 animate-pulse rounded-2xl bg-gray-100" />
-          <div className="space-y-4 pt-4">
-            <div className="h-4 w-24 animate-pulse rounded bg-gray-100" />
-            <div className="h-9 w-3/4 animate-pulse rounded bg-gray-100" />
-            <div className="h-7 w-32 animate-pulse rounded bg-gray-100" />
-            <div className="h-12 w-full animate-pulse rounded-full bg-gray-100" />
+      <main className="min-h-screen">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:px-8">
+          <div className="aspect-square animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-canvas" />
+          <div className="space-y-5 pt-4">
+            <div className="h-9 w-32 animate-pulse rounded-md bg-canvas" />
+            <div className="h-16 w-3/4 animate-pulse rounded-md bg-canvas" />
+            <div className="h-10 w-40 animate-pulse rounded-md bg-canvas" />
+            <div className="h-14 w-full animate-pulse rounded-lg bg-canvas" />
           </div>
         </div>
       </main>
@@ -167,8 +179,9 @@ export default function ProductDetailClient({
     return null;
   }
 
+  const LOW_STOCK = 8;
   const isOutOfStock = product.stock <= 0;
-  const isLowStock = !isOutOfStock && product.stock <= 5;
+  const isLowStock = !isOutOfStock && product.stock <= LOW_STOCK;
   const selectedImage =
     product.images?.find((image) => image.id === selectedImageId) ||
     product.images?.find((image) => image.isPrimary) ||
@@ -176,47 +189,51 @@ export default function ProductDetailClient({
   const imageUrl = getAssetUrl(selectedImage?.url || product.image);
   const galleryImages = product.images || [];
   const hasColors = galleryImages.some((image) => image.color);
+  const theme = getCategoryTheme(product.category);
 
   return (
-    <main className="min-h-screen bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-sm text-gray-500">
-          <Link href="/products" className="transition hover:text-gray-950">
+    <main className="min-h-screen">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-[15px] text-gray-600">
+          <Link href="/products" className="underline-offset-4 hover:text-ink hover:underline">
             Shop
           </Link>
           {product.category && (
             <>
-              <ChevronRight className="h-3.5 w-3.5 text-gray-300" aria-hidden="true" />
-              <Link href={`/category/${product.category.slug}`} className="transition hover:text-gray-950">
+              <HugeiconsIcon icon={ArrowRight01Icon} size={18} className="text-gray-400" aria-hidden="true" />
+              <Link href={`/category/${product.category.slug}`} className="underline-offset-4 hover:text-ink hover:underline">
                 {product.category.name}
               </Link>
             </>
           )}
-          <ChevronRight className="h-3.5 w-3.5 text-gray-300" aria-hidden="true" />
-          <span className="truncate text-gray-900">{product.name}</span>
+          <HugeiconsIcon icon={ArrowRight01Icon} size={18} className="text-gray-400" aria-hidden="true" />
+          <span className="truncate text-ink">{product.name}</span>
         </nav>
 
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
           {/* Gallery */}
           <div className="space-y-3">
-            <div className="relative aspect-4/5 overflow-hidden rounded-2xl bg-canvas">
+            <div
+              className="relative aspect-square overflow-hidden rounded-lg border-[1.5px] border-ink"
+              style={{ background: theme.soft }}
+            >
               {imageUrl ? (
                 <ProductImage
                   src={imageUrl}
                   alt={selectedImage?.altText || product.name}
                   fill
                   priority
-                  className={`object-cover ${isOutOfStock ? "opacity-70" : ""}`}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className={`object-cover mix-blend-multiply ${isOutOfStock ? "opacity-60 grayscale" : ""}`}
+                  sizes="(max-width: 1024px) 100vw, 55vw"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
-                  No image yet
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-600">
+                  <HugeiconsIcon icon={Image01Icon} size={56} strokeWidth={1.3} />
+                  No photo yet
                 </div>
               )}
               {isOutOfStock && (
-                <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+                <span className="absolute top-4 left-4 rounded-md border-[1.5px] border-ink bg-white px-2.5 py-1 font-mono text-xs font-semibold uppercase">
                   Sold out
                 </span>
               )}
@@ -235,12 +252,13 @@ export default function ProductDetailClient({
                       onClick={() => setSelectedImageId(image.id)}
                       aria-label={`Show ${image.color || "alternate"} image`}
                       aria-pressed={isSelected}
-                      className={`relative aspect-square overflow-hidden rounded-xl bg-canvas transition ${
-                        isSelected ? "ring-2 ring-gray-950 ring-offset-2" : "opacity-80 hover:opacity-100"
+                      className={`relative aspect-square overflow-hidden rounded-lg border-[1.5px] transition ${
+                        isSelected ? "border-ink shadow-sticker-sm" : "border-gray-300 hover:border-ink"
                       }`}
+                      style={{ background: theme.soft }}
                     >
                       {thumbnailUrl ? (
-                        <ProductImage src={thumbnailUrl} alt="" fill className="object-cover" sizes="96px" />
+                        <ProductImage src={thumbnailUrl} alt="" fill className="object-cover mix-blend-multiply" sizes="120px" />
                       ) : null}
                     </button>
                   );
@@ -250,38 +268,53 @@ export default function ProductDetailClient({
           </div>
 
           {/* Details */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="flex flex-col gap-6 lg:sticky lg:top-32 lg:self-start">
             {product.category && (
               <Link
                 href={`/category/${product.category.slug}`}
-                className="text-sm font-medium text-brand transition hover:text-brand-hover"
+                className="inline-flex items-center gap-2 self-start rounded-lg border-[1.5px] border-ink py-1.5 pr-3 pl-2 text-sm font-semibold transition hover:shadow-sticker-sm"
+                style={{ background: theme.solid, color: theme.onSolid }}
               >
+                <HugeiconsIcon icon={theme.icon} size={24} strokeWidth={1.6} />
                 {product.category.name}
               </Link>
             )}
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
-              {product.name}
-            </h1>
-            <p className="mt-4 text-2xl font-semibold text-gray-950">{formatPrice(product.price)}</p>
 
-            <p
-              className={`mt-3 inline-flex items-center gap-2 text-sm ${
-                isOutOfStock ? "text-gray-500" : isLowStock ? "text-brand" : "text-emerald-700"
+            <h1 className="text-5xl leading-[0.95] font-extrabold tracking-[-0.04em] text-ink sm:text-6xl">{product.name}</h1>
+
+            <p className="price-tag text-4xl text-ink">{formatPrice(product.price)}</p>
+
+            <div
+              className={`flex items-center gap-3 rounded-lg border-[1.5px] border-ink px-4 py-3.5 ${
+                isOutOfStock ? "bg-gray-100" : isLowStock ? "bg-sun-soft" : "bg-white"
               }`}
+              role="status"
             >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  isOutOfStock ? "bg-gray-400" : isLowStock ? "bg-brand" : "bg-emerald-500"
-                }`}
-                aria-hidden="true"
+              <HugeiconsIcon
+                icon={CheckmarkCircle02Icon}
+                size={30}
+                strokeWidth={1.7}
+                className={isOutOfStock ? "text-gray-500" : isLowStock ? "text-ink" : "text-leaf"}
               />
-              {isOutOfStock ? "Sold out" : isLowStock ? `Only ${product.stock} left` : "In stock"}
-            </p>
+              <span className="text-base">
+                {isOutOfStock ? (
+                  <strong>Sold out</strong>
+                ) : isLowStock ? (
+                  <>
+                    <strong>Only {product.stock} left</strong> — order soon
+                  </>
+                ) : (
+                  <>
+                    <strong>In stock</strong> — {product.stock} available
+                  </>
+                )}
+              </span>
+            </div>
 
             {hasColors && (
-              <div className="mt-8">
-                <p className="mb-3 text-sm font-medium text-gray-900">
-                  Colour: <span className="font-normal capitalize text-gray-600">{selectedImage?.color || "Default"}</span>
+              <div>
+                <p className="mb-3 text-[15px] font-semibold text-ink">
+                  Colour: <span className="font-normal text-gray-700 capitalize">{selectedImage?.color || "Default"}</span>
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {galleryImages.map((image) => {
@@ -294,8 +327,8 @@ export default function ProductDetailClient({
                         aria-label={image.color || "Default"}
                         aria-pressed={isSelected}
                         title={image.color || "Default"}
-                        className={`h-9 w-9 rounded-full border border-gray-200 transition ${
-                          isSelected ? "ring-2 ring-gray-950 ring-offset-2" : "hover:ring-2 hover:ring-gray-300 hover:ring-offset-2"
+                        className={`h-11 w-11 rounded-lg border-[1.5px] border-ink transition ${
+                          isSelected ? "shadow-sticker-sm -translate-x-px -translate-y-px" : "hover:shadow-sticker-sm"
                         }`}
                         style={{ backgroundColor: getSwatchColor(image.color) }}
                       />
@@ -306,18 +339,18 @@ export default function ProductDetailClient({
             )}
 
             {!isOutOfStock && (
-              <div className="mt-8 flex gap-3">
-                <div className="inline-flex h-12 items-center rounded-full border border-gray-200">
+              <div className="flex gap-3">
+                <div className="inline-flex h-14 items-center rounded-lg border-[1.5px] border-ink bg-white">
                   <button
                     type="button"
                     onClick={handleDecrease}
                     disabled={quantity <= 1}
                     aria-label="Decrease quantity"
-                    className="flex h-12 w-11 items-center justify-center rounded-l-full text-gray-600 transition hover:text-gray-950 disabled:opacity-30"
+                    className="flex h-14 w-12 items-center justify-center disabled:opacity-30"
                   >
-                    <Minus className="h-4 w-4" />
+                    <HugeiconsIcon icon={MinusSignIcon} size={22} strokeWidth={1.8} />
                   </button>
-                  <span className="w-8 select-none text-center text-sm font-medium text-gray-950" aria-live="polite">
+                  <span className="w-9 text-center font-mono text-lg font-semibold select-none" aria-live="polite">
                     {quantity}
                   </span>
                   <button
@@ -325,9 +358,9 @@ export default function ProductDetailClient({
                     onClick={handleIncrease}
                     disabled={quantity >= product.stock}
                     aria-label="Increase quantity"
-                    className="flex h-12 w-11 items-center justify-center rounded-r-full text-gray-600 transition hover:text-gray-950 disabled:opacity-30"
+                    className="flex h-14 w-12 items-center justify-center disabled:opacity-30"
                   >
-                    <Plus className="h-4 w-4" />
+                    <HugeiconsIcon icon={PlusSignIcon} size={22} strokeWidth={1.8} />
                   </button>
                 </div>
 
@@ -335,48 +368,51 @@ export default function ProductDetailClient({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
+                  className="inline-flex h-14 flex-1 items-center justify-center gap-2.5 rounded-lg bg-ink px-6 text-base font-semibold text-paper transition hover:bg-black disabled:opacity-60"
                 >
-                  {addingToCart ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
+                  <HugeiconsIcon
+                    icon={addingToCart ? Loading03Icon : ShoppingCart01Icon}
+                    size={26}
+                    strokeWidth={1.6}
+                    className={addingToCart ? "animate-spin" : ""}
+                  />
                   {addingToCart ? "Adding…" : "Add to cart"}
                 </button>
               </div>
             )}
 
-            {/* Description */}
-            <div className="mt-10 border-t border-gray-100 pt-6">
-              <h2 className="text-sm font-medium text-gray-900">Details</h2>
-              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
+            <div className="border-t-[1.5px] border-ink pt-5">
+              <h2 className="text-2xl font-extrabold">Details</h2>
+              <p className="mt-2 text-base leading-relaxed whitespace-pre-line text-gray-700">
                 {product.description || "More details about this product are coming soon."}
               </p>
             </div>
 
-            {/* Delivery & returns */}
-            <ul className="mt-8 space-y-4 rounded-2xl bg-canvas p-5">
-              <li className="flex gap-3">
-                <Truck className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Delivery in {storeConfig.deliveryTime}</p>
-                  <p className="text-sm text-gray-500">Shipping fee is shown at checkout.</p>
-                </div>
+            <ul className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              <li className="flex items-center gap-3 rounded-lg bg-sun-soft p-3.5">
+                <HugeiconsIcon icon={DeliveryTruck01Icon} size={34} strokeWidth={1.5} className="shrink-0" />
+                <span className="text-sm leading-snug">
+                  <strong className="block">{storeConfig.deliveryTime}</strong>
+                  Fee shown at checkout
+                </span>
               </li>
-              <li className="flex gap-3">
-                <RefreshCw className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{storeConfig.returnWindowDays}-day returns</p>
-                  <Link href="/refund-policy" className="text-sm text-gray-500 underline-offset-4 hover:underline">
-                    Read the return policy
+              <li className="flex items-center gap-3 rounded-lg bg-leaf-soft p-3.5">
+                <HugeiconsIcon icon={RefreshIcon} size={34} strokeWidth={1.5} className="shrink-0" />
+                <span className="text-sm leading-snug">
+                  <strong className="block">{storeConfig.returnWindowDays}-day returns</strong>
+                  <Link href="/refund-policy" className="underline underline-offset-4">
+                    Return policy
                   </Link>
-                </div>
+                </span>
               </li>
-              <li className="flex gap-3">
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Secure payment</p>
-                  <Link href="/secure-checkout" className="text-sm text-gray-500 underline-offset-4 hover:underline">
-                    Paid safely through Paystack
+              <li className="flex items-center gap-3 rounded-lg bg-pink-soft p-3.5">
+                <HugeiconsIcon icon={Shield01Icon} size={34} strokeWidth={1.5} className="shrink-0" />
+                <span className="text-sm leading-snug">
+                  <strong className="block">Secure payment</strong>
+                  <Link href="/secure-checkout" className="underline underline-offset-4">
+                    Via Paystack
                   </Link>
-                </div>
+                </span>
               </li>
             </ul>
           </div>
