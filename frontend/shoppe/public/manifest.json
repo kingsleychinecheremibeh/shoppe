@@ -1,11 +1,11 @@
 {
-  "name": "Shoppe - Curated Objects of Design",
+  "name": "Shoppe \u00b7 Tech, fashion, beauty & home",
   "short_name": "Shoppe",
-  "description": "Sourced globally, curated locally. Premium clothing, objects, and accessories crafted for modern life.",
+  "description": "Shop gadgets, fashion, shoes, beauty and home picks at fair prices. Pay with card, bank transfer or USSD, with delivery across Nigeria in 2-5 business days.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#FAF7F0",
+  "theme_color": "#FFC400",
   "orientation": "portrait-primary",
   "icons": [
     {

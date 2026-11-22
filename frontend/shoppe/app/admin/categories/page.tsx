@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState, useCallback } from "react";
 import { Edit, ImageIcon, Plus, Search, Trash2, X } from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { AlertBanner, ConfirmModal, EmptyState, FieldError, LoadingButton } from "@/app/components/feedback";
@@ -43,6 +44,7 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export default function AdminCategoriesPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,7 +56,7 @@ export default function AdminCategoriesPage() {
   const [fetchError, setFetchError] = useState("");
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof CategoryFormData, string>>>({});
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       setFetchError("");
       const me = (await api.getMe()) as MeResponse;
@@ -64,7 +66,7 @@ export default function AdminCategoriesPage() {
 
       if (!canManageProducts) {
         toast.error("You need product management access to manage categories.");
-        window.location.assign("/");
+        router.replace("/");
         return;
       }
 
@@ -74,15 +76,15 @@ export default function AdminCategoriesPage() {
       const message = getErrorMessage(error, "Failed to fetch categories.");
       setFetchError(message);
       toast.error(message);
-      window.location.assign("/login");
+      router.replace("/login");
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     void Promise.resolve().then(fetchCategories);
-  }, []);
+  }, [fetchCategories]);
 
   const filteredCategories = useMemo(() => {
     const search = query.trim().toLowerCase();

@@ -17,3 +17,11 @@ export function openCart(detail: CartOpenDetail = {}) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent<CartOpenDetail>(CART_OPEN_EVENT, { detail }));
 }
+
+export const AUTH_CHANGED_EVENT = "auth-changed";
+
+/** Tell the header to reload the signed-in user (e.g. right after registering). */
+export function notifyAuthChanged() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}

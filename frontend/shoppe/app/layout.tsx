@@ -32,10 +32,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     template: `%s | ${storeConfig.storeName}`,
-    default: `${storeConfig.storeName} - Curated Objects of Design`,
+    default: `${storeConfig.storeName} · Tech, fashion, beauty & home delivered across Nigeria`,
   },
-  description:  "Shop premium clothing, accessories, and lifestyle products curated for modern everyday living.",
-  keywords: ["Shoppe", "Ecommerce", "Online Store", "Clothing", "Accessories", "Fashion",  "Lifestyle Products",],
+  description: "Shop gadgets, fashion, shoes, beauty and home picks at fair prices. Pay with card, bank transfer or USSD, with delivery across Nigeria in 2-5 business days.",
+  keywords: ["Shoppe", "online shopping Nigeria", "electronics", "fashion", "shoes", "beauty", "home and living", "Lagos", "Paystack"],
   authors: [{ name: storeConfig.storeName }],
   creator: storeConfig.storeName,
   manifest: "/manifest.json",
@@ -44,17 +44,17 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: `${storeConfig.storeName} - Curated Objects of Design`,
-    description: "Shop premium clothing, accessories, and lifestyle products curated for modern everyday living.",
+    title: `${storeConfig.storeName} · Tech, fashion, beauty & home delivered across Nigeria`,
+    description: "Shop gadgets, fashion, shoes, beauty and home picks at fair prices. Pay with card, bank transfer or USSD, with delivery across Nigeria in 2-5 business days.",
     url: storeConfig.siteUrl,
     siteName: storeConfig.storeName,
-    locale: "en_US",
+    locale: "en_NG",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${storeConfig.storeName} - Curated Objects of Design`,
-    description: "Shop premium clothing, accessories, and lifestyle products curated for modern everyday living.",
+    title: `${storeConfig.storeName} · Tech, fashion, beauty & home delivered across Nigeria`,
+    description: "Shop gadgets, fashion, shoes, beauty and home picks at fair prices. Pay with card, bank transfer or USSD, with delivery across Nigeria in 2-5 business days.",
   },
   robots: {
     index: true,

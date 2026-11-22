@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ShieldCheck, Users } from "@/app/components/admin-icons";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export default function AdminManagersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function AdminManagersPage() {
         const me = (await api.getMe()) as MeResponse;
         if (me.user.role !== "ADMIN") {
           toast.error("Only admins can manage staff access.");
-          window.location.assign("/");
+          router.replace("/");
           return;
         }
 
@@ -58,14 +60,14 @@ export default function AdminManagersPage() {
         setUsers((data as AdminUser[]) || []);
       } catch (error) {
         toast.error(getErrorMessage(error, "Unable to load users."));
-        window.location.assign("/login");
+        router.replace("/login");
       } finally {
         setLoading(false);
       }
     };
 
     void loadUsers();
-  }, []);
+  }, [router]);
 
   const updateRole = async (user: AdminUser, role: Role, managerPermissions = user.managerPermissions || []) => {
     const nextPermissions =

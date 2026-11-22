@@ -3,6 +3,7 @@ import axios from "axios";
 import crypto from "crypto";
 import { AppError } from "../utils/AppError.js";
 import { orderRepository } from "../repositories/orderRepository.js";
+import { orderEmailService } from "./orderEmailService.js";
 import { notificationService } from "./notificationService.js";
 import { logger } from "../utils/logger.js";
 
@@ -97,6 +98,7 @@ const markOrderPaidFromWebhook = async ({ orderId, gateway, paidAmount, expected
   }
 
   await notificationService.notifyPaymentReceived({ ...order, status: "PAID" });
+  await orderEmailService.sendOrderConfirmed({ ...order, status: "PAID" });
   return { orderId, status: "PAID" };
 };
 

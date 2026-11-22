@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState, useCallback } from "react";
 import { CheckCircle2, Edit, ImageIcon, Plus, Search, Star, Trash2, X } from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/format";
@@ -104,6 +105,7 @@ const getPrimaryGalleryImage = (product: Product) => {
 };
 
 export default function AdminProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,7 +123,7 @@ export default function AdminProductsPage() {
   const [fetchError, setFetchError] = useState("");
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductFormData, string>>>({});
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setFetchError("");
       const me = (await api.getMe()) as MeResponse;
@@ -131,7 +133,7 @@ export default function AdminProductsPage() {
 
       if (!canManageProducts) {
         toast.error("You need product management access to manage products.");
-        window.location.assign("/");
+        router.replace("/");
         return;
       }
 
@@ -146,15 +148,15 @@ export default function AdminProductsPage() {
       const message = getErrorMessage(error, "Failed to fetch products.");
       setFetchError(message);
       toast.error(message);
-      window.location.assign("/login");
+      router.replace("/login");
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     void Promise.resolve().then(fetchProducts);
-  }, []);
+  }, [fetchProducts]);
 
   const filteredProducts = useMemo(() => {
     const search = query.trim().toLowerCase();

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieparser from 'cookie-parser';
-import csrf from 'csurf';
+import { doubleCsrf } from 'csrf-csrf';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -117,12 +117,20 @@ app.use('/api/v1/payment/paystack-webhook', paymentWebhookRawParser);
 const jsonParser = express.json({
   limit: '10kb',
 });
-const csrfProtection = csrf({
-  cookie: {
+// CSRF: signed double-submit cookie (csrf-csrf). The client gets a token from
+// GET /auth/csrf-token and sends it back in the X-CSRF-Token header.
+const { doubleCsrfProtection: csrfProtection } = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET || process.env.JWT_SECRET || 'dev-only-csrf-secret',
+  // Tokens aren't tied to a login session, so logging in/out doesn't invalidate them.
+  getSessionIdentifier: () => '',
+  cookieName: shouldUseSecureCookies() ? '__Host-shoppe.csrf' : 'shoppe.csrf',
+  cookieOptions: {
     httpOnly: true,
     sameSite: shouldUseSecureCookies() ? 'none' : 'lax',
     secure: shouldUseSecureCookies(),
+    path: '/',
   },
+  getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'],
 });
 
 app.use((req, res, next) => {
