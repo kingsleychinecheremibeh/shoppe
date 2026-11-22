@@ -296,7 +296,7 @@ export default async function Home() {
 
       {/* Popular */}
       {featuredProducts.length > 0 && products.length > 4 && (
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <section className={`mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8 ${deals.length >= 2 ? "pt-14" : ""}`}>
           <SectionHeader title="Popular right now" href="/products" linkLabel="Shop all" />
           <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
             {featuredProducts.map((product) => (
