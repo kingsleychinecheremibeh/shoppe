@@ -40,26 +40,32 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   (process.env.NODE_ENV === "development" ? LOCAL_API_BASE : "");
 
+const DEAL_LIMIT = 20000;
+
 async function getHomeData() {
   try {
     if (!API_BASE) {
-      return { categories: [] as Category[], products: [] as Product[] };
+      return { categories: [] as Category[], products: [] as Product[], deals: [] as Product[] };
     }
 
-    const [categoriesResponse, productsResponse] = await Promise.all([
+    const [categoriesResponse, productsResponse, dealsResponse] = await Promise.all([
       fetch(`${API_BASE}/categories`, { next: { revalidate: 60 } }),
       fetch(`${API_BASE}/products`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE}/products?page=1&limit=8&sort=price-asc`, { next: { revalidate: 60 } }),
     ]);
 
     const categoriesData = categoriesResponse.ok ? await categoriesResponse.json() : [];
     const productsData = productsResponse.ok ? await productsResponse.json() : [];
+    const dealsData = dealsResponse.ok ? await dealsResponse.json() : [];
+    const list = (data: unknown) => (Array.isArray(data) ? data : (data as { data?: unknown[] })?.data || []) as Product[];
 
     return {
-      categories: (Array.isArray(categoriesData) ? categoriesData : categoriesData?.data || []) as Category[],
-      products: (Array.isArray(productsData) ? productsData : productsData?.data || []) as Product[],
+      categories: list(categoriesData) as unknown as Category[],
+      products: list(productsData),
+      deals: list(dealsData).filter((product) => Number(product.price) <= DEAL_LIMIT && product.stock > 0),
     };
   } catch {
-    return { categories: [] as Category[], products: [] as Product[] };
+    return { categories: [] as Category[], products: [] as Product[], deals: [] as Product[] };
   }
 }
 
@@ -103,11 +109,18 @@ const promises = [
 ];
 
 export default async function Home() {
-  const { categories, products } = await getHomeData();
-  const inStock = products.filter((product) => product.stock > 0);
-  const hero = inStock.find((product) => productImage(product)) || products.find((product) => productImage(product));
-  const heroTheme = getCategoryTheme(hero?.category);
-  const heroImage = hero ? getAssetUrl(productImage(hero)) : null;
+  const { categories, products, deals } = await getHomeData();
+  const inStock = products.filter((product) => product.stock > 0 && productImage(product));
+  // Three products from different categories for the hero "sticker pile".
+  const pile: Product[] = [];
+  for (const product of inStock) {
+    if (pile.length === 3) break;
+    if (!pile.some((picked) => picked.category?.id === product.category?.id)) pile.push(product);
+  }
+  for (const product of inStock) {
+    if (pile.length === 3) break;
+    if (!pile.includes(product)) pile.push(product);
+  }
   const newArrivals = products.slice(0, 4);
   const featuredProducts = products.slice(4, 8).length ? products.slice(4, 8) : products.slice(0, 4);
 
@@ -146,34 +159,49 @@ export default async function Home() {
           </div>
         </div>
 
-        {hero && heroImage ? (
-          <Link
-            href={`/products/${hero.id}`}
-            className="sticker group relative block min-h-96 overflow-hidden rounded-lg border-[1.5px] border-ink lg:min-h-[32rem]"
-            style={{ background: heroTheme.soft }}
-          >
-            <ProductImage
-              src={heroImage}
-              alt={hero.name}
-              fill
-              priority
-              className="object-cover mix-blend-multiply transition-transform duration-700 group-hover:scale-[1.03]"
-              sizes="(max-width: 1024px) 100vw, 45vw"
-            />
-            {hero.category && (
-              <span
-                className="absolute top-4 left-4 inline-flex items-center gap-2 rounded-lg border-[1.5px] border-ink py-1.5 pr-3 pl-2 text-sm font-semibold"
-                style={{ background: heroTheme.solid, color: heroTheme.onSolid }}
-              >
-                <HugeiconsIcon icon={heroTheme.icon} size={24} strokeWidth={1.6} />
-                {hero.category.name}
-              </span>
-            )}
-            <span className="absolute right-4 bottom-4 flex flex-col gap-0.5 rounded-lg bg-ink px-4 py-3 text-paper shadow-[5px_5px_0_0_#fff]">
-              <span className="text-sm font-medium">{hero.name}</span>
-              <span className="price-tag text-2xl">{formatPrice(hero.price)}</span>
-            </span>
-          </Link>
+        {pile.length > 0 ? (
+          <div className="relative min-h-[26rem] sm:min-h-[32rem]" aria-label="Featured products">
+            {pile.map((product, index) => {
+              const theme = getCategoryTheme(product.category);
+              const url = getAssetUrl(productImage(product));
+              const layout = [
+                "left-[4%] top-[6%] w-[58%] -rotate-6 z-10",
+                "right-[2%] top-0 w-[52%] rotate-[5deg] z-20",
+                "left-[22%] bottom-0 w-[56%] -rotate-1 z-30",
+              ][index];
+              return (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className={`group absolute aspect-[4/5] rounded-lg border-[1.5px] border-ink bg-white p-2 shadow-sticker transition duration-200 hover:z-40 hover:-translate-y-2 hover:rotate-0 ${layout}`}
+                >
+                  <span className="relative block h-full w-full overflow-hidden rounded-md" style={{ background: theme.soft }}>
+                    {url && (
+                      <ProductImage
+                        src={url}
+                        alt={product.name}
+                        fill
+                        priority={index === 2}
+                        className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 1024px) 60vw, 25vw"
+                      />
+                    )}
+                    <span
+                      className="absolute top-2 left-2 inline-flex items-center gap-1.5 rounded-md border-[1.5px] border-ink py-1 pr-2 pl-1.5 text-xs font-semibold"
+                      style={{ background: theme.solid, color: theme.onSolid }}
+                    >
+                      <HugeiconsIcon icon={theme.icon} size={18} strokeWidth={1.7} />
+                      {product.category?.name}
+                    </span>
+                    <span className="absolute right-2 bottom-2 left-2 flex items-end justify-between gap-2 rounded-md bg-ink px-2.5 py-2 text-paper">
+                      <span className="truncate text-xs font-medium sm:text-sm">{product.name}</span>
+                      <span className="price-tag shrink-0 text-sm sm:text-base">{formatPrice(product.price)}</span>
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         ) : (
           <div className="flex min-h-96 items-center justify-center rounded-lg border-[1.5px] border-ink bg-sun lg:min-h-[32rem]">
             <LogoMark size={200} />
@@ -243,6 +271,28 @@ export default async function Home() {
           </p>
         )}
       </section>
+
+      {/* Under ₦20k */}
+      {deals.length >= 2 && (
+        <section className="border-y-[1.5px] border-ink bg-sun">
+          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <h2 className="text-4xl font-extrabold text-ink sm:text-5xl">
+                Under <span className="font-mono tracking-tight">₦20k</span>
+              </h2>
+              <Link href="/products?sort=price-asc" className="group inline-flex items-center gap-1.5 text-[15px] font-semibold underline-offset-4 hover:underline">
+                Cheapest first
+                <HugeiconsIcon icon={ArrowRight02Icon} size={22} strokeWidth={1.8} className="transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
+              {deals.slice(0, 4).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Popular */}
       {featuredProducts.length > 0 && products.length > 4 && (

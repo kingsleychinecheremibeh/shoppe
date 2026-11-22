@@ -129,11 +129,39 @@ h2 {
     width: max-content;
     animation: marquee 40s linear infinite;
   }
+  .animate-bob {
+    animation: bob 1.4s ease-in-out infinite;
+  }
+  .animate-bump {
+    animation: bump 450ms ease-out;
+  }
+  .animate-pop-in {
+    animation: pop-in 220ms ease-out;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .marquee {
+    .marquee,
+    .animate-bob,
+    .animate-bump,
+    .animate-pop-in {
       animation: none;
     }
   }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-4deg); }
+}
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35) rotate(-8deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pop-in {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes marquee {

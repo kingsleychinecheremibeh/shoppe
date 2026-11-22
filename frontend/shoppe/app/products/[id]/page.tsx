@@ -123,6 +123,20 @@ export async function generateMetadata({
   };
 }
 
+async function getRelated(product: Product): Promise<Product[]> {
+  if (!API_BASE || !product.category?.slug) return [];
+  try {
+    const query = new URLSearchParams({ page: "1", limit: "5", category: product.category.slug, search: "", sort: "default" });
+    const response = await fetch(`${API_BASE}/products?${query.toString()}`, { next: { revalidate: 300 } });
+    if (!response.ok) return [];
+    const body = await response.json();
+    const list: Product[] = Array.isArray(body) ? body : body?.data ?? [];
+    return list.filter((item) => item.id !== product.id).slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
 export default async function ProductPage({ params }: PageProps) {
   const { id } = await params;
   const product = await getProduct(id);
@@ -130,6 +144,8 @@ export default async function ProductPage({ params }: PageProps) {
   if (!product) {
     notFound();
   }
+
+  const related = await getRelated(product);
 
   const imageUrl = getAssetUrl(getPreferredProductImage(product));
   const productUrl = `${storeConfig.siteUrl}/products/${product.id}`;
@@ -164,7 +180,7 @@ export default async function ProductPage({ params }: PageProps) {
           __html: JSON.stringify(productSchema).replace(/</g, "\\u003c"),
         }}
       />
-      <ProductDetailClient productId={id} initialProduct={product} />
+      <ProductDetailClient productId={id} initialProduct={product} related={related} />
     </>
   );
 }
