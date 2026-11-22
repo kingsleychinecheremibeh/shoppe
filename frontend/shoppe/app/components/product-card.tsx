@@ -43,7 +43,7 @@ export function ProductCard({ product, priority = false, action }: ProductCardPr
         className="sticker-target relative aspect-4/5 overflow-hidden rounded-lg border-[1.5px] border-ink"
         style={{ background: theme.soft }}
       >
-        <Link href={href} className="block h-full w-full" tabIndex={-1} aria-hidden="true">
+        <Link href={href} className="relative block h-full w-full" tabIndex={-1} aria-hidden="true">
           {imageUrl ? (
             <ProductImage
               src={imageUrl}

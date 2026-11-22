@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, ArrowLeft01Icon, ArrowRight01Icon, Loading03Icon, Search01Icon, ShoppingBag01Icon } from "@hugeicons/core-free-icons";
+import { Add01Icon, ArrowLeft01Icon, Tick02Icon, ArrowRight01Icon, Loading03Icon, Search01Icon, ShoppingBag01Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { AlertBanner, EmptyState } from "@/app/components/feedback";
 import { ProductCard } from "@/app/components/product-card";
@@ -51,6 +51,7 @@ export function ProductCatalog({ initialData = null }: { initialData?: CatalogIn
   const [categories, setCategories] = useState<Category[]>(initialData?.categories ?? []);
   const [loading, setLoading] = useState(!initialData);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState("");
 
   // Filters come from the URL, so the first render matches what the server already loaded.
@@ -168,6 +169,8 @@ export function ProductCatalog({ initialData = null }: { initialData?: CatalogIn
       await api.addToCart(product.id, 1, primaryImage?.color || undefined, primaryImage?.id || undefined);
       notifyCartUpdated();
       openCart({ addedName: product.name });
+      setJustAddedId(product.id);
+      window.setTimeout(() => setJustAddedId((current) => (current === product.id ? null : current)), 1800);
     } catch {
       toast.error("Please login to add items to your cart.");
       router.push("/login");
@@ -315,7 +318,7 @@ export function ProductCatalog({ initialData = null }: { initialData?: CatalogIn
             <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4">
               {[...Array(8)].map((_, i) => (
                 <div key={i}>
-                  <div className="aspect-4/5 animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-canvas" />
+                  <div className="aspect-4/5 animate-pulse rounded-lg border-[1.5px] border-gray-300" style={{ background: ["#E3E9FF", "#FFE0EF", "#FFF1C2", "#D6F3E5"][i % 4] }} />
                   <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-canvas" />
                   <div className="mt-2 h-4 w-1/3 animate-pulse rounded bg-canvas" />
                 </div>
@@ -336,13 +339,16 @@ export function ProductCatalog({ initialData = null }: { initialData?: CatalogIn
                           onClick={(e) => handleAddToCart(e, product)}
                           disabled={addingToCart === product.id}
                           aria-label={`Add ${product.name} to cart`}
-                          className="flex h-11 w-11 items-center justify-center rounded-lg border-[1.5px] border-ink bg-white text-ink transition hover:bg-sun focus-visible:opacity-100 disabled:opacity-60 sm:opacity-0 sm:group-hover:opacity-100"
+                          className={`flex h-11 w-11 items-center justify-center rounded-lg border-[1.5px] border-ink transition focus-visible:opacity-100 disabled:opacity-60 ${
+                            justAddedId === product.id ? "bg-leaf text-ink sm:opacity-100" : "bg-white text-ink hover:bg-sun sm:opacity-0 sm:group-hover:opacity-100"
+                          }`}
                         >
                           <HugeiconsIcon
-                            icon={addingToCart === product.id ? Loading03Icon : Add01Icon}
+                            key={justAddedId === product.id ? "added" : "idle"}
+                            icon={addingToCart === product.id ? Loading03Icon : justAddedId === product.id ? Tick02Icon : Add01Icon}
                             size={24}
-                            strokeWidth={1.8}
-                            className={addingToCart === product.id ? "animate-spin" : ""}
+                            strokeWidth={justAddedId === product.id ? 2.4 : 1.8}
+                            className={addingToCart === product.id ? "animate-spin" : justAddedId === product.id ? "animate-pop-in" : ""}
                           />
                         </button>
                       ) : null

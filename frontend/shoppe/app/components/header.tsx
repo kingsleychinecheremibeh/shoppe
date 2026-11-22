@@ -587,7 +587,10 @@ export function Header() {
                 >
                   <HugeiconsIcon icon={ShoppingCart01Icon} size={24} strokeWidth={1.6} />
                   <span className="hidden text-sm font-semibold sm:inline">Cart</span>
-                  <span className="flex h-6 min-w-6 items-center justify-center rounded-md bg-sun px-1 font-mono text-xs font-semibold text-ink">
+                  <span
+                    key={cartCount}
+                    className="animate-bump flex h-6 min-w-6 items-center justify-center rounded-md bg-sun px-1 font-mono text-xs font-semibold text-ink"
+                  >
                     {cartCount}
                   </span>
                 </Link>

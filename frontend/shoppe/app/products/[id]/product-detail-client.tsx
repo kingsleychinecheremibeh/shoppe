@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
+  Cancel01Icon,
+  SearchAddIcon,
   CheckmarkCircle02Icon,
   DeliveryTruck01Icon,
   Image01Icon,
@@ -18,6 +20,7 @@ import {
   ShoppingCart01Icon,
 } from "@hugeicons/core-free-icons";
 import { ProductImage } from "@/app/components/product-image";
+import { ProductCard, type ProductCardProduct } from "@/app/components/product-card";
 import { notifyCartUpdated, openCart } from "@/lib/cart-events";
 import { getCategoryTheme } from "@/lib/category-colors";
 import { api, getAssetUrl } from "@/lib/api";
@@ -79,10 +82,13 @@ const getDefaultImageId = (product: Product | null) =>
 export default function ProductDetailClient({
   productId,
   initialProduct = null,
+  related = [],
 }: {
   productId: string;
   /** Product loaded on the server, so the page (and search engines) see it without waiting for JS. */
   initialProduct?: Product | null;
+  /** Up to four other products from the same category. */
+  related?: ProductCardProduct[];
 }) {
   const router = useRouter();
 
@@ -91,6 +97,22 @@ export default function ProductDetailClient({
   const [loading, setLoading] = useState(!initialProduct);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setZoomed(false);
+    };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [zoomed]);
 
   useEffect(() => {
     if (!productId) return;
@@ -151,6 +173,8 @@ export default function ProductDetailClient({
       await api.addToCart(product.id, quantity, selectedColor, selectedImage?.id);
       notifyCartUpdated();
       openCart({ addedName: quantity > 1 ? `${quantity} × ${product.name}` : product.name });
+      setJustAdded(true);
+      window.setTimeout(() => setJustAdded(false), 1800);
     } catch {
       toast.error("Please login to add items to your cart.");
       router.push("/login");
@@ -163,7 +187,7 @@ export default function ProductDetailClient({
     return (
       <main className="min-h-screen">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:px-8">
-          <div className="aspect-square animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-canvas" />
+          <div className="aspect-square animate-pulse rounded-lg border-[1.5px] border-gray-300 bg-blue-soft" />
           <div className="space-y-5 pt-4">
             <div className="h-9 w-32 animate-pulse rounded-md bg-canvas" />
             <div className="h-16 w-3/4 animate-pulse rounded-md bg-canvas" />
@@ -192,7 +216,7 @@ export default function ProductDetailClient({
   const theme = getCategoryTheme(product.category);
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pb-24 lg:pb-0">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-[15px] text-gray-600">
           <Link href="/products" className="underline-offset-4 hover:text-ink hover:underline">
@@ -218,14 +242,24 @@ export default function ProductDetailClient({
               style={{ background: theme.soft }}
             >
               {imageUrl ? (
-                <ProductImage
-                  src={imageUrl}
-                  alt={selectedImage?.altText || product.name}
-                  fill
-                  priority
-                  className={`object-cover mix-blend-multiply ${isOutOfStock ? "opacity-60 grayscale" : ""}`}
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                />
+                <button
+                  type="button"
+                  onClick={() => setZoomed(true)}
+                  className="group/zoom absolute inset-0 h-full w-full cursor-zoom-in"
+                  aria-label={`Zoom in on ${product.name}`}
+                >
+                  <ProductImage
+                    src={imageUrl}
+                    alt={selectedImage?.altText || product.name}
+                    fill
+                    priority
+                    className={`object-cover mix-blend-multiply ${isOutOfStock ? "opacity-60 grayscale" : ""}`}
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                  />
+                  <span className="absolute right-4 bottom-4 flex h-11 w-11 items-center justify-center rounded-lg border-[1.5px] border-ink bg-white text-ink transition group-hover/zoom:bg-sun">
+                    <HugeiconsIcon icon={SearchAddIcon} size={24} strokeWidth={1.7} />
+                  </span>
+                </button>
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-600">
                   <HugeiconsIcon icon={Image01Icon} size={56} strokeWidth={1.3} />
@@ -368,15 +402,18 @@ export default function ProductDetailClient({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="inline-flex h-14 flex-1 items-center justify-center gap-2.5 rounded-lg bg-ink px-6 text-base font-semibold text-paper transition hover:bg-black disabled:opacity-60"
+                  className={`inline-flex h-14 flex-1 items-center justify-center gap-2.5 rounded-lg px-6 text-base font-semibold transition disabled:opacity-60 ${
+                    justAdded ? "border-[1.5px] border-ink bg-leaf text-ink" : "bg-ink text-paper hover:bg-black"
+                  }`}
                 >
                   <HugeiconsIcon
-                    icon={addingToCart ? Loading03Icon : ShoppingCart01Icon}
+                    key={justAdded ? "added" : addingToCart ? "adding" : "idle"}
+                    icon={justAdded ? CheckmarkCircle02Icon : addingToCart ? Loading03Icon : ShoppingCart01Icon}
                     size={26}
                     strokeWidth={1.6}
-                    className={addingToCart ? "animate-spin" : ""}
+                    className={addingToCart ? "animate-spin" : justAdded ? "animate-pop-in" : ""}
                   />
-                  {addingToCart ? "Adding…" : "Add to cart"}
+                  <span aria-live="polite">{justAdded ? "Added" : addingToCart ? "Adding…" : "Add to cart"}</span>
                 </button>
               </div>
             )}
@@ -417,7 +454,71 @@ export default function ProductDetailClient({
             </ul>
           </div>
         </div>
+
+        {related.length > 0 && product.category && (
+          <section className="mt-16" aria-labelledby="related-title">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <h2 id="related-title" className="text-4xl font-extrabold text-ink">
+                More in {product.category.name}
+              </h2>
+              <Link href={`/category/${product.category.slug}`} className="text-[15px] font-semibold underline-offset-4 hover:underline">
+                See all
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
+              {related.map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
+
+      {/* Phones: keep price and Add to cart in reach while scrolling */}
+      {!isOutOfStock && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t-[1.5px] border-ink bg-paper px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+          <div className="flex items-center gap-4">
+            <div className="min-w-0">
+              <p className="truncate text-sm text-gray-700">{product.name}</p>
+              <p className="price-tag text-xl text-ink">{formatPrice(product.price)}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={addingToCart}
+              className={`ml-auto inline-flex h-12 shrink-0 items-center gap-2 rounded-lg px-5 text-[15px] font-semibold transition disabled:opacity-60 ${
+                justAdded ? "border-[1.5px] border-ink bg-leaf text-ink" : "bg-ink text-paper"
+              }`}
+            >
+              <HugeiconsIcon icon={justAdded ? CheckmarkCircle02Icon : ShoppingCart01Icon} size={22} strokeWidth={1.7} />
+              {justAdded ? "Added" : "Add to cart"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {zoomed && imageUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.name} photo`}
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/85 p-4"
+          onClick={() => setZoomed(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setZoomed(false)}
+            aria-label="Close photo"
+            autoFocus
+            className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-lg border-[1.5px] border-ink bg-white text-ink"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={26} strokeWidth={1.8} />
+          </button>
+          <div className="relative h-[85vh] w-full max-w-4xl overflow-hidden rounded-lg border-[1.5px] border-ink" style={{ background: theme.soft }}>
+            <ProductImage src={imageUrl} alt={selectedImage?.altText || product.name} fill className="object-contain mix-blend-multiply" sizes="100vw" />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -65,7 +65,7 @@ export function PwaInstallPrompt() {
   // Don't render anything if no prompt is available or the banner was dismissed
   if (!deferredPrompt || dismissed) return null;
   // Never cover the checkout flow (it has its own sticky Pay bar on phones), and skip staff pages.
-  if (pathname.startsWith("/checkout") || pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/checkout") || pathname.startsWith("/admin") || /^\/products\/[^/]+/.test(pathname)) return null;
 
   return (
     <div
