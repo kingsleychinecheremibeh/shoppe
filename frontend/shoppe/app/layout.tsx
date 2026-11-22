@@ -8,6 +8,7 @@ import { DevServiceWorkerCleanup } from "@/app/components/dev-service-worker-cle
 import { ServiceWorkerRegistration } from "@/app/components/service-worker-registration";
 import { PwaInstallPrompt } from "@/app/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
+import { Clarity } from "@/app/components/clarity";
 import {storeConfig } from "@/lib/store-config";
 import "./globals.css";
 
@@ -89,7 +90,12 @@ export default function RootLayout({
         <Footer />
         <CartDrawer />
         <Toaster position="top-right" toastOptions={{ className: "rounded-lg! border-[1.5px]! border-ink! shadow-sticker-sm! font-sans!" }} />
-        {process.env.NODE_ENV === "production" && <Analytics />}
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <Analytics />
+            <Clarity />
+          </>
+        )}
       </body>
     </html>
   );

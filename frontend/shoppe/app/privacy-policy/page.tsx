@@ -56,6 +56,15 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
+              <h2 className="text-2xl font-extrabold text-ink">Analytics</h2>
+              <p className="mt-2">
+                We use Vercel Analytics and Microsoft Clarity to understand how visitors use the store (pages visited,
+                clicks, scrolling and device type) so we can improve it. Pages with personal details, such as your
+                account, checkout and orders, are masked, and passwords and payment details are never recorded.
+              </p>
+            </section>
+
+            <section className="rounded-lg border-[1.5px] border-ink bg-white p-6">
               <h2 className="text-2xl font-extrabold text-ink">
                 Contact
               </h2>
