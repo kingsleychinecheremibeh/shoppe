@@ -164,7 +164,7 @@ describe("paymentService", () => {
 
     const result = await paymentService.verifyPaystackEvent(body, signPaystackBody(body));
 
-    expect(orderRepository.markPaidIfPending).toHaveBeenCalledWith("order-1");
+    expect(orderRepository.markPaidIfPending).toHaveBeenCalledWith("order-1", undefined);
     expect(result).toEqual({ orderId: "order-1", status: "PAID" });
   });
 
@@ -249,7 +249,7 @@ describe("paymentService", () => {
         }),
       })
     );
-    expect(orderRepository.markPaidIfPending).toHaveBeenCalledWith("order-1");
+    expect(orderRepository.markPaidIfPending).toHaveBeenCalledWith("order-1", "ref_123-ABC.45");
     expect(result).toEqual({ orderId: "order-1", status: "PAID" });
   });
 

@@ -149,10 +149,11 @@ export const orderRepository = {
      * Returns true when this call made the change, false if the order had already moved on
      * (for example it was cancelled by the unpaid-order expiry job).
      */
-    markPaidIfPending: async (id) => {
+    markPaidIfPending: async (id, paymentReference) => {
         const result = await prisma.order.updateMany({
             where: { id, status: "PENDING" },
-            data: { status: "PAID" },
+            // Keep the gateway's reference so staff can find the payment (e.g. for refunds).
+            data: paymentReference ? { status: "PAID", paymentReference: String(paymentReference) } : { status: "PAID" },
         });
         return result.count === 1;
     },
