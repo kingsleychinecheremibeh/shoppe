@@ -23,7 +23,7 @@ import { api } from "@/lib/api";
 import { getCategoryTheme } from "@/lib/category-colors";
 import { storeConfig } from "@/lib/store-config";
 import { Logo } from "@/app/components/logo";
-import { CART_UPDATED_EVENT, openCart } from "@/lib/cart-events";
+import { AUTH_CHANGED_EVENT, CART_UPDATED_EVENT, openCart } from "@/lib/cart-events";
 
 const stripItems = [
   `Delivery across Nigeria in ${storeConfig.deliveryTime}`,
@@ -104,6 +104,7 @@ export function Header() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [authVersion, setAuthVersion] = useState(0);
 
   const isStaff = user?.role === "ADMIN" || user?.role === "MANAGER";
   const isAdminRoute = pathname.startsWith("/admin");
@@ -205,7 +206,13 @@ export function Header() {
       ignore = true;
       cancelIdleWork(idleId);
     };
-  }, [showStorefrontTools]);
+  }, [showStorefrontTools, authVersion]);
+
+  useEffect(() => {
+    const onAuthChanged = () => setAuthVersion((version) => version + 1);
+    window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

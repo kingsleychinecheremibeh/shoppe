@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Eye, ImageIcon, Search, X } from "@/app/components/admin-icons";
 import { toast } from "sonner";
 import { api, getAssetUrl } from "@/lib/api";
@@ -120,6 +120,7 @@ const getStatusClassName = (status: OrderStatus) => {
 };
 
 export default function AdminOrdersPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const orderIdFromQuery = searchParams.get("orderId");
   const [orders, setOrders] = useState<Order[]>([]);
@@ -137,7 +138,7 @@ export default function AdminOrdersPage() {
 
       if (!canManageOrders) {
         toast.error("You need order management access to manage orders.");
-        window.location.assign("/");
+        router.replace("/");
         return;
       }
 
@@ -153,11 +154,11 @@ export default function AdminOrdersPage() {
       }
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to fetch orders."));
-      window.location.assign("/login");
+      router.replace("/login");
     } finally {
       setLoading(false);
     }
-  }, [orderIdFromQuery]);
+  }, [orderIdFromQuery, router]);
 
   useEffect(() => {
     void Promise.resolve().then(fetchOrders);

@@ -11,7 +11,7 @@ const API_BASE =
 
 export const metadata: Metadata = {
   title: "Shop all",
-  description: `Shop clothing, shoes, bags and accessories from ${storeConfig.storeName}, delivered across ${storeConfig.country}.`,
+  description: `Shop electronics, fashion, shoes, beauty and home picks from ${storeConfig.storeName}, delivered across ${storeConfig.country}.`,
   alternates: { canonical: "/products" },
 };
 

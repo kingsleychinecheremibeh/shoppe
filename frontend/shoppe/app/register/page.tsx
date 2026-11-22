@@ -7,6 +7,8 @@ import { PasswordField } from "@/app/components/password-field";
 import { AuthShell } from "@/app/components/auth-shell";
 import { ui } from "@/lib/ui";
 import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { notifyAuthChanged } from "@/lib/cart-events";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,6 +31,7 @@ const getErrorMessage = (error: unknown) => {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -47,7 +50,8 @@ export default function RegisterPage() {
       });
 
       toast.success("Account created successfully!");
-      window.location.assign("/");
+      notifyAuthChanged();
+      router.push("/");
     } catch (error) {
       setError("root", { message: getErrorMessage(error) });
     }
