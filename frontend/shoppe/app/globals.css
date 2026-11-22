@@ -54,6 +54,12 @@
   --color-violet-soft: #e6e0ff;
   --color-danger: #d93636;
 
+  /* Page widths: wider than Tailwind's defaults so big screens are filled.
+     7xl = main shell (header, footer, shop pages), 6xl/5xl = cart, checkout, account. */
+  --container-7xl: 96rem;
+  --container-6xl: 80rem;
+  --container-5xl: 72rem;
+
   /* Tighter radii across the site */
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
